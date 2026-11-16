@@ -1,0 +1,60 @@
+using System.Collections.Generic;
+using UnityEngine;
+
+public class ProjectilePool : MonoBehaviour
+{
+    [SerializeField] private GameHub hub;
+    [SerializeField] private Projectile projectilePrefab;
+    [SerializeField] private int prewarmCount = 16;
+
+    private readonly Stack<Projectile> freeProjectiles = new Stack<Projectile>(32);
+    private readonly List<Projectile> activeProjectiles = new List<Projectile>(32);
+
+    private void Awake()
+    {
+        for (int i = 0; i < prewarmCount; i++)
+        {
+            freeProjectiles.Push(CreateInstance());
+        }
+    }
+
+    private Projectile CreateInstance()
+    {
+        Projectile projectile = Instantiate(projectilePrefab, transform);
+        projectile.gameObject.SetActive(false);
+        return projectile;
+    }
+
+    public void Launch(Vector2 origin, Vector2 direction, MonsterDefinition definition, bool authoritative)
+    {
+        Projectile projectile;
+        if (freeProjectiles.Count > 0)
+        {
+            projectile = freeProjectiles.Pop();
+        }
+        else
+        {
+            projectile = CreateInstance();
+        }
+        projectile.Launch(origin, direction, definition, authoritative);
+        projectile.gameObject.SetActive(true);
+        activeProjectiles.Add(projectile);
+    }
+
+    private void Update()
+    {
+        float deltaTime = Time.deltaTime;
+        for (int i = activeProjectiles.Count - 1; i >= 0; i--)
+        {
+            Projectile projectile = activeProjectiles[i];
+            if (projectile.Tick(deltaTime, hub))
+            {
+                int last = activeProjectiles.Count - 1;
+                activeProjectiles[i] = activeProjectiles[last];
+                activeProjectiles.RemoveAt(last);
+                projectile.gameObject.SetActive(false);
+                freeProjectiles.Push(projectile);
+            }
+        }
+    }
+}
