@@ -25,6 +25,7 @@ MonoBehaviour:
   anim: 4
   animStartTime: 0.75
   animSpeed: 1.8
+  attackSound: 7
   range: 2.3
   arcDegrees: 120
   lineHalfWidth: 0.35

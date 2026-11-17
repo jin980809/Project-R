@@ -1,4 +1,4 @@
-using System.Text;
+﻿using System.Text;
 using LayerLab.ArtMakerUnity;
 using UnityEngine;
 
@@ -71,13 +71,13 @@ public class ItemBalance : ScriptableObject
     [SerializeField] private float[] optionRarityScale = { 1f, 1f, 1.4f, 1.8f };
 
     [Header("이름")]
-    [SerializeField] private string[] weaponKindNames = { "검", "창", "활", "지팡이" };
+    [SerializeField] private string[] weaponKindNames = { "검", "창", "활", "지팡이", "도끼", "둔기", "석궁", "총", "완드" };
     [SerializeField] private string offhandName = "방패";
     [SerializeField] private string helmetName = "투구";
     [SerializeField] private string armorName = "갑옷";
 
     [Header("외형 파츠 수(TowerBootstrap이 프리팹에서 읽어 채운다)")]
-    [SerializeField] private int[] weaponPartsCounts = { 1, 1, 1, 1 };
+    [SerializeField] private int[] weaponPartsCounts = { 1, 1, 1, 1, 1, 1, 1, 1, 1 };
     [SerializeField] private int shieldPartsCount = 1;
     [SerializeField] private int helmetPartsCount = 1;
     [SerializeField] private int armorPartsCount = 1;
@@ -445,24 +445,24 @@ public class ItemBalance : ScriptableObject
 
     // ------------------------------------------------------------ 외형과 설명
 
+    // 무기 계열의 패키지 파츠 종류(WeaponKind 순서와 같다)
+    private static readonly PartsType[] weaponPartsTypes =
+    {
+        PartsType.Sword, PartsType.Spear, PartsType.Bow, PartsType.Staff, PartsType.Axe,
+        PartsType.Blunt, PartsType.Crossbow, PartsType.Gun, PartsType.Wand
+    };
+
+    public static PartsType GetWeaponPartsType(WeaponKind kind)
+    {
+        return weaponPartsTypes[(int)kind];
+    }
+
     public PartsType GetPartsType(in ItemData item)
     {
         PartsType type = PartsType.Sword;
         if (item.slot == ItemSlot.Weapon)
         {
-            WeaponKind kind = (WeaponKind)item.kind;
-            if (kind == WeaponKind.Spear)
-            {
-                type = PartsType.Spear;
-            }
-            else if (kind == WeaponKind.Bow)
-            {
-                type = PartsType.Bow;
-            }
-            else if (kind == WeaponKind.Staff)
-            {
-                type = PartsType.Staff;
-            }
+            type = GetWeaponPartsType((WeaponKind)item.kind);
         }
         else if (item.slot == ItemSlot.Offhand)
         {

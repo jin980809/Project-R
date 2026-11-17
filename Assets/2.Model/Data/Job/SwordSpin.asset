@@ -13,13 +13,15 @@ MonoBehaviour:
   m_Name: SwordSpin
   m_EditorClassIdentifier: Assembly-CSharp::SkillDefinition
   displayName: "\uD68C\uC804 \uBCA0\uAE30"
+  description: "\uBAB8\uC744 \uD55C \uBC14\uD034 \uB3CC\uB824 \uC8FC\uBCC0\uC744
+    \uBCA0\uACE0 \uCD9C\uD608\uC744 \uB0A8\uAE41\uB2C8\uB2E4."
   kind: 0
   manaCost: 12
   cooldown: 5
   castTime: 0.35
   damageFactor: 1.6
   radius: 2.2
-  range: 4
+  range: 0
   invulnerable: 0
   count: 1
   spreadDegrees: 0
@@ -29,11 +31,14 @@ MonoBehaviour:
   projectileLook: 1
   buffEffect: 1
   buffValue: 30
-  buffDuration: 6
+  buffDuration: 0
+  healPercent: 0
   statusKind: 2
   statusDuration: 4
   statusPower: 0.12
   anim: 5
   animStartTime: 0
   animSpeed: 1.5
-  fxColor: {r: 1, g: 0.55, b: 0.35, a: 1}
+  fxColor: {r: 1, g: 0.45, b: 0.3, a: 1}
+  fx: 1
+  sound: 26

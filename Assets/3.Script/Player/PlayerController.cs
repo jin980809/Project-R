@@ -55,6 +55,8 @@ public class PlayerController : NetworkBehaviour, IDamageable
     [SerializeField] private float slashDuration = 0.14f;
     [SerializeField] private Vector2 centerOffset = new Vector2(0f, 0.35f);
     [SerializeField] private float muzzleDistance = 0.4f;
+    [Tooltip("조준 각도를 서버로 보내는 최소 간격(초)")]
+    [SerializeField] private float aimSendInterval = 0.05f;
 
     [Header("조준선(본인에게만 보임)")]
     [SerializeField] private float aimLineStart = 0.55f;
@@ -100,6 +102,10 @@ public class PlayerController : NetworkBehaviour, IDamageable
     [SyncVar] private Vector2 blockAim = Vector2.right;
     // 걸려 있는 상태이상 비트(StatusBurn 등). 몬스터의 공격이 건다.
     [SyncVar] private byte statusMask;
+    // 조준 각도(0~255 = 0~360도). 다른 사람 화면에서 무기가 가리키는 방향에 쓴다.
+    [SyncVar(hook = nameof(OnAimChanged))] private byte aimByte;
+    // 커스터마이징한 외형. 본인이 기기에 저장한 값을 접속할 때 보내고, 모두에게 같은 모습으로 보인다.
+    [SyncVar(hook = nameof(OnLookChanged))] private CharacterLook look;
 
     private GameNetworkManager manager;
     private GameHub hub;
@@ -124,6 +130,8 @@ public class PlayerController : NetworkBehaviour, IDamageable
     private float blockAimSendDot;
     private SkillDefinition castSkill;
     private Vector2 castDirection;
+    private byte sentAimByte;
+    private float aimSendTimer;
 
     // 모든 클라이언트 공통 연출
     private bool slashFlip;
@@ -256,6 +264,9 @@ public class PlayerController : NetworkBehaviour, IDamageable
         blockAimSendDot = Mathf.Cos(blockAimSendDegrees * Mathf.Deg2Rad);
         ApplyRemoteLocomotion();
         visual.SetFacing(faceLeft);
+        visual.SetAim(DecodeAim(aimByte), false);
+        visual.SetAimEnabled(!dead);
+        visual.ApplyLook(look);
         if (dead)
         {
             visual.PlayAction(CharacterAnim.Dead, 0.9f, 1f, true);
@@ -285,6 +296,44 @@ public class PlayerController : NetworkBehaviour, IDamageable
             hub.FacilityUi.Bind(inventory);
         }
         facility.OwnerStart();
+
+        // 저장한 외형이 있으면 보내고, 처음 실행이면 커스터마이징 화면부터 띄운다(로비에만 있다).
+        MetaProgress meta = hub.Meta;
+        if (meta.HasLook)
+        {
+            SubmitLook(meta.Look);
+        }
+        else if (hub.CustomizeUi != null)
+        {
+            hub.CustomizeUi.Open(this, true);
+        }
+    }
+
+    // 커스터마이징 화면에서 고르는 동안 내 화면에만 보여 준다.
+    public void PreviewLook(in CharacterLook value)
+    {
+        visual.ApplyLook(value);
+    }
+
+    public CharacterLook CurrentLook => look;
+    public CharacterVisual Visual => visual;
+
+    // 정한 외형을 모두에게 보낸다.
+    public void SubmitLook(in CharacterLook value)
+    {
+        visual.ApplyLook(value);
+        CmdSetLook(value);
+    }
+
+    [Command]
+    private void CmdSetLook(CharacterLook value)
+    {
+        look = value;
+    }
+
+    private void OnLookChanged(CharacterLook oldValue, CharacterLook newValue)
+    {
+        visual.ApplyLook(newValue);
     }
 
     public override void OnStopLocalPlayer()
@@ -354,13 +403,20 @@ public class PlayerController : NetworkBehaviour, IDamageable
 
     private void OwnerUpdate(float deltaTime)
     {
-        // 주소 입력 중에는 조작을 막고, 마우스가 UI 위에 있으면 공격하지 않는다.
+        if (input.MenuPressed)
+        {
+            HandleMenuKey();
+        }
+
+        // 주소 입력 중이거나 메뉴가 열려 있으면 조작을 막고, 마우스가 UI 위에 있으면 공격하지 않는다.
         bool blocked = hub.InputBlocked;
         attackAllowed = !blocked && !hub.IsPointerOverUi();
 
         RechargeRoll(deltaTime);
         ReadBufferedInput(deltaTime, blocked);
         UpdateAim();
+        visual.SetAim(aimDirection, false);
+        SendAim(deltaTime);
         Vector2 moveInput = Vector2.zero;
         if (!blocked)
         {
@@ -438,25 +494,48 @@ public class PlayerController : NetworkBehaviour, IDamageable
                 manager.ServerStartRun();
             }
         }
-        else if (input.MenuPressed)
+    }
+
+    // Esc: 열려 있는 창(가방, 시설, 노드맵, 마을 시설)이 있으면 그것을 닫고, 없으면 메뉴를 연다.
+    // 메뉴가 열려 있을 때는 조작이 막혀 있으므로 막힘 여부와 관계없이 처리한다.
+    private void HandleMenuKey()
+    {
+        if (hub.PauseMenu.IsOpen)
         {
-            // 가방이 열려 있으면 Esc는 가방만 닫는다.
-            if (hub.InventoryUi.IsOpen)
+            hub.PauseMenu.OnEscape();
+        }
+        else if (hub.CustomizeUi != null && hub.CustomizeUi.IsOpen)
+        {
+            // 처음 실행 때는 정해야 하므로 취소되지 않는다(메뉴는 열 수 있다).
+            if (hub.CustomizeUi.CanCancel)
             {
-                hub.InventoryUi.Close();
-            }
-            else if (hub.SkillUi.IsTreeOpen)
-            {
-                hub.SkillUi.CloseTree();
-            }
-            else if (hub.MetaUi != null && hub.MetaUi.IsOpen)
-            {
-                hub.MetaUi.Close();
+                hub.CustomizeUi.Cancel();
             }
             else
             {
-                manager.RequestExit();
+                hub.PauseMenu.Open();
             }
+        }
+        else if (hub.FacilityUi != null && hub.FacilityUi.IsOpen)
+        {
+            hub.FacilityUi.Close();
+            hub.InventoryUi.Close();
+        }
+        else if (hub.InventoryUi.IsOpen)
+        {
+            hub.InventoryUi.Close();
+        }
+        else if (hub.SkillUi.IsTreeOpen)
+        {
+            hub.SkillUi.CloseTree();
+        }
+        else if (hub.MetaUi != null && hub.MetaUi.IsOpen)
+        {
+            hub.MetaUi.Close();
+        }
+        else
+        {
+            hub.PauseMenu.Open();
         }
     }
 
@@ -498,6 +577,45 @@ public class PlayerController : NetworkBehaviour, IDamageable
         {
             aimDirection = toPointer.normalized;
         }
+#if UNITY_EDITOR
+        if (editorAimOverride.sqrMagnitude > 0.0001f)
+        {
+            aimDirection = editorAimOverride.normalized;
+        }
+#endif
+    }
+
+#if UNITY_EDITOR
+    // 에디터 검사 도구(EditorCommandWatcher의 aim 명령)가 조준을 고정할 때 쓴다. 0이면 마우스를 따른다.
+    [System.NonSerialized] public Vector2 editorAimOverride;
+#endif
+
+    // 조준 각도가 바뀌었으면 일정 간격으로 서버에 알린다(다른 사람 화면의 무기 방향).
+    private void SendAim(float deltaTime)
+    {
+        aimSendTimer -= deltaTime;
+        if (aimSendTimer <= 0f)
+        {
+            byte encoded = EncodeAim(aimDirection);
+            if (encoded != sentAimByte)
+            {
+                sentAimByte = encoded;
+                aimSendTimer = aimSendInterval;
+                CmdSetAim(encoded);
+            }
+        }
+    }
+
+    private static byte EncodeAim(Vector2 aim)
+    {
+        float degrees = Mathf.Repeat(Mathf.Atan2(aim.y, aim.x) * Mathf.Rad2Deg, 360f);
+        return (byte)(Mathf.RoundToInt(degrees / 360f * 256f) & 255);
+    }
+
+    private static Vector2 DecodeAim(byte value)
+    {
+        float radians = value * (360f / 256f) * Mathf.Deg2Rad;
+        return new Vector2(Mathf.Cos(radians), Mathf.Sin(radians));
     }
 
     private void TickNormal(Vector2 moveInput, bool blocked)
@@ -506,7 +624,8 @@ public class PlayerController : NetworkBehaviour, IDamageable
         bool wantAttack = bufferedAction == BufferedAction.Attack || (input.AttackHeld && attackAllowed);
         bool wantBlock = !blocked && inventory.ShieldActive && input.OffhandHeld;
         bool castStarted = false;
-        if (!blocked)
+        // 스킬 트리가 열려 있으면 Q, E, R은 장착에 쓴다(SkillUi가 처리).
+        if (!blocked && !hub.SkillUi.IsTreeOpen)
         {
             int skillKey = input.SkillKeyPressed;
             if (skillKey >= 0)
@@ -681,6 +800,7 @@ public class PlayerController : NetworkBehaviour, IDamageable
         state = PlayerState.Normal;
         locomotionSent = false;
         desiredVelocity = Vector2.zero;
+        visual.SetAimEnabled(true);
     }
 
     private void SetLocalLocomotion(bool isMoving, bool isFaceLeft)
@@ -777,7 +897,12 @@ public class PlayerController : NetworkBehaviour, IDamageable
     private void PlayAttackVisual(Vector2 aim)
     {
         visual.SetFacing(aim.x < 0f);
-        visual.PlayAction(weapon.Anim, weapon.AnimStartTime, weapon.AnimSpeed * inventory.Stats.attackSpeedMultiplier, false);
+        // 패키지 공격 동작은 손을 머리 위로 올려 조준 회전과 어긋나므로 쓰지 않고, 무기 연출(휘두르기·찌르기·반동)만 쓴다.
+        // 휘두르는 방향은 공격한 순간의 조준으로 맞춘다(다른 사람 화면도 같은 방향).
+        visual.SetAim(aim, false);
+        visual.SetAimEnabled(true);
+        visual.PlayWeaponMotion(weapon.Motion, AttackDuration);
+        hub.Sound.PlayAt(weapon.AttackSound, transform.position);
 
         if (!weapon.IsRanged)
         {
@@ -798,7 +923,8 @@ public class PlayerController : NetworkBehaviour, IDamageable
     private void PlayChargeVisual(Vector2 aim)
     {
         visual.SetFacing(aim.x < 0f);
-        visual.PlayAction(weapon.Anim, weapon.AnimStartTime, 0f, false);
+        visual.SetAim(aim, false);
+        hub.Sound.PlayAt(SoundId.BowCharge, transform.position);
     }
 
     private void PlayRollVisual(Vector2 direction)
@@ -807,7 +933,10 @@ public class PlayerController : NetworkBehaviour, IDamageable
         {
             visual.SetFacing(direction.x < 0f);
         }
+        // 구르는 동안은 패키지 애니메이션이 무기를 움직인다.
+        visual.SetAimEnabled(false);
         visual.PlayAction(CharacterAnim.Roll, 0f, 0.5833f / rollDuration, false);
+        hub.Sound.PlayAt(SoundId.Roll, transform.position);
     }
 
     private void TickSlash(float deltaTime)
@@ -872,6 +1001,7 @@ public class PlayerController : NetworkBehaviour, IDamageable
         if (!isLocalPlayer)
         {
             visual.SetFacing(faceLeft);
+            visual.SetAimEnabled(!dead);
             if (moving)
             {
                 visual.PlayLoop(CharacterAnim.Run);
@@ -884,6 +1014,12 @@ public class PlayerController : NetworkBehaviour, IDamageable
     }
 
     // ------------------------------------------------------------ 네트워크: 본인 → 서버 → 다른 클라이언트
+
+    [Command(channel = Channels.Unreliable)]
+    private void CmdSetAim(byte value)
+    {
+        aimByte = value;
+    }
 
     [Command]
     private void CmdSetLocomotion(bool isMoving, bool isFaceLeft)
@@ -986,6 +1122,7 @@ public class PlayerController : NetworkBehaviour, IDamageable
     private void RpcParry()
     {
         guardFlashTimer = guardFlashTime;
+        hub.Sound.PlayAt(SoundId.Parry, transform.position);
         if (isLocalPlayer)
         {
             hub.CameraFollow.Shake(0.1f, 0.12f);
@@ -1447,6 +1584,7 @@ public class PlayerController : NetworkBehaviour, IDamageable
             if (hub != null)
             {
                 hub.DamageTextPool.Show((Vector2)transform.position + new Vector2(0f, 1.1f), oldValue - newValue, damageTextColor);
+                hub.Sound.PlayAt(SoundId.PlayerHurt, transform.position);
                 if (isLocalPlayer)
                 {
                     hub.CameraFollow.Shake(0.12f, 0.18f);
@@ -1459,8 +1597,10 @@ public class PlayerController : NetworkBehaviour, IDamageable
     {
         if (hub != null)
         {
+            visual.SetAimEnabled(!newValue);
             if (newValue)
             {
+                hub.Sound.PlayAt(SoundId.PlayerDie, transform.position);
                 visual.PlayAction(CharacterAnim.Dead, 0f, 1f, true);
                 if (isLocalPlayer)
                 {
@@ -1470,12 +1610,21 @@ public class PlayerController : NetworkBehaviour, IDamageable
             }
             else
             {
+                hub.Sound.PlayAt(SoundId.Revive, transform.position);
                 visual.PlayLoop(CharacterAnim.Idle);
                 if (isLocalPlayer)
                 {
                     EnterNormal();
                 }
             }
+        }
+    }
+
+    private void OnAimChanged(byte oldValue, byte newValue)
+    {
+        if (hub != null && !isLocalPlayer)
+        {
+            visual.SetAim(DecodeAim(newValue), true);
         }
     }
 

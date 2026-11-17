@@ -1,0 +1,269 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 54a8b087ee685f848849c476663fea22, type: 3}
+  m_Name: SoundLibrary
+  m_EditorClassIdentifier: Assembly-CSharp::SoundLibrary
+  sounds:
+  - id: 1
+    clips: []
+    volume: 1
+    pitchJitter: 0.05
+    minInterval: 0.04
+  - id: 2
+    clips: []
+    volume: 1
+    pitchJitter: 0.05
+    minInterval: 0.04
+  - id: 3
+    clips: []
+    volume: 1
+    pitchJitter: 0.05
+    minInterval: 0.04
+  - id: 4
+    clips: []
+    volume: 1
+    pitchJitter: 0.05
+    minInterval: 0.04
+  - id: 5
+    clips: []
+    volume: 1
+    pitchJitter: 0.05
+    minInterval: 0.04
+  - id: 6
+    clips: []
+    volume: 1
+    pitchJitter: 0.05
+    minInterval: 0.04
+  - id: 7
+    clips: []
+    volume: 1
+    pitchJitter: 0.05
+    minInterval: 0.04
+  - id: 8
+    clips: []
+    volume: 1
+    pitchJitter: 0.05
+    minInterval: 0.04
+  - id: 9
+    clips: []
+    volume: 1
+    pitchJitter: 0.05
+    minInterval: 0.04
+  - id: 10
+    clips: []
+    volume: 1
+    pitchJitter: 0.05
+    minInterval: 0.04
+  - id: 11
+    clips: []
+    volume: 1
+    pitchJitter: 0.05
+    minInterval: 0.04
+  - id: 12
+    clips: []
+    volume: 1
+    pitchJitter: 0.05
+    minInterval: 0.04
+  - id: 13
+    clips: []
+    volume: 1
+    pitchJitter: 0.05
+    minInterval: 0.04
+  - id: 14
+    clips: []
+    volume: 1
+    pitchJitter: 0.05
+    minInterval: 0.04
+  - id: 15
+    clips: []
+    volume: 1
+    pitchJitter: 0.05
+    minInterval: 0.04
+  - id: 16
+    clips: []
+    volume: 1
+    pitchJitter: 0.05
+    minInterval: 0.04
+  - id: 17
+    clips: []
+    volume: 1
+    pitchJitter: 0.05
+    minInterval: 0.04
+  - id: 18
+    clips: []
+    volume: 1
+    pitchJitter: 0.05
+    minInterval: 0.04
+  - id: 19
+    clips: []
+    volume: 1
+    pitchJitter: 0.05
+    minInterval: 0.04
+  - id: 20
+    clips: []
+    volume: 1
+    pitchJitter: 0.05
+    minInterval: 0.04
+  - id: 21
+    clips: []
+    volume: 1
+    pitchJitter: 0.05
+    minInterval: 0.04
+  - id: 22
+    clips: []
+    volume: 1
+    pitchJitter: 0.05
+    minInterval: 0.04
+  - id: 23
+    clips: []
+    volume: 1
+    pitchJitter: 0.05
+    minInterval: 0.04
+  - id: 24
+    clips: []
+    volume: 1
+    pitchJitter: 0.05
+    minInterval: 0.04
+  - id: 25
+    clips: []
+    volume: 1
+    pitchJitter: 0.05
+    minInterval: 0.04
+  - id: 26
+    clips: []
+    volume: 1
+    pitchJitter: 0.05
+    minInterval: 0.04
+  - id: 27
+    clips: []
+    volume: 1
+    pitchJitter: 0.05
+    minInterval: 0.04
+  - id: 28
+    clips: []
+    volume: 1
+    pitchJitter: 0.05
+    minInterval: 0.04
+  - id: 29
+    clips: []
+    volume: 1
+    pitchJitter: 0.05
+    minInterval: 0.04
+  - id: 30
+    clips: []
+    volume: 1
+    pitchJitter: 0.05
+    minInterval: 0.04
+  - id: 31
+    clips: []
+    volume: 1
+    pitchJitter: 0.05
+    minInterval: 0.04
+  - id: 32
+    clips: []
+    volume: 1
+    pitchJitter: 0.05
+    minInterval: 0.04
+  - id: 33
+    clips: []
+    volume: 1
+    pitchJitter: 0.05
+    minInterval: 0.04
+  - id: 34
+    clips: []
+    volume: 1
+    pitchJitter: 0.05
+    minInterval: 0.04
+  - id: 35
+    clips: []
+    volume: 1
+    pitchJitter: 0.05
+    minInterval: 0.04
+  - id: 36
+    clips: []
+    volume: 1
+    pitchJitter: 0.05
+    minInterval: 0.04
+  - id: 37
+    clips: []
+    volume: 1
+    pitchJitter: 0.05
+    minInterval: 0.04
+  - id: 38
+    clips: []
+    volume: 1
+    pitchJitter: 0.05
+    minInterval: 0.04
+  - id: 39
+    clips: []
+    volume: 1
+    pitchJitter: 0.05
+    minInterval: 0.04
+  - id: 40
+    clips: []
+    volume: 1
+    pitchJitter: 0.05
+    minInterval: 0.04
+  - id: 41
+    clips: []
+    volume: 1
+    pitchJitter: 0.05
+    minInterval: 0.04
+  - id: 42
+    clips: []
+    volume: 1
+    pitchJitter: 0.05
+    minInterval: 0.04
+  - id: 43
+    clips: []
+    volume: 1
+    pitchJitter: 0.05
+    minInterval: 0.04
+  - id: 44
+    clips: []
+    volume: 1
+    pitchJitter: 0.05
+    minInterval: 0.04
+  - id: 45
+    clips: []
+    volume: 1
+    pitchJitter: 0.05
+    minInterval: 0.04
+  - id: 46
+    clips: []
+    volume: 1
+    pitchJitter: 0.05
+    minInterval: 0.04
+  - id: 47
+    clips: []
+    volume: 1
+    pitchJitter: 0.05
+    minInterval: 0.04
+  music:
+  - id: 1
+    clip: {fileID: 0}
+    volume: 1
+  - id: 2
+    clip: {fileID: 0}
+    volume: 1
+  - id: 3
+    clip: {fileID: 0}
+    volume: 1
+  - id: 4
+    clip: {fileID: 0}
+    volume: 1
+  - id: 5
+    clip: {fileID: 0}
+    volume: 1
+  - id: 6
+    clip: {fileID: 0}
+    volume: 1

@@ -1,0 +1,43 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3a62f28f4b3a06b43bb3383b221b3957, type: 3}
+  m_Name: Crossbow
+  m_EditorClassIdentifier: Assembly-CSharp::WeaponDefinition
+  displayName: "\uC11D\uAD81"
+  kind: 6
+  damage: 19
+  manaOnHit: 4
+  hitDelay: 0.05
+  duration: 0.55
+  moveFactor: 0.45
+  allowsShield: 0
+  partsType: 13
+  partsIndex: 0
+  anim: 4
+  animStartTime: 0.75
+  animSpeed: 2.2
+  attackSound: 9
+  range: 1.5
+  arcDegrees: 120
+  lineHalfWidth: 0
+  slashScale: {x: 1, y: 1}
+  projectileSpeed: 18
+  projectileLifetime: 0.9
+  projectileRadius: 0.22
+  explosionRadius: 0
+  statusKind: 0
+  statusDuration: 3
+  statusPower: 0.12
+  projectileLook: 1
+  projectileColor: {r: 0.85, g: 0.85, b: 0.95, a: 1}
+  chargeTime: 0
+  minChargeFactor: 0.35

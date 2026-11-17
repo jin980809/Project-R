@@ -1,4 +1,4 @@
-using Mirror;
+﻿using Mirror;
 using UnityEngine;
 
 public enum MonsterState : byte
@@ -261,7 +261,7 @@ public class MonsterController : NetworkBehaviour, IDamageable
             {
                 rarity = minRarity;
             }
-            wornWeapon = balance.CreateWeapon((WeaponKind)Random.Range(0, 4), rarity);
+            wornWeapon = balance.CreateWeapon((WeaponKind)Random.Range(0, WeaponDefinition.KindCount), rarity);
             wornHelmet = balance.CreateGear(ItemSlot.Helmet, rarity);
             wornArmor = balance.CreateGear(ItemSlot.Armor, rarity);
             moveSpeed = fallenMoveSpeed;
@@ -1139,6 +1139,10 @@ public class MonsterController : NetworkBehaviour, IDamageable
             PlayFrames(definition.AttackFrames, definition.AttackClipDuration, false);
             ShowTelegraph();
         }
+        else if (newState == MonsterState.Strike)
+        {
+            hub.Sound.PlayAt(SoundId.MonsterAttack, transform.position, 0.7f);
+        }
         else if (newState == MonsterState.Stagger)
         {
             PlayFrames(definition.HitFrames, LoopDuration(definition.HitFrames), false);
@@ -1211,6 +1215,7 @@ public class MonsterController : NetworkBehaviour, IDamageable
             // 쓰러뜨린 몬스터는 각자의 도감에 기록된다.
             if (newValue == MonsterState.Dead && oldValue != MonsterState.Dead)
             {
+                hub.Sound.PlayAt(SoundId.MonsterDie, transform.position);
                 int codexIndex = definitionIndex;
                 if (fallen)
                 {
@@ -1262,10 +1267,12 @@ public class MonsterController : NetworkBehaviour, IDamageable
                 {
                     seenCritCounter = critCounter;
                     hub.DamageTextPool.ShowScaled(textPosition, oldValue - newValue, critTextColor, critTextScale);
+                    hub.Sound.PlayAt(SoundId.CriticalHit, transform.position);
                 }
                 else
                 {
                     hub.DamageTextPool.Show(textPosition, oldValue - newValue, Color.white);
+                    hub.Sound.PlayAt(SoundId.MonsterHit, transform.position);
                 }
 
                 if (newValue > 0)

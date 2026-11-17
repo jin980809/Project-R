@@ -1,0 +1,44 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d31d9e92da8c0464aa4d1b02d82027ff, type: 3}
+  m_Name: WandVenom
+  m_EditorClassIdentifier: Assembly-CSharp::SkillDefinition
+  displayName: "\uB3C5 \uD3ED\uD0C4"
+  description: "\uD130\uC9C0\uB294 \uB3C5 \uD3ED\uD0C4\uC744 \uB358\uC838 \uC8FC\uBCC0
+    \uC801\uC5D0\uAC8C \uB3C5\uC744 \uB0A8\uAE41\uB2C8\uB2E4."
+  kind: 2
+  manaCost: 16
+  cooldown: 7
+  castTime: 0.3
+  damageFactor: 1.6
+  radius: 0.24
+  range: 0
+  invulnerable: 0
+  count: 1
+  spreadDegrees: 0
+  projectileSpeed: 10
+  projectileLifetime: 0.9
+  explosionRadius: 2.2
+  projectileLook: 2
+  buffEffect: 1
+  buffValue: 30
+  buffDuration: 0
+  healPercent: 0
+  statusKind: 1
+  statusDuration: 4
+  statusPower: 0.12
+  anim: 4
+  animStartTime: 0
+  animSpeed: 1.5
+  fxColor: {r: 0.6, g: 0.9, b: 0.3, a: 1}
+  fx: 8
+  sound: 32

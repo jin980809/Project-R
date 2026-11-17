@@ -1,15 +1,16 @@
-using System.Text;
+﻿using System.Text;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-// 로비 마을의 세 시설 화면: 해금 상인(영혼석으로 영구 강화), 도감(처치한 몬스터와 얻어 본 장비), 설정.
+// 로비 마을의 시설 화면: 해금 상점(영혼석으로 영구 강화), 도서관(도감: 처치한 몬스터와 얻어 본 장비).
 // 시설 가까이에서 F로 열고, 같은 패널을 시설마다 다르게 쓴다. 모든 값은 MetaProgress(기기 저장)에 있다.
+// 미용실(BarberStation)은 위치만 여기서 찾고 화면은 CustomizeUi가 맡는다. 설정은 Esc 메뉴로 옮겼다.
 public class MetaUi : MonoBehaviour
 {
     private const int TabUnlock = 0;
     private const int TabCodex = 1;
-    private const int TabSettings = 2;
+    public const int BarberStation = 2;
 
     [SerializeField] private GameHub hub;
     [SerializeField] private GameObject panel;
@@ -19,9 +20,9 @@ public class MetaUi : MonoBehaviour
     [SerializeField] private TMP_Text[] actionLabels;
     [SerializeField] private Button closeButton;
 
-    [Header("시설 위치(해금 상인, 도감, 설정 순서)")]
+    [Header("시설 위치(해금 상점, 도서관, 미용실 순서)")]
     [SerializeField] private Vector2[] stationPositions;
-    [SerializeField] private string[] stationNames = { "해금 상인", "도감", "설정" };
+    [SerializeField] private string[] stationNames = { "해금 상점", "도서관", "미용실" };
     [SerializeField] private float stationRange = 1.4f;
 
     [Header("영구 해금(최대 체력, 포션, 시작 골드 순서)")]
@@ -132,39 +133,7 @@ public class MetaUi : MonoBehaviour
                 hub.Hud.ShowNotice("영혼석이 부족합니다");
             }
         }
-        else if (tab == TabSettings)
-        {
-            if (index == 0)
-            {
-                Screen.fullScreen = !Screen.fullScreen;
-            }
-            else if (index == 1)
-            {
-                meta.SetShakeEnabled(!meta.ShakeEnabled);
-            }
-            else
-            {
-                meta.SetDamageTextEnabled(!meta.DamageTextEnabled);
-            }
-            meta.Save();
-            hub.ApplySettings();
-        }
         Refresh();
-    }
-
-    private void SetToggleLabel(TMP_Text label, string name, bool value)
-    {
-        builder.Clear();
-        builder.Append(name).Append("  ");
-        if (value)
-        {
-            builder.Append("켜짐");
-        }
-        else
-        {
-            builder.Append("꺼짐");
-        }
-        label.SetText(builder);
     }
 
     private void Refresh()
@@ -234,14 +203,6 @@ public class MetaUi : MonoBehaviour
                 }
                 builder.Append('\n');
             }
-        }
-        else
-        {
-            SetToggleLabel(actionLabels[0], "전체 화면", Screen.fullScreen);
-            SetToggleLabel(actionLabels[1], "화면 흔들림", meta.ShakeEnabled);
-            SetToggleLabel(actionLabels[2], "피해 숫자", meta.DamageTextEnabled);
-            builder.Clear();
-            builder.Append("버튼을 누르면 켜고 끕니다.\n설정은 이 기기에 저장됩니다.");
         }
         bodyLabel.SetText(builder);
     }

@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: StaffBlink
   m_EditorClassIdentifier: Assembly-CSharp::SkillDefinition
   displayName: "\uC810\uBA78"
+  description: "\uC870\uC900 \uBC29\uD5A5\uC73C\uB85C \uC21C\uAC04 \uC774\uB3D9\uD569\uB2C8\uB2E4."
   kind: 1
   manaCost: 10
   cooldown: 6
@@ -29,7 +30,8 @@ MonoBehaviour:
   projectileLook: 1
   buffEffect: 1
   buffValue: 30
-  buffDuration: 6
+  buffDuration: 0
+  healPercent: 0
   statusKind: 0
   statusDuration: 3
   statusPower: 0.12
@@ -37,3 +39,5 @@ MonoBehaviour:
   animStartTime: 0
   animSpeed: 1.5
   fxColor: {r: 0.8, g: 0.55, b: 1, a: 1}
+  fx: 4
+  sound: 32

@@ -1,0 +1,43 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3a62f28f4b3a06b43bb3383b221b3957, type: 3}
+  m_Name: Wand
+  m_EditorClassIdentifier: Assembly-CSharp::WeaponDefinition
+  displayName: "\uC644\uB4DC"
+  kind: 8
+  damage: 10
+  manaOnHit: 3
+  hitDelay: 0.08
+  duration: 0.3
+  moveFactor: 0.5
+  allowsShield: 1
+  partsType: 9
+  partsIndex: 0
+  anim: 4
+  animStartTime: 0.75
+  animSpeed: 2.2
+  attackSound: 11
+  range: 1.5
+  arcDegrees: 120
+  lineHalfWidth: 0
+  slashScale: {x: 1, y: 1}
+  projectileSpeed: 11
+  projectileLifetime: 0.8
+  projectileRadius: 0.2
+  explosionRadius: 0
+  statusKind: 0
+  statusDuration: 3
+  statusPower: 0.12
+  projectileLook: 2
+  projectileColor: {r: 0.75, g: 0.55, b: 1, a: 1}
+  chargeTime: 0
+  minChargeFactor: 0.35

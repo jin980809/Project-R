@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Text;
 using Mirror;
 using UnityEngine;
@@ -260,7 +260,7 @@ public class PlayerInventory : NetworkBehaviour
 
     // ------------------------------------------------------------ 본인 조작
 
-    // 매 프레임: 가까운 바닥 아이템 안내, F 줍기, Tab 가방, 로비에서는 1~4로 시작 무기 선택.
+    // 매 프레임: 가까운 바닥 아이템 안내, F 줍기, Tab 가방, (시작 직업 선택은 PlayerSkills).
     public void OwnerTick(GameInput input, bool blocked)
     {
         ItemPickup nearest = hub.ItemDropPool.FindNearest(transform.position, pickupRange);
@@ -311,14 +311,6 @@ public class PlayerInventory : NetworkBehaviour
             if (input.InventoryPressed)
             {
                 hub.InventoryUi.Toggle();
-            }
-            if (!hub.IsCombatScene)
-            {
-                int pick = input.WeaponKeyPressed;
-                if (pick >= 0 && pick < weapons.Length && pick != WeaponKindIndex)
-                {
-                    CmdSetStartWeapon(pick);
-                }
             }
         }
     }
@@ -445,15 +437,6 @@ public class PlayerInventory : NetworkBehaviour
     {
         ServerSetEquip(index, item);
         Recompute();
-    }
-
-    [Command]
-    private void CmdSetStartWeapon(int kind)
-    {
-        if (!hub.IsCombatScene)
-        {
-            ServerSetStartWeapon(kind);
-        }
     }
 
     [Command]

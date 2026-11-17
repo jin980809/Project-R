@@ -12,14 +12,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d31d9e92da8c0464aa4d1b02d82027ff, type: 3}
   m_Name: StaffStorm
   m_EditorClassIdentifier: Assembly-CSharp::SkillDefinition
-  displayName: "\uBE44\uC804 \uD3ED\uD48D"
+  displayName: "\uC5F0\uC1C4 \uBC88\uAC1C"
+  description: "\uC0AC\uBC29\uC73C\uB85C \uBC88\uAC1C \uAD6C\uC2AC\uC744 \uD769\uBFCC\uB824
+    \uC801\uC744 \uC57D\uD558\uAC8C \uB9CC\uB4ED\uB2C8\uB2E4."
   kind: 2
   manaCost: 22
   cooldown: 12
   castTime: 0.4
   damageFactor: 1.2
   radius: 0.22
-  range: 4
+  range: 0
   invulnerable: 0
   count: 8
   spreadDegrees: 315
@@ -29,7 +31,8 @@ MonoBehaviour:
   projectileLook: 2
   buffEffect: 1
   buffValue: 30
-  buffDuration: 6
+  buffDuration: 0
+  healPercent: 0
   statusKind: 5
   statusDuration: 5
   statusPower: 0
@@ -37,3 +40,5 @@ MonoBehaviour:
   animStartTime: 0
   animSpeed: 1.5
   fxColor: {r: 0.8, g: 0.55, b: 1, a: 1}
+  fx: 9
+  sound: 30

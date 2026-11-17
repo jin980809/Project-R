@@ -1,13 +1,15 @@
 using TMPro;
 using UnityEngine;
 
-// 방 가장자리의 문 표시. 잠겼는지와 문 너머 방의 종류를 보여 준다.
+// 방 가장자리의 문. 잠겼으면 창살이 내려간 그림, 열렸으면 뚫린 통로 그림이고 문 너머 방의 종류를 보여 준다.
 public class DoorView : MonoBehaviour
 {
-    [SerializeField] private SpriteRenderer frameRenderer;
+    [SerializeField] private SpriteRenderer doorRenderer;
+    [SerializeField] private Sprite openSprite;
+    [SerializeField] private Sprite closedSprite;
     [SerializeField] private TMP_Text label;
-    [SerializeField] private Color lockedColor = new Color(0.85f, 0.25f, 0.2f, 0.9f);
-    [SerializeField] private Color openColor = new Color(0.4f, 0.9f, 0.5f, 0.9f);
+    [SerializeField] private Color lockedLabelColor = new Color(1f, 0.55f, 0.5f);
+    [SerializeField] private Color openLabelColor = Color.white;
 
     public void Hide()
     {
@@ -25,11 +27,13 @@ public class DoorView : MonoBehaviour
         }
         if (locked)
         {
-            frameRenderer.color = lockedColor;
+            doorRenderer.sprite = closedSprite;
+            label.color = lockedLabelColor;
         }
         else
         {
-            frameRenderer.color = openColor;
+            doorRenderer.sprite = openSprite;
+            label.color = openLabelColor;
         }
         label.text = roomName;
     }

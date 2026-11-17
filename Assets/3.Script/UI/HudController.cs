@@ -1,4 +1,4 @@
-using System.Text;
+﻿using System.Text;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -120,7 +120,7 @@ public class HudController : MonoBehaviour
                 }
                 else
                 {
-                    builder.Append("   1~4 시작 무기 · Tab 가방");
+                    builder.Append("   숫자 키 시작 직업 · Tab 가방");
                 }
                 weaponLabel.SetText(builder);
             }

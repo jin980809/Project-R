@@ -1,0 +1,44 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d31d9e92da8c0464aa4d1b02d82027ff, type: 3}
+  m_Name: PriestBolt
+  m_EditorClassIdentifier: Assembly-CSharp::SkillDefinition
+  displayName: "\uC2E0\uC131 \uD0C4"
+  description: "\uBE5B\uC758 \uAD6C\uC2AC\uC744 \uB0A0\uB824 \uB2FF\uC740 \uACF3\uC744
+    \uC815\uD654\uD569\uB2C8\uB2E4."
+  kind: 2
+  manaCost: 12
+  cooldown: 4
+  castTime: 0.3
+  damageFactor: 1.8
+  radius: 0.24
+  range: 0
+  invulnerable: 0
+  count: 1
+  spreadDegrees: 0
+  projectileSpeed: 11
+  projectileLifetime: 1
+  explosionRadius: 1.4
+  projectileLook: 2
+  buffEffect: 1
+  buffValue: 30
+  buffDuration: 0
+  healPercent: 0
+  statusKind: 0
+  statusDuration: 3
+  statusPower: 0.12
+  anim: 4
+  animStartTime: 0
+  animSpeed: 1.5
+  fxColor: {r: 1, g: 0.85, b: 0.45, a: 1}
+  fx: 5
+  sound: 31

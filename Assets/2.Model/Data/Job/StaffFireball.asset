@@ -13,13 +13,15 @@ MonoBehaviour:
   m_Name: StaffFireball
   m_EditorClassIdentifier: Assembly-CSharp::SkillDefinition
   displayName: "\uD654\uC5FC\uAD6C"
+  description: "\uD130\uC9C0\uB294 \uBD88\uB369\uC774\uB97C \uB358\uC838 \uC8FC\uBCC0\uC744
+    \uBD88\uD0DC\uC6C1\uB2C8\uB2E4."
   kind: 2
   manaCost: 14
   cooldown: 4
   castTime: 0.3
   damageFactor: 2.2
   radius: 0.25
-  range: 4
+  range: 0
   invulnerable: 0
   count: 1
   spreadDegrees: 0
@@ -29,11 +31,14 @@ MonoBehaviour:
   projectileLook: 2
   buffEffect: 1
   buffValue: 30
-  buffDuration: 6
+  buffDuration: 0
+  healPercent: 0
   statusKind: 1
   statusDuration: 4
   statusPower: 0.15
   anim: 4
   animStartTime: 0
   animSpeed: 1.5
-  fxColor: {r: 1, g: 0.55, b: 0.35, a: 1}
+  fxColor: {r: 1, g: 0.45, b: 0.3, a: 1}
+  fx: 3
+  sound: 28

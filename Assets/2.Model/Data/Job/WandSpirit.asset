@@ -1,0 +1,43 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d31d9e92da8c0464aa4d1b02d82027ff, type: 3}
+  m_Name: WandSpirit
+  m_EditorClassIdentifier: Assembly-CSharp::SkillDefinition
+  displayName: "\uD63C\uB839 \uC9C8\uC8FC"
+  description: "\uD63C\uB839\uC774 \uB418\uC5B4 \uC801\uC744 \uAFF0\uB6AB\uACE0 \uC9C0\uB098\uAC11\uB2C8\uB2E4."
+  kind: 1
+  manaCost: 12
+  cooldown: 6
+  castTime: 0.25
+  damageFactor: 0.8
+  radius: 0.7
+  range: 4
+  invulnerable: 1
+  count: 1
+  spreadDegrees: 0
+  projectileSpeed: 12
+  projectileLifetime: 1
+  explosionRadius: 0
+  projectileLook: 1
+  buffEffect: 1
+  buffValue: 30
+  buffDuration: 0
+  healPercent: 0
+  statusKind: 0
+  statusDuration: 3
+  statusPower: 0.12
+  anim: 7
+  animStartTime: 0
+  animSpeed: 1.5
+  fxColor: {r: 0.8, g: 0.55, b: 1, a: 1}
+  fx: 4
+  sound: 27

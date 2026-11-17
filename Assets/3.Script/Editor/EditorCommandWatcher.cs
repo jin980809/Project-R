@@ -1,4 +1,4 @@
-using System.IO;
+﻿using System.IO;
 using Unity.Profiling;
 using UnityEditor;
 using UnityEngine;
@@ -88,6 +88,85 @@ public static class EditorCommandWatcher
                 typeof(FloorDirector).GetMethod("ServerSetRoomType", flags).Invoke(floor, new object[] { floor.CurrentRoom, type });
                 typeof(FloorDirector).GetField("viewDirty", flags).SetValue(floor, true);
                 Mirror.NetworkClient.localPlayer.GetComponent<PlayerFacility>().ServerOnRoomEntered(true, type);
+            }
+            else if (command.StartsWith("aim "))
+            {
+                // 본인 조준을 고정한다. 예: "aim 1 0.5", "aim 0 0"은 마우스로 되돌린다.
+                string[] parts = command.Split(' ');
+                Vector2 aim = new Vector2(float.Parse(parts[1], System.Globalization.CultureInfo.InvariantCulture),
+                    float.Parse(parts[2], System.Globalization.CultureInfo.InvariantCulture));
+                Mirror.NetworkClient.localPlayer.GetComponent<PlayerController>().editorAimOverride = aim;
+            }
+            else if (command.StartsWith("srinfo "))
+            {
+                // 스프라이트 이름에 글자가 들어간 렌더러의 위치·크기·그리기 방식. 예: "srinfo Floor"
+                string key = command.Substring(7);
+                System.Text.StringBuilder info = new System.Text.StringBuilder();
+                SpriteRenderer[] renderers = Object.FindObjectsByType<SpriteRenderer>(FindObjectsSortMode.None);
+                for (int i = 0; i < renderers.Length; i++)
+                {
+                    if (renderers[i].sprite != null && renderers[i].sprite.name.Contains(key))
+                    {
+                        info.Append(renderers[i].name).Append(" mode=").Append(renderers[i].drawMode).Append(" size=").Append(renderers[i].size)
+                            .Append(" scale=").Append(renderers[i].transform.lossyScale).Append(" bounds=").Append(renderers[i].bounds.size)
+                            .Append(" ppu=").Append(renderers[i].sprite.pixelsPerUnit).Append(" rect=").Append(renderers[i].sprite.rect).Append(" | ");
+                    }
+                }
+                result = "ok " + info;
+            }
+            else if (command == "lookreset")
+            {
+                // 저장한 외형을 지워 다음 실행을 '처음 실행'으로 만든다.
+                PlayerPrefs.DeleteKey("ProjectR.Look.Parts");
+                PlayerPrefs.DeleteKey("ProjectR.Look.Colors");
+                PlayerPrefs.Save();
+            }
+            else if (command.StartsWith("customize"))
+            {
+                // 미용실과 같은 경로로 꾸미기 화면을 연다.
+                PlayerController player = Mirror.NetworkClient.localPlayer.GetComponent<PlayerController>();
+                Object.FindFirstObjectByType<GameHub>().CustomizeUi.Open(player, false);
+            }
+            else if (command == "esc")
+            {
+                // Esc를 누른 것과 같은 경로
+                PlayerController player = Mirror.NetworkClient.localPlayer.GetComponent<PlayerController>();
+                typeof(PlayerController).GetMethod("HandleMenuKey", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)
+                    .Invoke(player, null);
+                result = "ok esc timeScale=" + Time.timeScale;
+            }
+            else if (command.StartsWith("click "))
+            {
+                // 이름이 같은 활성 버튼을 누른다. 예: "click Settings"
+                string buttonName = command.Substring(6);
+                UnityEngine.UI.Button[] buttons = Object.FindObjectsByType<UnityEngine.UI.Button>(FindObjectsSortMode.None);
+                int clicked = 0;
+                for (int i = 0; i < buttons.Length; i++)
+                {
+                    if (buttons[i].name == buttonName && buttons[i].isActiveAndEnabled)
+                    {
+                        buttons[i].onClick.Invoke();
+                        clicked++;
+                    }
+                }
+                result = "ok click " + buttonName + " " + clicked;
+            }
+            else if (command.StartsWith("timescale "))
+            {
+                // 짧은 연출을 화면으로 확인할 때 시간을 느리게 한다. 예: "timescale 0.05"
+                Time.timeScale = float.Parse(command.Substring(10), System.Globalization.CultureInfo.InvariantCulture);
+            }
+            else if (command.StartsWith("swing"))
+            {
+                // 지금 조준 방향으로 기본 공격을 한 번 한 것과 같은 경로(로비에서도 동작 확인용).
+                PlayerController player = Mirror.NetworkClient.localPlayer.GetComponent<PlayerController>();
+                typeof(PlayerController).GetMethod("StartAttack", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)
+                    .Invoke(player, new object[] { 1f });
+            }
+            else if (command == "handinfo")
+            {
+                // 플레이어 프리팹의 오른손 뼈대 경로와 무기 파츠의 로컬 위치·회전·스프라이트 크기를 Temp/tower_hand.txt에 적는다.
+                result = "ok " + DescribeHand();
             }
             else if (command == "openlobby")
             {
@@ -236,12 +315,12 @@ public static class EditorCommandWatcher
                 PlayerController player = Mirror.NetworkClient.localPlayer.GetComponent<PlayerController>();
                 player.ServerApplyStatus((StatusKind)int.Parse(command.Substring(8)), 3f, 2);
             }
-            else if (command == "interact")
+            else if (command == "interact" || command == "interactalt")
             {
                 // 방 시설에서 F를 누른 것과 같은 경로(제단, 광맥, 낚시터, 마구간).
                 PlayerFacility facility = Mirror.NetworkClient.localPlayer.GetComponent<PlayerFacility>();
                 typeof(PlayerFacility).GetMethod("CmdInteract", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)
-                    .Invoke(facility, null);
+                    .Invoke(facility, new object[] { command == "interactalt" });
             }
             else if (command.StartsWith("fallen "))
             {
@@ -350,6 +429,25 @@ public static class EditorCommandWatcher
                     System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
                 object started = method.Invoke(player, new object[] { int.Parse(command.Substring(5)) });
                 result = "ok cast started=" + started + " mana=" + player.Mana;
+            }
+            else if (command.StartsWith("job "))
+            {
+                // 로비에서 숫자 키로 시작 직업을 고른 것과 같다(0~9).
+                LocalSkills().ServerSetStartJob(int.Parse(command.Substring(4)));
+            }
+            else if (command.StartsWith("slot "))
+            {
+                // slot 칸 스킬: 스킬을 장착 칸에 넣는다.
+                string[] parts = command.Split(' ');
+                LocalSkills().RequestEquip(int.Parse(parts[1]), int.Parse(parts[2]));
+            }
+            else if (command.StartsWith("fx "))
+            {
+                // 본인 위치에 스킬 이펙트를 재생한다(fx 종류번호 반경 지속시간).
+                string[] parts = command.Split(' ');
+                PlayerController player = Mirror.NetworkClient.localPlayer.GetComponent<PlayerController>();
+                (Mirror.NetworkManager.singleton as GameNetworkManager).Hub.SkillFx.Play((SkillFx)int.Parse(parts[1]), player.Center,
+                    float.Parse(parts[2]), Color.white, float.Parse(parts[3]), null);
             }
             else if (command == "tree")
             {
@@ -499,6 +597,14 @@ public static class EditorCommandWatcher
         {
             builder.Append(skills.IsSkillUnlocked(i)).Append(',');
         }
+        System.Reflection.BindingFlags flags = System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic;
+        builder.Append(" rawJob=").Append(typeof(PlayerSkills).GetField("jobIndex", flags).GetValue(skills))
+            .Append(" lobbyJob=").Append(typeof(PlayerSkills).GetField("lobbyJob", flags).GetValue(skills));
+        builder.Append(" slots=");
+        for (int i = 0; i < JobDefinition.SlotCount; i++)
+        {
+            builder.Append(skills.GetSlotSkill(i)).Append(',');
+        }
         EquipStats stats = player.Inventory.Stats;
         builder.Append(" mana=").Append(player.Mana).Append('/').Append(player.MaxMana)
             .Append(" hp=").Append(player.Hp).Append('/').Append(player.MaxHp)
@@ -597,6 +703,54 @@ public static class EditorCommandWatcher
         Vector2 aim = AimAtNearestMonster();
         InvokeOnLocalPlayer("CmdAttack", new object[] { aim, charge });
         return "aim=" + aim.ToString("F2");
+    }
+
+    private static string DescribeHand()
+    {
+        GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/2.Model/Prefabs/Player.prefab");
+        if (EditorApplication.isPlaying && Mirror.NetworkClient.localPlayer != null)
+        {
+            prefab = Mirror.NetworkClient.localPlayer.gameObject;
+        }
+        System.Text.StringBuilder builder = new System.Text.StringBuilder();
+        Transform hand = null;
+        Transform[] all = prefab.GetComponentsInChildren<Transform>(true);
+        for (int i = 0; i < all.Length; i++)
+        {
+            if (all[i].name == "HandRight")
+            {
+                hand = all[i];
+            }
+        }
+        Transform walker = hand;
+        while (walker != null)
+        {
+            builder.Append(walker.name).Append(" pos=").Append(walker.localPosition.ToString("F3"))
+                .Append(" rotZ=").Append(walker.localEulerAngles.z.ToString("F1"))
+                .Append(" scale=").Append(walker.localScale.ToString("F2")).Append('\n');
+            walker = walker.parent;
+        }
+        builder.Append("--children\n");
+        SpriteRenderer[] renderers = hand.GetComponentsInChildren<SpriteRenderer>(true);
+        for (int i = 0; i < renderers.Length; i++)
+        {
+            SpriteRenderer renderer = renderers[i];
+            Transform t = renderer.transform;
+            builder.Append(t.parent.name).Append('/').Append(t.name)
+                .Append(" pos=").Append(t.localPosition.ToString("F3"))
+                .Append(" rotZ=").Append(t.localEulerAngles.z.ToString("F1"))
+                .Append(" scale=").Append(t.localScale.ToString("F2"))
+                .Append(" flipX=").Append(renderer.flipX)
+                .Append(" order=").Append(renderer.sortingOrder);
+            if (renderer.sprite != null)
+            {
+                builder.Append(" sprite=").Append(renderer.sprite.name).Append(' ').Append(renderer.sprite.rect.size.ToString("F0"))
+                    .Append(" pivot=").Append(renderer.sprite.pivot.ToString("F0"));
+            }
+            builder.Append('\n');
+        }
+        File.WriteAllText("Temp/tower_hand.txt", builder.ToString());
+        return "written";
     }
 
     // 플레이 여부, 현재 씬, 네트워크 상태, 플레이어·몬스터 수를 한 줄로 돌려준다.

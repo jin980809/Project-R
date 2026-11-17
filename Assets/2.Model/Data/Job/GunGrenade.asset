@@ -1,0 +1,43 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d31d9e92da8c0464aa4d1b02d82027ff, type: 3}
+  m_Name: GunGrenade
+  m_EditorClassIdentifier: Assembly-CSharp::SkillDefinition
+  displayName: "\uC218\uB958\uD0C4"
+  description: "\uC218\uB958\uD0C4\uC744 \uB358\uC838 \uB113\uAC8C \uD130\uB728\uB9BD\uB2C8\uB2E4."
+  kind: 2
+  manaCost: 18
+  cooldown: 9
+  castTime: 0.35
+  damageFactor: 2.2
+  radius: 0.24
+  range: 0
+  invulnerable: 0
+  count: 1
+  spreadDegrees: 0
+  projectileSpeed: 9
+  projectileLifetime: 0.8
+  explosionRadius: 2.4
+  projectileLook: 2
+  buffEffect: 1
+  buffValue: 30
+  buffDuration: 0
+  healPercent: 0
+  statusKind: 1
+  statusDuration: 3
+  statusPower: 0.12
+  anim: 4
+  animStartTime: 0
+  animSpeed: 1.5
+  fxColor: {r: 1, g: 0.65, b: 0.25, a: 1}
+  fx: 3
+  sound: 35

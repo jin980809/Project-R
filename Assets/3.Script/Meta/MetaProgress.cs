@@ -16,6 +16,12 @@ public class MetaProgress
     private const string ItemKey = "ProjectR.Codex.Item.";
     private const string ShakeKey = "ProjectR.Setting.Shake";
     private const string DamageTextKey = "ProjectR.Setting.DamageText";
+    private const string VolumeKey = "ProjectR.Setting.Volume.";
+    private const string LookPartsKey = "ProjectR.Look.Parts";
+    private const string LookColorsKey = "ProjectR.Look.Colors";
+    // 음량은 0~10단계(전체, 효과음, 배경음 순서)
+    public const int VolumeChannels = 3;
+    public const int MaxVolumeStep = 10;
 
     private int soulstones;
     private readonly int[] unlockLevels = new int[UnlockCount];
@@ -23,9 +29,21 @@ public class MetaProgress
     private readonly bool[] itemFound = new bool[ItemSlotKinds * RarityKinds];
     private bool shakeEnabled = true;
     private bool damageTextEnabled = true;
+    private readonly int[] volumeSteps = { 8, 8, 6 };
     private bool dirty;
+    private CharacterLook look;
 
     public int Soulstones => soulstones;
+    // 처음 실행이면 false(커스터마이징 화면을 먼저 띄운다)
+    public bool HasLook => look.valid != 0;
+    public CharacterLook Look => look;
+
+    public void SetLook(in CharacterLook value)
+    {
+        look = value;
+        look.valid = 1;
+        dirty = true;
+    }
     public bool ShakeEnabled => shakeEnabled;
     public bool DamageTextEnabled => damageTextEnabled;
 
@@ -46,6 +64,11 @@ public class MetaProgress
         }
         shakeEnabled = PlayerPrefs.GetInt(ShakeKey, 1) != 0;
         damageTextEnabled = PlayerPrefs.GetInt(DamageTextKey, 1) != 0;
+        for (int i = 0; i < VolumeChannels; i++)
+        {
+            volumeSteps[i] = Mathf.Clamp(PlayerPrefs.GetInt(VolumeKey + i, volumeSteps[i]), 0, MaxVolumeStep);
+        }
+        look = CharacterLook.Unpack(PlayerPrefs.GetInt(LookPartsKey, 0), PlayerPrefs.GetInt(LookColorsKey, 0));
         dirty = false;
     }
 
@@ -85,6 +108,12 @@ public class MetaProgress
             }
             PlayerPrefs.SetInt(ShakeKey, shake);
             PlayerPrefs.SetInt(DamageTextKey, damageText);
+            for (int i = 0; i < VolumeChannels; i++)
+            {
+                PlayerPrefs.SetInt(VolumeKey + i, volumeSteps[i]);
+            }
+            PlayerPrefs.SetInt(LookPartsKey, look.PackParts());
+            PlayerPrefs.SetInt(LookColorsKey, look.PackColors());
             PlayerPrefs.Save();
         }
     }
@@ -156,6 +185,23 @@ public class MetaProgress
     public void SetDamageTextEnabled(bool value)
     {
         damageTextEnabled = value;
+        dirty = true;
+    }
+
+    public int GetVolumeStep(int channel)
+    {
+        return volumeSteps[channel];
+    }
+
+    // 0~1 음량
+    public float GetVolume01(int channel)
+    {
+        return volumeSteps[channel] / (float)MaxVolumeStep;
+    }
+
+    public void SetVolumeStep(int channel, int step)
+    {
+        volumeSteps[channel] = Mathf.Clamp(step, 0, MaxVolumeStep);
         dirty = true;
     }
 }

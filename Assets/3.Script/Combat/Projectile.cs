@@ -1,10 +1,12 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 public enum ProjectileLook : byte
 {
     Spore,
     Arrow,
-    Orb
+    Orb,
+    // 총알: 짧고 굵은 막대
+    Bullet
 }
 
 // 투사체 한 발의 설정. 값 형식이라 넘길 때 할당이 없다.
@@ -76,6 +78,12 @@ public class Projectile : MonoBehaviour
             spriteTransform.localScale = new Vector3(0.56f / PixelSize, 0.07f / PixelSize, 1f);
             spriteTransform.localRotation = Quaternion.Euler(0f, 0f, Mathf.Atan2(shot.direction.y, shot.direction.x) * Mathf.Rad2Deg);
         }
+        else if (shot.look == ProjectileLook.Bullet)
+        {
+            spriteRenderer.sprite = pixelSprite;
+            spriteTransform.localScale = new Vector3(0.24f / PixelSize, 0.1f / PixelSize, 1f);
+            spriteTransform.localRotation = Quaternion.Euler(0f, 0f, Mathf.Atan2(shot.direction.y, shot.direction.x) * Mathf.Rad2Deg);
+        }
         else if (shot.look == ProjectileLook.Orb)
         {
             float scale = shot.radius * 2f / CircleSize;
@@ -111,6 +119,11 @@ public class Projectile : MonoBehaviour
             }
             else if (!hub.IsInsideArena(position, 0f))
             {
+                finished = Impact(hub, null, null);
+            }
+            else if (Physics2D.OverlapPoint(position, GameLayers.WallMask) != null)
+            {
+                // 방 장애물에 막힌다.
                 finished = Impact(hub, null, null);
             }
             else if (shot.hitsMonsters)
@@ -180,6 +193,7 @@ public class Projectile : MonoBehaviour
             {
                 DamageMonstersInExplosion(hub);
             }
+            hub.Sound.PlayAt(SoundId.Explosion, position);
             StartExplosion();
         }
         else if (shot.authoritative)

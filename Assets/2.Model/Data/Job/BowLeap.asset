@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: BowLeap
   m_EditorClassIdentifier: Assembly-CSharp::SkillDefinition
   displayName: "\uD68C\uD53C \uB3C4\uC57D"
+  description: "\uBB34\uC801 \uC0C1\uD0DC\uB85C \uBE60\uB974\uAC8C \uBAB8\uC744 \uB0A0\uB9BD\uB2C8\uB2E4."
   kind: 1
   manaCost: 8
   cooldown: 5
@@ -29,7 +30,8 @@ MonoBehaviour:
   projectileLook: 1
   buffEffect: 1
   buffValue: 30
-  buffDuration: 6
+  buffDuration: 0
+  healPercent: 0
   statusKind: 0
   statusDuration: 3
   statusPower: 0.12
@@ -37,3 +39,5 @@ MonoBehaviour:
   animStartTime: 0
   animSpeed: 1.5
   fxColor: {r: 0.5, g: 0.75, b: 1, a: 1}
+  fx: 10
+  sound: 27

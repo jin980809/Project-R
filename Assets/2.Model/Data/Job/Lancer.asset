@@ -13,13 +13,20 @@ MonoBehaviour:
   m_Name: Lancer
   m_EditorClassIdentifier: Assembly-CSharp::JobDefinition
   displayName: "\uCC3D\uAE30\uC0AC"
+  weaponKind: 1
+  description: "\uAE34 \uC0AC\uAC70\uB9AC\uB85C \uCC0C\uB974\uACE0 \uD729\uC4F0\uB294
+    \uADFC\uC811 \uC9C1\uC5C5."
   branchNames:
   - "\uB3CC\uD30C"
   - "\uC5F0\uACA9"
+  - "\uC6A9\uAE30\uBCD1"
   skills:
   - {fileID: 11400000, guid: 32f6a0093993fa64da9d4a64daa8a10c, type: 2}
+  - {fileID: 11400000, guid: 473c8a3999d9fb341b72dcbe12a039d3, type: 2}
   - {fileID: 11400000, guid: c180e7b2cc5563740a69dbd2650f9163, type: 2}
   - {fileID: 11400000, guid: be3e7a6b7a7fa4e48b031a32e04a859e, type: 2}
+  - {fileID: 11400000, guid: 1f871d9bb282b454ba8eefb9a0ac771e, type: 2}
+  - {fileID: 11400000, guid: 77d6cc9a4908cc34dae1b1b2cbf6f546, type: 2}
   nodes:
   - displayName: "\uAFF0\uB6AB\uAE30"
     effect: 0
@@ -29,30 +36,46 @@ MonoBehaviour:
     effect: 10
     value: 8
     maxRank: 3
+  - displayName: "\uB1CC\uCC3D \uD22C\uCC99"
+    effect: 0
+    value: 1
+    maxRank: 1
   - displayName: "\uD798 \uC2E3\uAE30"
     effect: 1
     value: 5
     maxRank: 3
-  - displayName: "\uC9C8\uD48D"
-    effect: 0
-    value: 2
-    maxRank: 1
   - displayName: "\uD729\uC4F8\uAE30"
     effect: 0
-    value: 1
+    value: 2
     maxRank: 1
   - displayName: "\uBE60\uB978 \uC190"
     effect: 2
     value: 5
     maxRank: 3
+  - displayName: "\uC9C8\uD48D"
+    effect: 0
+    value: 3
+    maxRank: 1
+  - displayName: "\uAE30\uC138"
+    effect: 8
+    value: 1
+    maxRank: 3
+  - displayName: "\uB3C4\uC57D \uCC0D\uAE30"
+    effect: 0
+    value: 4
+    maxRank: 1
   - displayName: "\uBC1C\uB180\uB9BC"
     effect: 3
     value: 4
     maxRank: 3
-  - displayName: "\uAE30\uC138"
-    effect: 8
-    value: 2
+  - displayName: "\uB099\uB8B0 \uC9C0\uB300"
+    effect: 0
+    value: 5
     maxRank: 1
+  - displayName: "\uC6A9\uC758 \uD53C"
+    effect: 5
+    value: 12
+    maxRank: 3
   effectFormats:
   - 
   - "\uACF5\uACA9\uB825 +{0}%"

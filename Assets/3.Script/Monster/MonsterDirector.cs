@@ -18,6 +18,8 @@ public class MonsterDirector : NetworkBehaviour
     [SerializeField] private float firstSpawnDelay = 0.6f;
     [SerializeField] private float spawnInterval = 0.15f;
     [SerializeField] private float minSpawnDistance = 4f;
+    [Tooltip("이 반지름 안에 장애물이 있으면 다른 자리를 고른다")]
+    [SerializeField] private float spawnClearRadius = 0.6f;
     [SerializeField] private float hpScalePerExtraPlayer = 0.5f;
 
     [Header("드랍(플레이어마다 따로 굴림)")]
@@ -315,10 +317,11 @@ public class MonsterDirector : NetworkBehaviour
         Vector2 point = Vector2.zero;
         float minSqr = minSpawnDistance * minSpawnDistance;
         bool found = false;
-        for (int attempt = 0; attempt < 10 && !found; attempt++)
+        for (int attempt = 0; attempt < 20 && !found; attempt++)
         {
             point = new Vector2(Random.Range(-half.x + 1f, half.x - 1f), Random.Range(-half.y + 1f, half.y - 1f));
-            found = true;
+            // 방 장애물 위에는 세우지 않는다.
+            found = Physics2D.OverlapCircle(point, spawnClearRadius, GameLayers.WallMask) == null;
             int count = hub.PlayerCount;
             for (int i = 0; i < count; i++)
             {

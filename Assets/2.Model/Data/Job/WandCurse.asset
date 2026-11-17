@@ -1,0 +1,44 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d31d9e92da8c0464aa4d1b02d82027ff, type: 3}
+  m_Name: WandCurse
+  m_EditorClassIdentifier: Assembly-CSharp::SkillDefinition
+  displayName: "\uC800\uC8FC \uD0C4"
+  description: "\uC800\uC8FC \uAD6C\uC2AC \uC138 \uAC1C\uB97C \uB0A0\uB824 \uC801\uC744
+    \uC57D\uD558\uAC8C \uB9CC\uB4ED\uB2C8\uB2E4."
+  kind: 2
+  manaCost: 12
+  cooldown: 4
+  castTime: 0.3
+  damageFactor: 1
+  radius: 0.2
+  range: 0
+  invulnerable: 0
+  count: 3
+  spreadDegrees: 25
+  projectileSpeed: 11
+  projectileLifetime: 0.9
+  explosionRadius: 0
+  projectileLook: 2
+  buffEffect: 1
+  buffValue: 30
+  buffDuration: 0
+  healPercent: 0
+  statusKind: 5
+  statusDuration: 4
+  statusPower: 0
+  anim: 4
+  animStartTime: 0
+  animSpeed: 1.5
+  fxColor: {r: 0.8, g: 0.55, b: 1, a: 1}
+  fx: 4
+  sound: 32

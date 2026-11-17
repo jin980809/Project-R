@@ -13,6 +13,8 @@ MonoBehaviour:
   m_Name: SpearPierce
   m_EditorClassIdentifier: Assembly-CSharp::SkillDefinition
   displayName: "\uAFF0\uB6AB\uAE30"
+  description: "\uAE38\uAC8C \uCC14\uB7EC \uB4E4\uC5B4\uAC00\uBA70 \uAE38\uBAA9\uC758
+    \uC801\uC5D0\uAC8C \uCD9C\uD608\uC744 \uB0A8\uAE41\uB2C8\uB2E4."
   kind: 1
   manaCost: 12
   cooldown: 6
@@ -29,7 +31,8 @@ MonoBehaviour:
   projectileLook: 1
   buffEffect: 1
   buffValue: 30
-  buffDuration: 6
+  buffDuration: 0
+  healPercent: 0
   statusKind: 2
   statusDuration: 4
   statusPower: 0.15
@@ -37,3 +40,5 @@ MonoBehaviour:
   animStartTime: 0
   animSpeed: 1.5
   fxColor: {r: 1, g: 0.9, b: 0.4, a: 1}
+  fx: 10
+  sound: 27

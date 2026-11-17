@@ -1,4 +1,4 @@
-using LayerLab.ArtMakerUnity;
+﻿using LayerLab.ArtMakerUnity;
 using UnityEngine;
 
 public enum WeaponKind : byte
@@ -6,7 +6,12 @@ public enum WeaponKind : byte
     Sword,
     Spear,
     Bow,
-    Staff
+    Staff,
+    Axe,
+    Blunt,
+    Crossbow,
+    Gun,
+    Wand
 }
 
 // 무기 한 자루의 능력치와 공격 방식. 무기 계열(Kind)이 조작감을 정한다.
@@ -14,6 +19,11 @@ public enum WeaponKind : byte
 // - 창: 긴 직선 찌르기
 // - 활: 누르는 동안 차지, 떼면 발사
 // - 지팡이: 마법 투사체, 닿거나 사거리 끝에서 광역 폭발
+// - 도끼: 넓고 느린 부채꼴 근접(출혈)
+// - 둔기: 느린 근접, 기절
+// - 석궁: 차지 없이 빠르고 강한 화살
+// - 총: 짧은 사거리의 빠른 연사
+// - 완드: 가볍고 빠른 마법 탄
 [CreateAssetMenu(menuName = "Tower/Weapon Definition", fileName = "WeaponDefinition")]
 public class WeaponDefinition : ScriptableObject
 {
@@ -38,6 +48,7 @@ public class WeaponDefinition : ScriptableObject
     [SerializeField] private CharacterAnim anim = CharacterAnim.Attack;
     [SerializeField] private float animStartTime = 0.75f;
     [SerializeField] private float animSpeed = 2.2f;
+    [SerializeField] private SoundId attackSound = SoundId.SwordSwing;
 
     [Header("근접")]
     [SerializeField] private float range = 1.5f;
@@ -80,6 +91,7 @@ public class WeaponDefinition : ScriptableObject
     public CharacterAnim Anim => anim;
     public float AnimStartTime => animStartTime;
     public float AnimSpeed => animSpeed;
+    public SoundId AttackSound => attackSound;
     public float Range => range;
     public float ArcDegrees => arcDegrees;
     public float LineHalfWidth => lineHalfWidth;
@@ -96,6 +108,25 @@ public class WeaponDefinition : ScriptableObject
     public float ChargeTime => chargeTime;
     public float MinChargeFactor => minChargeFactor;
 
-    public bool IsRanged => kind == WeaponKind.Bow || kind == WeaponKind.Staff;
+    public bool IsRanged => kind == WeaponKind.Bow || kind == WeaponKind.Staff || kind == WeaponKind.Crossbow || kind == WeaponKind.Gun || kind == WeaponKind.Wand;
+    public const int KindCount = 9;
+
+    // 공격할 때 무기를 움직이는 방식(CharacterVisual이 조준 각도 위에 더한다)
+    public WeaponMotion Motion
+    {
+        get
+        {
+            WeaponMotion result = WeaponMotion.Swing;
+            if (kind == WeaponKind.Spear)
+            {
+                result = WeaponMotion.Thrust;
+            }
+            else if (IsRanged)
+            {
+                result = WeaponMotion.Recoil;
+            }
+            return result;
+        }
+    }
     public bool UsesCharge => chargeTime > 0f;
 }

@@ -12,14 +12,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a582d7cf054923c4088284afb0ba700d, type: 3}
   m_Name: Archer
   m_EditorClassIdentifier: Assembly-CSharp::JobDefinition
-  displayName: "\uAD81\uC218"
+  displayName: "\uB808\uC778\uC800"
+  weaponKind: 2
+  description: "\uD65C\uC744 \uB2F9\uACA8 \uC3D8\uB294 \uAE30\uB3D9\uD615 \uC6D0\uAC70\uB9AC
+    \uC9C1\uC5C5."
   branchNames:
   - "\uC18D\uC0AC"
   - "\uC0AC\uB0E5\uAFBC"
+  - "\uC790\uC5F0"
   skills:
   - {fileID: 11400000, guid: 4e6b2ebf21ea21247a8165dc80eff861, type: 2}
-  - {fileID: 11400000, guid: 728a58764b309df498ecdc101add5df9, type: 2}
   - {fileID: 11400000, guid: 7ded67ac470903b4397fe326e5f3f56c, type: 2}
+  - {fileID: 11400000, guid: 728a58764b309df498ecdc101add5df9, type: 2}
+  - {fileID: 11400000, guid: 2619923238a03ac4c810c7547ecb83fb, type: 2}
+  - {fileID: 11400000, guid: 003c27dcf88ee254c9f29f838733e2dd, type: 2}
+  - {fileID: 11400000, guid: 370634767152d774f9cbfa2404fd903c, type: 2}
   nodes:
   - displayName: "\uBD80\uCC44 \uC0AC\uACA9"
     effect: 0
@@ -29,30 +36,46 @@ MonoBehaviour:
     effect: 2
     value: 5
     maxRank: 3
-  - displayName: "\uC57D\uC810 \uAC04\uD30C"
-    effect: 4
-    value: 5
-    maxRank: 3
   - displayName: "\uD3ED\uBC1C \uD654\uC0B4"
     effect: 0
-    value: 2
+    value: 1
     maxRank: 1
+  - displayName: "\uAC15\uD55C \uC2DC\uC704"
+    effect: 1
+    value: 5
+    maxRank: 3
   - displayName: "\uD68C\uD53C \uB3C4\uC57D"
     effect: 0
-    value: 1
+    value: 2
     maxRank: 1
   - displayName: "\uAC00\uBCBC\uC6B4 \uBC1C"
     effect: 3
     value: 4
     maxRank: 3
-  - displayName: "\uAC15\uD55C \uC2DC\uC704"
-    effect: 1
+  - displayName: "\uC0AC\uB0E5 \uBCF8\uB2A5"
+    effect: 0
+    value: 3
+    maxRank: 1
+  - displayName: "\uC57D\uC810 \uAC04\uD30C"
+    effect: 4
     value: 5
     maxRank: 3
-  - displayName: "\uC219\uB828"
-    effect: 9
-    value: 15
+  - displayName: "\uB3C5 \uD654\uC0B4\uBE44"
+    effect: 0
+    value: 4
     maxRank: 1
+  - displayName: "\uC232\uC758 \uC9C0\uD61C"
+    effect: 9
+    value: 5
+    maxRank: 3
+  - displayName: "\uC790\uC5F0\uC758 \uC228\uACB0"
+    effect: 0
+    value: 5
+    maxRank: 1
+  - displayName: "\uC9C8\uAE34 \uBAB8"
+    effect: 5
+    value: 10
+    maxRank: 3
   effectFormats:
   - 
   - "\uACF5\uACA9\uB825 +{0}%"

@@ -13,11 +13,18 @@ MonoBehaviour:
   m_Name: Swordsman
   m_EditorClassIdentifier: Assembly-CSharp::JobDefinition
   displayName: "\uAC80\uC0AC"
+  weaponKind: 0
+  description: "\uAC80\uACFC \uBC29\uD328\uB97C \uC4F0\uB294 \uADE0\uD615 \uC7A1\uD78C
+    \uADFC\uC811 \uC9C1\uC5C5."
   branchNames:
-  - "\uAD11\uC804"
+  - "\uAC80\uC220"
   - "\uC218\uD638"
+  - "\uC9C8\uD48D"
   skills:
   - {fileID: 11400000, guid: 28faa4a595b40104893f5860afb97594, type: 2}
+  - {fileID: 11400000, guid: 054e8e8994777ca4e95bb9d2530af8cb, type: 2}
+  - {fileID: 11400000, guid: b21f05e0413221b4d9a6d84a40f99ebb, type: 2}
+  - {fileID: 11400000, guid: 2a8c187bfbabe7649921b39816696eca, type: 2}
   - {fileID: 11400000, guid: 05145ce4fdf389f4ca09678409a648cc, type: 2}
   - {fileID: 11400000, guid: 385b419aa5312e24da681feeb900a4aa, type: 2}
   nodes:
@@ -29,30 +36,46 @@ MonoBehaviour:
     effect: 1
     value: 5
     maxRank: 3
+  - displayName: "\uC2ED\uC790 \uBCA0\uAE30"
+    effect: 0
+    value: 1
+    maxRank: 1
   - displayName: "\uAE09\uC18C \uB178\uB9AC\uAE30"
     effect: 4
     value: 4
     maxRank: 3
-  - displayName: "\uC804\uD22C \uD568\uC131"
+  - displayName: "\uBC29\uD328 \uBC00\uCE58\uAE30"
     effect: 0
     value: 2
-    maxRank: 1
-  - displayName: "\uB3CC\uC9C4 \uBCA0\uAE30"
-    effect: 0
-    value: 1
     maxRank: 1
   - displayName: "\uB2E8\uB828"
     effect: 5
     value: 12
     maxRank: 3
+  - displayName: "\uC218\uD638\uC758 \uD568\uC131"
+    effect: 0
+    value: 3
+    maxRank: 1
   - displayName: "\uBC84\uD2F0\uAE30"
     effect: 6
     value: 4
     maxRank: 3
+  - displayName: "\uB3CC\uC9C4 \uBCA0\uAE30"
+    effect: 0
+    value: 4
+    maxRank: 1
+  - displayName: "\uAC00\uBCBC\uC6B4 \uBC1C"
+    effect: 3
+    value: 4
+    maxRank: 3
+  - displayName: "\uC804\uD22C \uD568\uC131"
+    effect: 0
+    value: 5
+    maxRank: 1
   - displayName: "\uC219\uB828"
     effect: 9
-    value: 15
-    maxRank: 1
+    value: 5
+    maxRank: 3
   effectFormats:
   - 
   - "\uACF5\uACA9\uB825 +{0}%"

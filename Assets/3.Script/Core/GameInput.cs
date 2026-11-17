@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.InputSystem;
 
 // 키보드·마우스 입력. 액션을 코드로 만들어 두고 매 프레임 값만 읽는다(할당 없음).
@@ -17,15 +17,17 @@ public class GameInput
     private readonly InputAction inventory;
     private readonly InputAction potion;
     private readonly InputAction skillTree;
-    // 로비에서 숫자 키 1~4로 시작 무기를 고른다.
-    private readonly InputAction[] weaponKeys = new InputAction[4];
+    // 로비에서 숫자 키 1~9, 0으로 시작 직업을 고른다(PlayerSkills의 직업 순서).
+    private readonly InputAction[] weaponKeys = new InputAction[PlayerSkills.JobCount];
+    // 제단에서 두 번째 직업(완드의 사제)으로 전직
+    private readonly InputAction interactAlt;
 
     public GameInput()
     {
-        weaponKeys[0] = new InputAction("Weapon1", InputActionType.Button, "<Keyboard>/1");
-        weaponKeys[1] = new InputAction("Weapon2", InputActionType.Button, "<Keyboard>/2");
-        weaponKeys[2] = new InputAction("Weapon3", InputActionType.Button, "<Keyboard>/3");
-        weaponKeys[3] = new InputAction("Weapon4", InputActionType.Button, "<Keyboard>/4");
+        for (int i = 0; i < weaponKeys.Length; i++)
+        {
+            weaponKeys[i] = new InputAction("Job" + i, InputActionType.Button, "<Keyboard>/" + ((i + 1) % 10));
+        }
 
         move = new InputAction("Move", InputActionType.Value);
         move.AddCompositeBinding("2DVector")
@@ -39,6 +41,7 @@ public class GameInput
         offhand = new InputAction("Offhand", InputActionType.Button, "<Mouse>/rightButton");
         roll = new InputAction("Roll", InputActionType.Button, "<Keyboard>/space");
         interact = new InputAction("Interact", InputActionType.Button, "<Keyboard>/f");
+        interactAlt = new InputAction("InteractAlt", InputActionType.Button, "<Keyboard>/g");
         skill1 = new InputAction("Skill1", InputActionType.Button, "<Keyboard>/q");
         skill2 = new InputAction("Skill2", InputActionType.Button, "<Keyboard>/e");
         skill3 = new InputAction("Skill3", InputActionType.Button, "<Keyboard>/r");
@@ -55,6 +58,7 @@ public class GameInput
     public bool OffhandHeld => offhand.IsPressed();
     public bool RollPressed => roll.WasPressedThisFrame();
     public bool InteractPressed => interact.WasPressedThisFrame();
+    public bool InteractAltPressed => interactAlt.WasPressedThisFrame();
     public bool Skill1Pressed => skill1.WasPressedThisFrame();
     public bool Skill2Pressed => skill2.WasPressedThisFrame();
     public bool Skill3Pressed => skill3.WasPressedThisFrame();
@@ -85,8 +89,8 @@ public class GameInput
         }
     }
 
-    // 이번 프레임에 눌린 무기 키 번호(0~3). 없으면 -1.
-    public int WeaponKeyPressed
+    // 이번 프레임에 눌린 직업 키 번호(0~9). 없으면 -1.
+    public int JobKeyPressed
     {
         get
         {
@@ -114,6 +118,7 @@ public class GameInput
         offhand.Enable();
         roll.Enable();
         interact.Enable();
+        interactAlt.Enable();
         skill1.Enable();
         skill2.Enable();
         skill3.Enable();
@@ -135,6 +140,7 @@ public class GameInput
         offhand.Dispose();
         roll.Dispose();
         interact.Dispose();
+        interactAlt.Dispose();
         skill1.Dispose();
         skill2.Dispose();
         skill3.Dispose();

@@ -1,0 +1,43 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3a62f28f4b3a06b43bb3383b221b3957, type: 3}
+  m_Name: Blunt
+  m_EditorClassIdentifier: Assembly-CSharp::WeaponDefinition
+  displayName: "\uB454\uAE30"
+  kind: 5
+  damage: 20
+  manaOnHit: 5
+  hitDelay: 0.2
+  duration: 0.56
+  moveFactor: 0.2
+  allowsShield: 1
+  partsType: 12
+  partsIndex: 0
+  anim: 4
+  animStartTime: 0.75
+  animSpeed: 2.2
+  attackSound: 6
+  range: 1.4
+  arcDegrees: 110
+  lineHalfWidth: 0
+  slashScale: {x: 0.95, y: 0.95}
+  projectileSpeed: 12
+  projectileLifetime: 1.2
+  projectileRadius: 0.22
+  explosionRadius: 0
+  statusKind: 4
+  statusDuration: 0.5
+  statusPower: 0
+  projectileLook: 1
+  projectileColor: {r: 1, g: 1, b: 1, a: 1}
+  chargeTime: 0
+  minChargeFactor: 0.35

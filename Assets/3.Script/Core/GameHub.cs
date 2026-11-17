@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
@@ -19,23 +19,32 @@ public class GameHub : MonoBehaviour
     [SerializeField] private SkillUi skillUi;
     // 로비 마을 화면(해금 상인, 도감, 설정). 전투 씬에서는 비운다.
     [SerializeField] private MetaUi metaUi;
+    [SerializeField] private SoundManager sound;
+    [SerializeField] private PauseMenuUi pauseMenu;
+    [Tooltip("씬이 시작될 때 트는 배경음악")]
+    [SerializeField] private MusicId sceneMusic = MusicId.Lobby;
     [SerializeField] private Vector2 arenaHalfSize = new Vector2(9.2f, 5f);
     [SerializeField] private Vector2[] spawnPoints;
 
     [Header("전투 씬 전용(로비에서는 비움)")]
     [SerializeField] private MonsterDirector monsterDirector;
     [SerializeField] private ProjectilePool projectilePool;
+    [SerializeField] private SkillFxPlayer skillFx;
     [SerializeField] private FloorDirector floorDirector;
 
     [Header("로비 전용")]
     [SerializeField] private bool hasStartZone;
     [SerializeField] private Vector2 startZoneCenter;
     [SerializeField] private float startZoneRadius = 1f;
+    [Tooltip("캐릭터 커스터마이징 화면(처음 실행, 미용실)")]
+    [SerializeField] private CustomizeUi customizeUi;
 
     private readonly List<PlayerController> players = new List<PlayerController>(4);
     private readonly Collider2D[] hitBuffer = new Collider2D[32];
     private ContactFilter2D monsterFilter;
     private bool inputBlocked;
+    private bool menuBlocked;
+    private bool customizeBlocked;
     private readonly MetaProgress meta = new MetaProgress();
 
     public Camera MainCamera => mainCamera;
@@ -43,6 +52,7 @@ public class GameHub : MonoBehaviour
     public HudController Hud => hud;
     public MonsterDirector MonsterDirector => monsterDirector;
     public ProjectilePool ProjectilePool => projectilePool;
+    public SkillFxPlayer SkillFx => skillFx;
     public FloorDirector FloorDirector => floorDirector;
     public DamageTextPool DamageTextPool => damageTextPool;
     public ItemDropPool ItemDropPool => itemDropPool;
@@ -55,14 +65,19 @@ public class GameHub : MonoBehaviour
     public Collider2D[] HitBuffer => hitBuffer;
     public int PlayerCount => players.Count;
     public bool IsCombatScene => monsterDirector != null;
-    public bool InputBlocked => inputBlocked;
+    public bool InputBlocked => inputBlocked || menuBlocked || customizeBlocked;
+    public CustomizeUi CustomizeUi => customizeUi;
+    public SoundManager Sound => sound;
+    public PauseMenuUi PauseMenu => pauseMenu;
     // 영혼석, 영구 해금, 도감, 설정(기기에 저장)
     public MetaProgress Meta => meta;
 
     private void Awake()
     {
         meta.Load();
+        sound.SetCamera(mainCamera);
         ApplySettings();
+        sound.PlayMusic(sceneMusic);
         Physics2D.IgnoreLayerCollision(GameLayers.Player, GameLayers.Monster, true);
         Physics2D.IgnoreLayerCollision(GameLayers.Player, GameLayers.Player, true);
 
@@ -82,6 +97,7 @@ public class GameHub : MonoBehaviour
     {
         cameraFollow.SetShakeEnabled(meta.ShakeEnabled);
         damageTextPool.SetShowEnabled(meta.DamageTextEnabled);
+        sound.ApplyVolumes(meta);
     }
 
     private void OnDestroy()
@@ -125,6 +141,18 @@ public class GameHub : MonoBehaviour
     public void SetInputBlocked(bool blocked)
     {
         inputBlocked = blocked;
+    }
+
+    // Esc 메뉴나 커스터마이징 화면이 열려 있는 동안 캐릭터 조작을 막는다(주소 입력과 따로 센다).
+    public void SetMenuBlocked(bool blocked)
+    {
+        menuBlocked = blocked;
+    }
+
+    // 커스터마이징 화면이 열려 있는 동안 조작을 막는다(Esc 메뉴와 따로 센다).
+    public void SetCustomizeBlocked(bool blocked)
+    {
+        customizeBlocked = blocked;
     }
 
     public bool IsPointerOverUi()

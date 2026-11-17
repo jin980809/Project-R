@@ -81,10 +81,15 @@ MonoBehaviour:
   - "\uCC3D"
   - "\uD65C"
   - "\uC9C0\uD321\uC774"
+  - "\uB3C4\uB07C"
+  - "\uB454\uAE30"
+  - "\uC11D\uAD81"
+  - "\uCD1D"
+  - "\uC644\uB4DC"
   offhandName: "\uBC29\uD328"
   helmetName: "\uD22C\uAD6C"
   armorName: "\uAC11\uC637"
-  weaponPartsCounts: 20000000110000000d00000012000000
+  weaponPartsCounts: 20000000110000000d000000120000000e0000000d0000000a000000030000000a000000
   shieldPartsCount: 17
   helmetPartsCount: 76
   armorPartsCount: 57

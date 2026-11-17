@@ -1,4 +1,4 @@
-using System.Text;
+﻿using System.Text;
 using Mirror;
 using UnityEngine;
 
@@ -167,7 +167,7 @@ public class PlayerFacility : NetworkBehaviour
         }
         else if (metaUi != null)
         {
-            // 로비 마을: 해금 상인, 도감, 설정
+            // 로비 마을: 해금 상점, 도서관, 미용실
             if (!inventory.HasNearbyDrop)
             {
                 station = metaUi.FindStation(transform.position);
@@ -192,7 +192,15 @@ public class PlayerFacility : NetworkBehaviour
             }
             if (!blocked && input.InteractPressed)
             {
-                metaUi.Toggle(station);
+                if (station == MetaUi.BarberStation)
+                {
+                    metaUi.Close();
+                    hub.CustomizeUi.Open(controller, false);
+                }
+                else
+                {
+                    metaUi.Toggle(station);
+                }
             }
         }
         else if (near)
@@ -210,7 +218,11 @@ public class PlayerFacility : NetworkBehaviour
             }
             if (!blocked && input.InteractPressed)
             {
-                CmdInteract();
+                CmdInteract(false);
+            }
+            else if (!blocked && input.InteractAltPressed && roomType == RoomType.Start)
+            {
+                CmdInteract(true);
             }
         }
         else if (promptShown)
@@ -229,18 +241,30 @@ public class PlayerFacility : NetworkBehaviour
         if (roomType == RoomType.Start)
         {
             int held = inventory.WeaponKindIndex;
-            if (held == skills.JobIndex)
+            int first = skills.GetAltarTarget(false);
+            int second = skills.GetAltarTarget(true);
+            bool sameWeapon = (int)skills.Job.WeaponKind == held;
+            bool ready = sameWeapon || skills.GetMastery(held) >= skills.MasteryRequired;
+            if (!ready)
             {
-                builder.Append("전직 제단: 지금 직업은 ").Append(skills.Job.DisplayName).Append("입니다 (다른 계열 무기를 들고 오면 전직)");
-            }
-            else if (skills.GetMastery(held) >= skills.MasteryRequired)
-            {
-                builder.Append("F  ").Append(skills.GetJobName(held)).Append("(으)로 전직");
+                builder.Append(skills.GetJobName(first)).Append(" 숙련도 ").Append(skills.GetMastery(held)).Append('/')
+                    .Append(skills.MasteryRequired).Append("  (그 무기를 들고 처치하면 오릅니다)");
             }
             else
             {
-                builder.Append(skills.GetJobName(held)).Append(" 숙련도 ").Append(skills.GetMastery(held)).Append('/')
-                    .Append(skills.MasteryRequired).Append("  (그 무기를 들고 처치하면 오릅니다)");
+                builder.Append("전직 제단 (지금 ").Append(skills.Job.DisplayName).Append(')');
+                if (first != skills.JobIndex)
+                {
+                    builder.Append("   F  ").Append(skills.GetJobName(first)).Append("(으)로 전직");
+                }
+                if (second >= 0 && second != skills.JobIndex)
+                {
+                    builder.Append("   G  ").Append(skills.GetJobName(second)).Append("(으)로 전직");
+                }
+                if (first == skills.JobIndex && (second < 0 || second == skills.JobIndex))
+                {
+                    builder.Append("  다른 계열 무기를 들고 오면 전직");
+                }
             }
         }
         else if (roomType == RoomType.Ore)
@@ -325,7 +349,7 @@ public class PlayerFacility : NetworkBehaviour
     }
 
     [Command]
-    private void CmdInteract()
+    private void CmdInteract(bool alternate)
     {
         FloorDirector floor = hub.FloorDirector;
         if (floor != null && !controller.IsDead)
@@ -338,7 +362,7 @@ public class PlayerFacility : NetworkBehaviour
             {
                 if (roomType == RoomType.Start)
                 {
-                    if (skills.ServerTryChangeJob())
+                    if (skills.ServerTryChangeJob(alternate))
                     {
                         TargetNotice(0);
                     }

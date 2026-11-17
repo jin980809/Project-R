@@ -55,6 +55,7 @@ public class FloorDirector : NetworkBehaviour
     [SerializeField] private GameObject stairsObject;
     [SerializeField] private GameObject facilityObject;
     [SerializeField] private TMPro.TMP_Text facilityLabel;
+    [SerializeField] private RoomDecor decor;
 
     [Header("층 구조")]
     [SerializeField] private int minRooms = 10;
@@ -106,9 +107,9 @@ public class FloorDirector : NetworkBehaviour
     private readonly SyncList<RoomInfo> rooms = new SyncList<RoomInfo>();
     [SyncVar(hook = nameof(OnStateChanged))] private int currentRoom = -1;
     [SyncVar(hook = nameof(OnStateChanged))] private int floorNumber;
-    [SyncVar(hook = nameof(OnLockChanged))] private bool roomLocked;
-    [SyncVar(hook = nameof(OnLockChanged))] private bool chestAvailable;
-    [SyncVar(hook = nameof(OnLockChanged))] private bool stairsOpen;
+    [SyncVar(hook = nameof(OnRoomLockChanged))] private bool roomLocked;
+    [SyncVar(hook = nameof(OnChestChanged))] private bool chestAvailable;
+    [SyncVar(hook = nameof(OnStairsChanged))] private bool stairsOpen;
 
     private readonly StringBuilder labelBuilder = new StringBuilder(32);
     private GameNetworkManager manager;
@@ -348,6 +349,8 @@ public class FloorDirector : NetworkBehaviour
 
         bool combat = room.type == RoomType.Combat || room.type == RoomType.Elite || room.type == RoomType.Boss;
         bool newShop = room.type == RoomType.Shop && room.cleared == 0;
+        // 몬스터와 사람을 세우기 전에 장애물을 놓아 겹치지 않게 한다.
+        decor.Apply(floorNumber, index, room.type);
         if (room.cleared == 0)
         {
             if (combat)
@@ -724,9 +727,37 @@ public class FloorDirector : NetworkBehaviour
         viewDirty = true;
     }
 
-    private void OnLockChanged(bool oldValue, bool newValue)
+    // 문이 잠기면 철컥, 적을 다 잡아 열리면 방 정리 소리와 문 열리는 소리
+    private void OnRoomLockChanged(bool oldValue, bool newValue)
     {
         viewDirty = true;
+        if (newValue && !oldValue)
+        {
+            hub.Sound.Play(SoundId.DoorLock);
+        }
+        else if (oldValue && !newValue)
+        {
+            hub.Sound.Play(SoundId.RoomClear);
+            hub.Sound.Play(SoundId.DoorOpen);
+        }
+    }
+
+    private void OnChestChanged(bool oldValue, bool newValue)
+    {
+        viewDirty = true;
+        if (oldValue && !newValue)
+        {
+            hub.Sound.Play(SoundId.ChestOpen);
+        }
+    }
+
+    private void OnStairsChanged(bool oldValue, bool newValue)
+    {
+        viewDirty = true;
+        if (newValue && !oldValue)
+        {
+            hub.Sound.Play(SoundId.StairsOpen);
+        }
     }
 
     // 문, 배경 색, 상자·계단·시설 표시, 화면 위쪽 방 이름을 현재 방에 맞춘다.
@@ -747,6 +778,16 @@ public class FloorDirector : NetworkBehaviour
         }
 
         backgroundRenderer.color = roomTints[(int)room.type];
+        decor.Apply(floorNumber, currentRoom, room.type);
+        // 보스와 싸우는 동안만 보스 음악(같은 곡이면 그대로 이어진다)
+        if (room.type == RoomType.Boss && roomLocked)
+        {
+            hub.Sound.PlayMusic(MusicId.Boss);
+        }
+        else
+        {
+            hub.Sound.PlayMusic(MusicId.Combat);
+        }
         chestObject.SetActive(chestAvailable);
         stairsObject.SetActive(stairsOpen);
         bool facility = room.type == RoomType.Shop || room.type == RoomType.Forge || room.type == RoomType.Start
