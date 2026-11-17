@@ -14,6 +14,7 @@ public class CameraFollow : MonoBehaviour
     private float shakeAmplitude;
     private float shakeDuration;
     private float shakeTimer;
+    private bool shakeEnabled = true;
 
     private void Awake()
     {
@@ -29,9 +30,14 @@ public class CameraFollow : MonoBehaviour
         }
     }
 
+    public void SetShakeEnabled(bool value)
+    {
+        shakeEnabled = value;
+    }
+
     public void Shake(float amplitude, float duration)
     {
-        if (amplitude >= shakeAmplitude || shakeTimer <= 0f)
+        if (shakeEnabled && (amplitude >= shakeAmplitude || shakeTimer <= 0f))
         {
             shakeAmplitude = amplitude;
             shakeDuration = duration;

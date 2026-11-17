@@ -25,7 +25,7 @@ public class ProjectilePool : MonoBehaviour
         return projectile;
     }
 
-    public void Launch(Vector2 origin, Vector2 direction, MonsterDefinition definition, bool authoritative)
+    public void Launch(in ProjectileShot shot)
     {
         Projectile projectile;
         if (freeProjectiles.Count > 0)
@@ -36,7 +36,7 @@ public class ProjectilePool : MonoBehaviour
         {
             projectile = CreateInstance();
         }
-        projectile.Launch(origin, direction, definition, authoritative);
+        projectile.Launch(shot);
         projectile.gameObject.SetActive(true);
         activeProjectiles.Add(projectile);
     }

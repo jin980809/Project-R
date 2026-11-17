@@ -1,0 +1,101 @@
+using LayerLab.ArtMakerUnity;
+using UnityEngine;
+
+public enum WeaponKind : byte
+{
+    Sword,
+    Spear,
+    Bow,
+    Staff
+}
+
+// 무기 한 자루의 능력치와 공격 방식. 무기 계열(Kind)이 조작감을 정한다.
+// - 검: 부채꼴 근접, 방패 사용 가능
+// - 창: 긴 직선 찌르기
+// - 활: 누르는 동안 차지, 떼면 발사
+// - 지팡이: 마법 투사체, 닿거나 사거리 끝에서 광역 폭발
+[CreateAssetMenu(menuName = "Tower/Weapon Definition", fileName = "WeaponDefinition")]
+public class WeaponDefinition : ScriptableObject
+{
+    [Header("기본")]
+    [SerializeField] private string displayName;
+    [SerializeField] private WeaponKind kind;
+    [SerializeField] private int damage = 12;
+    [SerializeField] private int manaOnHit = 3;
+    [Tooltip("공격 시작부터 판정(또는 발사)까지 걸리는 시간")]
+    [SerializeField] private float hitDelay = 0.11f;
+    [Tooltip("공격 한 번의 전체 길이. 이 시간이 지나야 다음 행동을 한다.")]
+    [SerializeField] private float duration = 0.34f;
+    [Tooltip("공격(차지) 중 이동 속도 배율")]
+    [SerializeField] private float moveFactor = 0.25f;
+    [SerializeField] private bool allowsShield;
+
+    [Header("외형(패키지 파츠)")]
+    [SerializeField] private PartsType partsType = PartsType.Sword;
+    [SerializeField] private int partsIndex;
+
+    [Header("애니메이션")]
+    [SerializeField] private CharacterAnim anim = CharacterAnim.Attack;
+    [SerializeField] private float animStartTime = 0.75f;
+    [SerializeField] private float animSpeed = 2.2f;
+
+    [Header("근접")]
+    [SerializeField] private float range = 1.5f;
+    [Tooltip("부채꼴 각도. 직선 폭이 0보다 크면 쓰지 않는다.")]
+    [SerializeField] private float arcDegrees = 120f;
+    [Tooltip("0보다 크면 부채꼴 대신 이 반폭의 직선으로 판정한다(창).")]
+    [SerializeField] private float lineHalfWidth;
+    [SerializeField] private Vector2 slashScale = Vector2.one;
+
+    [Header("원거리")]
+    [SerializeField] private float projectileSpeed = 12f;
+    [SerializeField] private float projectileLifetime = 1.2f;
+    [SerializeField] private float projectileRadius = 0.22f;
+    [SerializeField] private float explosionRadius;
+
+    [Header("상태이상(맞은 몬스터에게 건다)")]
+    [SerializeField] private StatusKind statusKind;
+    [SerializeField] private float statusDuration = 3f;
+    [Tooltip("화상·출혈: 0.5초마다 들어가는 피해가 타격 피해의 몇 배인지")]
+    [SerializeField] private float statusPower = 0.12f;
+    [SerializeField] private ProjectileLook projectileLook = ProjectileLook.Arrow;
+    [SerializeField] private Color projectileColor = Color.white;
+
+    [Header("차지(활)")]
+    [Tooltip("최대 차지까지 걸리는 시간. 0이면 차지하지 않는다.")]
+    [SerializeField] private float chargeTime;
+    [Tooltip("차지 없이 쐈을 때의 피해·속도 배율")]
+    [SerializeField] private float minChargeFactor = 0.35f;
+
+    public string DisplayName => displayName;
+    public WeaponKind Kind => kind;
+    public int Damage => damage;
+    public int ManaOnHit => manaOnHit;
+    public float HitDelay => hitDelay;
+    public float Duration => duration;
+    public float MoveFactor => moveFactor;
+    public bool AllowsShield => allowsShield;
+    public PartsType PartsType => partsType;
+    public int PartsIndex => partsIndex;
+    public CharacterAnim Anim => anim;
+    public float AnimStartTime => animStartTime;
+    public float AnimSpeed => animSpeed;
+    public float Range => range;
+    public float ArcDegrees => arcDegrees;
+    public float LineHalfWidth => lineHalfWidth;
+    public Vector2 SlashScale => slashScale;
+    public float ProjectileSpeed => projectileSpeed;
+    public float ProjectileLifetime => projectileLifetime;
+    public float ProjectileRadius => projectileRadius;
+    public float ExplosionRadius => explosionRadius;
+    public StatusKind StatusKind => statusKind;
+    public float StatusDuration => statusDuration;
+    public float StatusPower => statusPower;
+    public ProjectileLook ProjectileLook => projectileLook;
+    public Color ProjectileColor => projectileColor;
+    public float ChargeTime => chargeTime;
+    public float MinChargeFactor => minChargeFactor;
+
+    public bool IsRanged => kind == WeaponKind.Bow || kind == WeaponKind.Staff;
+    public bool UsesCharge => chargeTime > 0f;
+}

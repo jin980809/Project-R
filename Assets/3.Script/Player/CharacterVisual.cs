@@ -94,6 +94,41 @@ public class CharacterVisual : MonoBehaviour
         }
     }
 
+    // 오른손 무기를 바꾼다. 패키지가 다른 오른손 무기는 알아서 벗기고, 양손 무기면 방패도 벗긴다.
+    public void EquipWeapon(PartsType type, int index, bool withShield, int shieldIndex)
+    {
+        partsManager.EquipParts(type, index);
+        if (withShield)
+        {
+            partsManager.EquipParts(PartsType.Shield, shieldIndex);
+        }
+        else
+        {
+            partsManager.UnequipParts(PartsType.Shield);
+        }
+    }
+
+    // 투구와 갑옷. 투구가 없으면 머리카락이 보이고, 갑옷이 없으면 기본 옷을 입는다.
+    public void EquipGear(bool hasHelmet, int helmetIndex, bool hasArmor, int armorIndex, int defaultChestIndex)
+    {
+        if (hasHelmet)
+        {
+            partsManager.EquipParts(PartsType.Helmet, helmetIndex);
+        }
+        else
+        {
+            partsManager.UnequipParts(PartsType.Helmet);
+        }
+        if (hasArmor)
+        {
+            partsManager.EquipParts(PartsType.Chest, armorIndex);
+        }
+        else
+        {
+            partsManager.EquipParts(PartsType.Chest, defaultChestIndex);
+        }
+    }
+
     public void Tick(float deltaTime)
     {
         if (holdTimer > 0f)

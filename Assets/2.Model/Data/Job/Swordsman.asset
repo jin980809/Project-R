@@ -1,0 +1,67 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a582d7cf054923c4088284afb0ba700d, type: 3}
+  m_Name: Swordsman
+  m_EditorClassIdentifier: Assembly-CSharp::JobDefinition
+  displayName: "\uAC80\uC0AC"
+  branchNames:
+  - "\uAD11\uC804"
+  - "\uC218\uD638"
+  skills:
+  - {fileID: 11400000, guid: 28faa4a595b40104893f5860afb97594, type: 2}
+  - {fileID: 11400000, guid: 05145ce4fdf389f4ca09678409a648cc, type: 2}
+  - {fileID: 11400000, guid: 385b419aa5312e24da681feeb900a4aa, type: 2}
+  nodes:
+  - displayName: "\uD68C\uC804 \uBCA0\uAE30"
+    effect: 0
+    value: 0
+    maxRank: 1
+  - displayName: "\uB0A0 \uC138\uC6B0\uAE30"
+    effect: 1
+    value: 5
+    maxRank: 3
+  - displayName: "\uAE09\uC18C \uB178\uB9AC\uAE30"
+    effect: 4
+    value: 4
+    maxRank: 3
+  - displayName: "\uC804\uD22C \uD568\uC131"
+    effect: 0
+    value: 2
+    maxRank: 1
+  - displayName: "\uB3CC\uC9C4 \uBCA0\uAE30"
+    effect: 0
+    value: 1
+    maxRank: 1
+  - displayName: "\uB2E8\uB828"
+    effect: 5
+    value: 12
+    maxRank: 3
+  - displayName: "\uBC84\uD2F0\uAE30"
+    effect: 6
+    value: 4
+    maxRank: 3
+  - displayName: "\uC219\uB828"
+    effect: 9
+    value: 15
+    maxRank: 1
+  effectFormats:
+  - 
+  - "\uACF5\uACA9\uB825 +{0}%"
+  - "\uACF5\uACA9 \uC18D\uB3C4 +{0}%"
+  - "\uC774\uB3D9 \uC18D\uB3C4 +{0}%"
+  - "\uCE58\uBA85\uD0C0 \uD655\uB960 +{0}%"
+  - "\uCD5C\uB300 \uCCB4\uB825 +{0}"
+  - "\uBC1B\uB294 \uD53C\uD574 -{0}%"
+  - "\uCD5C\uB300 \uB9C8\uB098 +{0}"
+  - "\uC801\uC911 \uC2DC \uB9C8\uB098 +{0}"
+  - "\uC7AC\uC0AC\uC6A9 \uC2DC\uAC04 -{0}%"
+  - "\uC2A4\uD0AC \uD53C\uD574 +{0}%"

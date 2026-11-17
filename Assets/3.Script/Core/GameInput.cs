@@ -14,9 +14,19 @@ public class GameInput
     private readonly InputAction skill2;
     private readonly InputAction skill3;
     private readonly InputAction menu;
+    private readonly InputAction inventory;
+    private readonly InputAction potion;
+    private readonly InputAction skillTree;
+    // 로비에서 숫자 키 1~4로 시작 무기를 고른다.
+    private readonly InputAction[] weaponKeys = new InputAction[4];
 
     public GameInput()
     {
+        weaponKeys[0] = new InputAction("Weapon1", InputActionType.Button, "<Keyboard>/1");
+        weaponKeys[1] = new InputAction("Weapon2", InputActionType.Button, "<Keyboard>/2");
+        weaponKeys[2] = new InputAction("Weapon3", InputActionType.Button, "<Keyboard>/3");
+        weaponKeys[3] = new InputAction("Weapon4", InputActionType.Button, "<Keyboard>/4");
+
         move = new InputAction("Move", InputActionType.Value);
         move.AddCompositeBinding("2DVector")
             .With("Up", "<Keyboard>/w")
@@ -33,6 +43,9 @@ public class GameInput
         skill2 = new InputAction("Skill2", InputActionType.Button, "<Keyboard>/e");
         skill3 = new InputAction("Skill3", InputActionType.Button, "<Keyboard>/r");
         menu = new InputAction("Menu", InputActionType.Button, "<Keyboard>/escape");
+        inventory = new InputAction("Inventory", InputActionType.Button, "<Keyboard>/tab");
+        potion = new InputAction("Potion", InputActionType.Button, "<Keyboard>/h");
+        skillTree = new InputAction("SkillTree", InputActionType.Button, "<Keyboard>/k");
     }
 
     public Vector2 Move => move.ReadValue<Vector2>();
@@ -46,9 +59,55 @@ public class GameInput
     public bool Skill2Pressed => skill2.WasPressedThisFrame();
     public bool Skill3Pressed => skill3.WasPressedThisFrame();
     public bool MenuPressed => menu.WasPressedThisFrame();
+    public bool InventoryPressed => inventory.WasPressedThisFrame();
+    public bool PotionPressed => potion.WasPressedThisFrame();
+    public bool SkillTreePressed => skillTree.WasPressedThisFrame();
+
+    // 이번 프레임에 눌린 스킬 키 번호(0 Q, 1 E, 2 R). 없으면 -1.
+    public int SkillKeyPressed
+    {
+        get
+        {
+            int pressed = -1;
+            if (skill1.WasPressedThisFrame())
+            {
+                pressed = 0;
+            }
+            else if (skill2.WasPressedThisFrame())
+            {
+                pressed = 1;
+            }
+            else if (skill3.WasPressedThisFrame())
+            {
+                pressed = 2;
+            }
+            return pressed;
+        }
+    }
+
+    // 이번 프레임에 눌린 무기 키 번호(0~3). 없으면 -1.
+    public int WeaponKeyPressed
+    {
+        get
+        {
+            int pressed = -1;
+            for (int i = 0; i < weaponKeys.Length && pressed < 0; i++)
+            {
+                if (weaponKeys[i].WasPressedThisFrame())
+                {
+                    pressed = i;
+                }
+            }
+            return pressed;
+        }
+    }
 
     public void Enable()
     {
+        for (int i = 0; i < weaponKeys.Length; i++)
+        {
+            weaponKeys[i].Enable();
+        }
         move.Enable();
         point.Enable();
         attack.Enable();
@@ -59,10 +118,17 @@ public class GameInput
         skill2.Enable();
         skill3.Enable();
         menu.Enable();
+        inventory.Enable();
+        potion.Enable();
+        skillTree.Enable();
     }
 
     public void Dispose()
     {
+        for (int i = 0; i < weaponKeys.Length; i++)
+        {
+            weaponKeys[i].Dispose();
+        }
         move.Dispose();
         point.Dispose();
         attack.Dispose();
@@ -73,5 +139,8 @@ public class GameInput
         skill2.Dispose();
         skill3.Dispose();
         menu.Dispose();
+        inventory.Dispose();
+        potion.Dispose();
+        skillTree.Dispose();
     }
 }

@@ -31,6 +31,11 @@ public class GameNetworkManager : NetworkManager
 
     private readonly bool[] slotUsed = new bool[MaxPlayers];
     private readonly int[] slotConnection = new int[MaxPlayers];
+    private readonly int[] slotWeapon = new int[MaxPlayers];
+    // 자리별 장비 저장소(장착 4칸 + 가방 12칸). 씬이 바뀌어 플레이어 오브젝트가 새로 만들어져도 유지된다.
+    private readonly ItemData[] slotItems = new ItemData[MaxPlayers * PlayerInventory.TotalSlotCount];
+    private readonly bool[] slotKitReady = new bool[MaxPlayers];
+    private readonly int[] slotGold = new int[MaxPlayers];
     private GameHub hub;
     private PendingNetworkAction pendingAction;
     private int pendingDelayFrames;
@@ -167,6 +172,12 @@ public class GameNetworkManager : NetworkManager
     {
         if (NetworkServer.active && IsRunInProgress)
         {
+            // 판이 끝나면 장비와 골드는 시작 상태로 돌아간다(시작 무기 선택은 유지).
+            for (int i = 0; i < MaxPlayers; i++)
+            {
+                slotKitReady[i] = false;
+                slotGold[i] = 0;
+            }
             ServerChangeScene(LobbyScenePath);
         }
     }
@@ -231,6 +242,48 @@ public class GameNetworkManager : NetworkManager
         }
     }
 
+    // 로비에서 고른 시작 무기 계열(WeaponKind 번호)
+    public void SetSlotWeapon(int slot, int weaponKind)
+    {
+        slotWeapon[slot] = weaponKind;
+    }
+
+    public int GetSlotWeapon(int slot)
+    {
+        return slotWeapon[slot];
+    }
+
+    // 시작 장비를 이미 지급했는지
+    public bool IsSlotKitReady(int slot)
+    {
+        return slotKitReady[slot];
+    }
+
+    public void SetSlotKitReady(int slot, bool ready)
+    {
+        slotKitReady[slot] = ready;
+    }
+
+    public ItemData GetSlotItem(int slot, int index)
+    {
+        return slotItems[slot * PlayerInventory.TotalSlotCount + index];
+    }
+
+    public void SetSlotItem(int slot, int index, ItemData item)
+    {
+        slotItems[slot * PlayerInventory.TotalSlotCount + index] = item;
+    }
+
+    public int GetSlotGold(int slot)
+    {
+        return slotGold[slot];
+    }
+
+    public void SetSlotGold(int slot, int amount)
+    {
+        slotGold[slot] = amount;
+    }
+
     // 자리 번호는 씬이 바뀌어도 유지된다.
     private int AssignSlot(int connectionId)
     {
@@ -248,6 +301,9 @@ public class GameNetworkManager : NetworkManager
             {
                 slotUsed[i] = true;
                 slotConnection[i] = connectionId;
+                slotWeapon[i] = 0;
+                slotKitReady[i] = false;
+                slotGold[i] = 0;
                 slot = i;
             }
         }

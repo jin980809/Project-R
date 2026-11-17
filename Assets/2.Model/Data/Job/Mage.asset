@@ -1,0 +1,67 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a582d7cf054923c4088284afb0ba700d, type: 3}
+  m_Name: Mage
+  m_EditorClassIdentifier: Assembly-CSharp::JobDefinition
+  displayName: "\uB9C8\uBC95\uC0AC"
+  branchNames:
+  - "\uD654\uC5FC"
+  - "\uBE44\uC804"
+  skills:
+  - {fileID: 11400000, guid: 52b3b6903e5ef4845977fa624488e07e, type: 2}
+  - {fileID: 11400000, guid: 780b0a71b3e99ad4fb9043d15adc6af4, type: 2}
+  - {fileID: 11400000, guid: a1c9a49fff4c97f4b85a1d852c37ca47, type: 2}
+  nodes:
+  - displayName: "\uD654\uC5FC\uAD6C"
+    effect: 0
+    value: 0
+    maxRank: 1
+  - displayName: "\uBD88\uAE38"
+    effect: 10
+    value: 8
+    maxRank: 3
+  - displayName: "\uB9C8\uB825 \uADF8\uB987"
+    effect: 7
+    value: 10
+    maxRank: 3
+  - displayName: "\uBE44\uC804 \uD3ED\uD48D"
+    effect: 0
+    value: 2
+    maxRank: 1
+  - displayName: "\uC810\uBA78"
+    effect: 0
+    value: 1
+    maxRank: 1
+  - displayName: "\uB9C8\uB825 \uD761\uC218"
+    effect: 8
+    value: 1
+    maxRank: 3
+  - displayName: "\uBE60\uB978 \uC601\uCC3D"
+    effect: 9
+    value: 5
+    maxRank: 3
+  - displayName: "\uC9D1\uC911"
+    effect: 10
+    value: 20
+    maxRank: 1
+  effectFormats:
+  - 
+  - "\uACF5\uACA9\uB825 +{0}%"
+  - "\uACF5\uACA9 \uC18D\uB3C4 +{0}%"
+  - "\uC774\uB3D9 \uC18D\uB3C4 +{0}%"
+  - "\uCE58\uBA85\uD0C0 \uD655\uB960 +{0}%"
+  - "\uCD5C\uB300 \uCCB4\uB825 +{0}"
+  - "\uBC1B\uB294 \uD53C\uD574 -{0}%"
+  - "\uCD5C\uB300 \uB9C8\uB098 +{0}"
+  - "\uC801\uC911 \uC2DC \uB9C8\uB098 +{0}"
+  - "\uC7AC\uC0AC\uC6A9 \uC2DC\uAC04 -{0}%"
+  - "\uC2A4\uD0AC \uD53C\uD574 +{0}%"

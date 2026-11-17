@@ -12,12 +12,20 @@ public class GameHub : MonoBehaviour
     [SerializeField] private HudController hud;
     [SerializeField] private DamageTextPool damageTextPool;
     [SerializeField] private EventSystem eventSystem;
+    [SerializeField] private ItemDropPool itemDropPool;
+    [SerializeField] private InventoryUi inventoryUi;
+    [SerializeField] private FacilityUi facilityUi;
+    [SerializeField] private ResultUi resultUi;
+    [SerializeField] private SkillUi skillUi;
+    // 로비 마을 화면(해금 상인, 도감, 설정). 전투 씬에서는 비운다.
+    [SerializeField] private MetaUi metaUi;
     [SerializeField] private Vector2 arenaHalfSize = new Vector2(9.2f, 5f);
     [SerializeField] private Vector2[] spawnPoints;
 
     [Header("전투 씬 전용(로비에서는 비움)")]
     [SerializeField] private MonsterDirector monsterDirector;
     [SerializeField] private ProjectilePool projectilePool;
+    [SerializeField] private FloorDirector floorDirector;
 
     [Header("로비 전용")]
     [SerializeField] private bool hasStartZone;
@@ -28,21 +36,33 @@ public class GameHub : MonoBehaviour
     private readonly Collider2D[] hitBuffer = new Collider2D[32];
     private ContactFilter2D monsterFilter;
     private bool inputBlocked;
+    private readonly MetaProgress meta = new MetaProgress();
 
     public Camera MainCamera => mainCamera;
     public CameraFollow CameraFollow => cameraFollow;
     public HudController Hud => hud;
     public MonsterDirector MonsterDirector => monsterDirector;
     public ProjectilePool ProjectilePool => projectilePool;
+    public FloorDirector FloorDirector => floorDirector;
     public DamageTextPool DamageTextPool => damageTextPool;
+    public ItemDropPool ItemDropPool => itemDropPool;
+    public InventoryUi InventoryUi => inventoryUi;
+    public FacilityUi FacilityUi => facilityUi;
+    public ResultUi ResultUi => resultUi;
+    public SkillUi SkillUi => skillUi;
+    public MetaUi MetaUi => metaUi;
     public Vector2 ArenaHalfSize => arenaHalfSize;
     public Collider2D[] HitBuffer => hitBuffer;
     public int PlayerCount => players.Count;
     public bool IsCombatScene => monsterDirector != null;
     public bool InputBlocked => inputBlocked;
+    // 영혼석, 영구 해금, 도감, 설정(기기에 저장)
+    public MetaProgress Meta => meta;
 
     private void Awake()
     {
+        meta.Load();
+        ApplySettings();
         Physics2D.IgnoreLayerCollision(GameLayers.Player, GameLayers.Monster, true);
         Physics2D.IgnoreLayerCollision(GameLayers.Player, GameLayers.Player, true);
 
@@ -57,8 +77,16 @@ public class GameHub : MonoBehaviour
         }
     }
 
+    // 설정(화면 흔들림, 피해 숫자)을 실제 동작에 반영한다. 설정을 바꾼 뒤에도 부른다.
+    public void ApplySettings()
+    {
+        cameraFollow.SetShakeEnabled(meta.ShakeEnabled);
+        damageTextPool.SetShowEnabled(meta.DamageTextEnabled);
+    }
+
     private void OnDestroy()
     {
+        meta.Save();
         if (monsterDirector != null)
         {
             monsterDirector.ClientUnregisterPrefab();

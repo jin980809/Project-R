@@ -1,0 +1,67 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a582d7cf054923c4088284afb0ba700d, type: 3}
+  m_Name: Archer
+  m_EditorClassIdentifier: Assembly-CSharp::JobDefinition
+  displayName: "\uAD81\uC218"
+  branchNames:
+  - "\uC18D\uC0AC"
+  - "\uC0AC\uB0E5\uAFBC"
+  skills:
+  - {fileID: 11400000, guid: 4e6b2ebf21ea21247a8165dc80eff861, type: 2}
+  - {fileID: 11400000, guid: 728a58764b309df498ecdc101add5df9, type: 2}
+  - {fileID: 11400000, guid: 7ded67ac470903b4397fe326e5f3f56c, type: 2}
+  nodes:
+  - displayName: "\uBD80\uCC44 \uC0AC\uACA9"
+    effect: 0
+    value: 0
+    maxRank: 1
+  - displayName: "\uBE60\uB978 \uC2DC\uC704"
+    effect: 2
+    value: 5
+    maxRank: 3
+  - displayName: "\uC57D\uC810 \uAC04\uD30C"
+    effect: 4
+    value: 5
+    maxRank: 3
+  - displayName: "\uD3ED\uBC1C \uD654\uC0B4"
+    effect: 0
+    value: 2
+    maxRank: 1
+  - displayName: "\uD68C\uD53C \uB3C4\uC57D"
+    effect: 0
+    value: 1
+    maxRank: 1
+  - displayName: "\uAC00\uBCBC\uC6B4 \uBC1C"
+    effect: 3
+    value: 4
+    maxRank: 3
+  - displayName: "\uAC15\uD55C \uC2DC\uC704"
+    effect: 1
+    value: 5
+    maxRank: 3
+  - displayName: "\uC219\uB828"
+    effect: 9
+    value: 15
+    maxRank: 1
+  effectFormats:
+  - 
+  - "\uACF5\uACA9\uB825 +{0}%"
+  - "\uACF5\uACA9 \uC18D\uB3C4 +{0}%"
+  - "\uC774\uB3D9 \uC18D\uB3C4 +{0}%"
+  - "\uCE58\uBA85\uD0C0 \uD655\uB960 +{0}%"
+  - "\uCD5C\uB300 \uCCB4\uB825 +{0}"
+  - "\uBC1B\uB294 \uD53C\uD574 -{0}%"
+  - "\uCD5C\uB300 \uB9C8\uB098 +{0}"
+  - "\uC801\uC911 \uC2DC \uB9C8\uB098 +{0}"
+  - "\uC7AC\uC0AC\uC6A9 \uC2DC\uAC04 -{0}%"
+  - "\uC2A4\uD0AC \uD53C\uD574 +{0}%"

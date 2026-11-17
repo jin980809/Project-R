@@ -11,6 +11,7 @@ public class DamageTextPool : MonoBehaviour
 
     private readonly Stack<DamageText> freeTexts = new Stack<DamageText>(32);
     private readonly List<DamageText> activeTexts = new List<DamageText>(32);
+    private bool showEnabled = true;
 
     private void Awake()
     {
@@ -29,19 +30,35 @@ public class DamageTextPool : MonoBehaviour
 
     public void Show(Vector2 position, int amount, Color color)
     {
-        DamageText text;
-        if (freeTexts.Count > 0)
+        ShowScaled(position, amount, color, 1f);
+    }
+
+    // 치명타처럼 크게 보여 줄 때 쓴다.
+    public void ShowScaled(Vector2 position, int amount, Color color, float scale)
+    {
+        if (showEnabled)
         {
-            text = freeTexts.Pop();
+            DamageText text;
+            if (freeTexts.Count > 0)
+            {
+                text = freeTexts.Pop();
+            }
+            else
+            {
+                text = CreateInstance();
+            }
+            position.x += Random.Range(-spread, spread);
+            text.gameObject.SetActive(true);
+            text.transform.localScale = new Vector3(scale, scale, 1f);
+            text.Show(position, amount, color, duration, riseSpeed);
+            activeTexts.Add(text);
         }
-        else
-        {
-            text = CreateInstance();
-        }
-        position.x += Random.Range(-spread, spread);
-        text.gameObject.SetActive(true);
-        text.Show(position, amount, color, duration, riseSpeed);
-        activeTexts.Add(text);
+    }
+
+    // 설정에서 피해 숫자를 끄면 더 이상 띄우지 않는다.
+    public void SetShowEnabled(bool value)
+    {
+        showEnabled = value;
     }
 
     private void Update()
