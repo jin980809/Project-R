@@ -20,10 +20,38 @@ public class HudController : MonoBehaviour
     [SerializeField] private Image bossFill;
     [SerializeField] private TMP_Text bossLabel;
     [Header("걸린 상태이상 표시")]
-    [SerializeField] private TMP_Text statusLabel;
+    [Header("포션 칸 2개(화면 아래 가운데, 스킬 칸 오른쪽)")]
+    [SerializeField] private Image[] potionIcons;
+    [SerializeField] private TMP_Text[] potionCounts;
+    [SerializeField] private TMP_Text[] potionKeys;
+    [Header("걸린 강화 아이콘(스킬 강화, 물약)")]
+    [SerializeField] private GameObject[] buffSlots;
+    [SerializeField] private Image[] buffIcons;
+    [Tooltip("지난 시간만큼 시계 방향으로 덮이는 어두운 부채꼴(Filled Radial360)")]
+    [SerializeField] private Image[] buffGauges;
+    [Header("걸린 상태이상 아이콘(화상, 출혈, 둔화, 약화, 기절). 버프와 다른 붉은 테두리 칸")]
+    [SerializeField] private GameObject[] debuffSlots;
+    [SerializeField] private Image[] debuffIcons;
+    [SerializeField] private Image[] debuffGauges;
+    [Tooltip("상태 비트 순서의 아이콘")]
+    [SerializeField] private Sprite[] statusSprites;
+    [Header("차징 스킬 게이지(모으는 동안 캐릭터 머리 위)")]
+    [SerializeField] private RectTransform chargeGaugeRoot;
+    [SerializeField] private Image chargeGaugeFill;
+    [Tooltip("캐릭터 발밑에서 게이지까지(유닛)")]
+    [SerializeField] private Vector2 chargeGaugeOffset = new Vector2(0f, 1.75f);
+    [SerializeField] private Color chargeFillColor = new Color(0.45f, 0.82f, 1f);
+    [Tooltip("다 모으면 이 색과 흰색 사이로 깜박인다")]
+    [SerializeField] private Color chargeFullColor = new Color(1f, 0.84f, 0.28f);
+    [SerializeField] private float chargeBlinkRate = 12f;
+    [Tooltip("남은 시간이 이보다 적으면 아이콘이 깜박인다")]
+    [SerializeField] private float buffBlinkTime = 3f;
     [SerializeField] private float noticeDuration = 1.6f;
     [SerializeField] private Color pipReadyColor = new Color(1f, 0.85f, 0.3f);
     [SerializeField] private Color pipEmptyColor = new Color(1f, 1f, 1f, 0.2f);
+
+    // 코드로 만드는 화면(유물 선택)이 글꼴을 빌려 쓴다.
+    public TMP_Text NoticeLabel => noticeLabel;
 
     private readonly StringBuilder builder = new StringBuilder(64);
     private PlayerController player;
@@ -35,13 +63,23 @@ public class HudController : MonoBehaviour
     private int lastRevision = -1;
     private int lastGold = -1;
     private int lastOre = -1;
-    private int lastPotions = -1;
+    private int lastKeysRevision = -1;
+    private readonly PotionKind[] lastQuick = new PotionKind[GameInput.PotionSlotCount];
     private int soulstones;
     private float noticeTimer;
     private MonsterController shownBoss;
     private int lastBossHp = -1;
     private bool lastBossEnraged;
-    private int lastStatusMask = -1;
+    private Canvas hudCanvas;
+
+    private void Awake()
+    {
+        hudCanvas = GetComponent<Canvas>();
+        if (chargeGaugeRoot != null)
+        {
+            chargeGaugeRoot.gameObject.SetActive(false);
+        }
+    }
 
     public void Bind(PlayerController localPlayer)
     {
@@ -52,7 +90,7 @@ public class HudController : MonoBehaviour
         lastMana = -1;
         lastRollCharges = -1;
         lastGold = -1;
-        lastStatusMask = -1;
+        lastKeysRevision = -1;
         ClearPrompt();
         noticeLabel.enabled = false;
     }
@@ -104,9 +142,17 @@ public class HudController : MonoBehaviour
 
             // 장비가 바뀔 때만 글자를 다시 만든다.
             PlayerInventory inventory = player.Inventory;
-            if (inventory.Revision != lastRevision)
+            int keysRevision = 0;
+            if (player.Input != null)
+            {
+                keysRevision = player.Input.KeysRevision;
+            }
+            bool quickChanged = inventory.GetQuickPotion(0) != lastQuick[0] || inventory.GetQuickPotion(1) != lastQuick[1];
+            if (inventory.Revision != lastRevision || keysRevision != lastKeysRevision || quickChanged)
             {
                 lastRevision = inventory.Revision;
+                lastKeysRevision = keysRevision;
+                RefreshPotionSlots(inventory);
                 ItemData weaponItem = inventory.GetEquipped((int)ItemSlot.Weapon);
                 builder.Clear();
                 if (weaponItem.Exists)
@@ -114,24 +160,24 @@ public class HudController : MonoBehaviour
                     inventory.Balance.AppendName(builder, weaponItem);
                     weaponLabel.color = inventory.Balance.GetRarityColor(weaponItem.rarity);
                 }
+                string bagKey = hub.GetKeyName(GameInput.KeyInventory, "Tab");
                 if (hub.IsCombatScene)
                 {
-                    builder.Append("   Tab 가방");
+                    builder.Append("   ").Append(bagKey).Append(" 가방");
                 }
                 else
                 {
-                    builder.Append("   숫자 키 시작 직업 · Tab 가방");
+                    builder.Append("   ").Append(bagKey).Append(" 가방");
                 }
                 weaponLabel.SetText(builder);
             }
 
-            if (inventory.Gold != lastGold || inventory.Ore != lastOre || inventory.Potions != lastPotions || hub.Meta.Soulstones != soulstones)
+            if (inventory.Gold != lastGold || inventory.Ore != lastOre || hub.Meta.Soulstones != soulstones)
             {
                 lastGold = inventory.Gold;
                 lastOre = inventory.Ore;
-                lastPotions = inventory.Potions;
                 soulstones = hub.Meta.Soulstones;
-                goldLabel.SetText("{0} G    광석 {1}    포션 {2} (H)    영혼석 {3}", lastGold, lastOre, lastPotions, soulstones);
+                goldLabel.SetText("{0} G    광석 {1}    영혼석 {2}", lastGold, lastOre, soulstones);
             }
 
             if (player.RollCharges != lastRollCharges)
@@ -150,35 +196,14 @@ public class HudController : MonoBehaviour
                 }
             }
 
-            int statusMask = player.StatusMask;
-            if (statusMask != lastStatusMask)
-            {
-                lastStatusMask = statusMask;
-                builder.Clear();
-                if ((statusMask & PlayerController.StatusBurn) != 0)
-                {
-                    builder.Append("화상  ");
-                }
-                if ((statusMask & PlayerController.StatusBleed) != 0)
-                {
-                    builder.Append("출혈  ");
-                }
-                if ((statusMask & PlayerController.StatusSlow) != 0)
-                {
-                    builder.Append("둔화  ");
-                }
-                if ((statusMask & PlayerController.StatusWeaken) != 0)
-                {
-                    builder.Append("약화  ");
-                }
-                if ((statusMask & PlayerController.StatusStun) != 0)
-                {
-                    builder.Append("기절  ");
-                }
-                statusLabel.SetText(builder);
-            }
         }
 
+        if (player != null)
+        {
+            TickBuffIcons();
+            TickDebuffIcons();
+        }
+        TickChargeGauge();
         TickBossBar();
 
         if (noticeTimer > 0f)
@@ -188,6 +213,167 @@ public class HudController : MonoBehaviour
             {
                 noticeLabel.enabled = false;
             }
+        }
+    }
+
+    // 차징 스킬을 모으는 동안 캐릭터 머리 위에 모은 정도를 막대로 보여 준다. 다 모으면 금색으로 깜박인다.
+    private void TickChargeGauge()
+    {
+        if (chargeGaugeRoot != null)
+        {
+            bool show = player != null && player.IsChargingSkill && hub.MainCamera != null;
+            if (chargeGaugeRoot.gameObject.activeSelf != show)
+            {
+                chargeGaugeRoot.gameObject.SetActive(show);
+            }
+            if (show)
+            {
+                float charge = player.SkillCharge01;
+                chargeGaugeFill.fillAmount = charge;
+                Color color = chargeFillColor;
+                if (charge >= 1f)
+                {
+                    color = chargeFullColor;
+                    if (Mathf.Repeat(Time.time * chargeBlinkRate, 2f) < 1f)
+                    {
+                        color = Color.Lerp(chargeFullColor, Color.white, 0.6f);
+                    }
+                }
+                chargeGaugeFill.color = color;
+                Vector3 world = player.transform.position + (Vector3)chargeGaugeOffset;
+                Vector3 screen = hub.MainCamera.WorldToScreenPoint(world);
+                float scale = 1f;
+                if (hudCanvas != null)
+                {
+                    scale = hudCanvas.scaleFactor;
+                }
+                chargeGaugeRoot.anchoredPosition = new Vector2(screen.x / scale, screen.y / scale);
+            }
+        }
+    }
+
+    // 걸린 강화(스킬 강화, 힘·신속·정화 물약): 아이콘을 차례로 띄우고, 지난 시간만큼 어두운 부채꼴이 시계 방향으로 덮인다.
+    private void TickBuffIcons()
+    {
+        int shown = 0;
+        SkillDefinition buff = player.Skills.ActiveBuffSkill;
+        if (buff != null)
+        {
+            shown = ShowBuffIcon(shown, buff.Icon, player.Skills.BuffRemaining, player.Skills.BuffDuration);
+        }
+        shown = ShowTonicIcon(shown, PlayerController.TonicPower, PotionKind.Power);
+        shown = ShowTonicIcon(shown, PlayerController.TonicSwift, PotionKind.Swift);
+        shown = ShowTonicIcon(shown, PlayerController.TonicCleanse, PotionKind.Cleanse);
+        for (int i = shown; i < buffSlots.Length; i++)
+        {
+            if (buffSlots[i].activeSelf)
+            {
+                buffSlots[i].SetActive(false);
+            }
+        }
+    }
+
+    // 걸린 상태이상: 붉은 테두리 칸에 아이콘을 차례로 띄우고, 지난 시간만큼 어두운 부채꼴이 덮인다.
+    private void TickDebuffIcons()
+    {
+        int shown = 0;
+        int statusMask = player.StatusMask;
+        for (int i = 0; i < PlayerController.StatusCount && i < statusSprites.Length; i++)
+        {
+            if ((statusMask & (1 << i)) != 0)
+            {
+                shown = ShowEffectIcon(debuffSlots, debuffIcons, debuffGauges, shown, statusSprites[i], player.GetStatusRemaining(i), player.GetStatusDuration(i));
+            }
+        }
+        for (int i = shown; i < debuffSlots.Length; i++)
+        {
+            if (debuffSlots[i].activeSelf)
+            {
+                debuffSlots[i].SetActive(false);
+            }
+        }
+    }
+
+    private int ShowTonicIcon(int index, byte tonic, PotionKind kind)
+    {
+        int next = index;
+        if ((player.TonicMask & tonic) != 0)
+        {
+            next = ShowBuffIcon(index, player.Inventory.Balance.GetPotionIcon(kind), player.GetTonicRemaining(tonic), player.GetTonicDuration(tonic));
+        }
+        return next;
+    }
+
+    private int ShowBuffIcon(int index, Sprite icon, float remaining, float duration)
+    {
+        return ShowEffectIcon(buffSlots, buffIcons, buffGauges, index, icon, remaining, duration);
+    }
+
+    // index 칸에 아이콘을 띄운다. 띄웠으면 다음 칸 번호를 돌려준다.
+    private int ShowEffectIcon(GameObject[] slots, Image[] icons, Image[] gauges, int index, Sprite icon, float remaining, float duration)
+    {
+        int next = index;
+        if (index < slots.Length && remaining > 0f)
+        {
+            if (!slots[index].activeSelf)
+            {
+                slots[index].SetActive(true);
+            }
+            if (icons[index].sprite != icon)
+            {
+                icons[index].sprite = icon;
+            }
+            float ratio = 0f;
+            if (duration > 0.01f)
+            {
+                ratio = Mathf.Clamp01(remaining / duration);
+            }
+            gauges[index].fillAmount = 1f - ratio;
+            // 끝나기 직전에는 아이콘이 깜박인다.
+            Color color = Color.white;
+            if (remaining < buffBlinkTime)
+            {
+                color.a = 0.45f + 0.55f * Mathf.Abs(Mathf.Sin(Time.time * 6f));
+            }
+            icons[index].color = color;
+            next = index + 1;
+        }
+        return next;
+    }
+
+    // 포션 칸: 등록한 포션의 아이콘, 가방에 든 개수, 키 이름
+    private void RefreshPotionSlots(PlayerInventory inventory)
+    {
+        for (int i = 0; i < potionIcons.Length; i++)
+        {
+            PotionKind kind = inventory.GetQuickPotion(i);
+            lastQuick[i] = kind;
+            int count = 0;
+            if (kind != PotionKind.None)
+            {
+                count = inventory.CountPotions(kind);
+                potionIcons[i].sprite = inventory.Balance.GetPotionIcon(kind);
+                potionIcons[i].enabled = true;
+            }
+            else
+            {
+                potionIcons[i].enabled = false;
+            }
+            float alpha = 1f;
+            if (count == 0)
+            {
+                alpha = 0.3f;
+            }
+            potionIcons[i].color = new Color(1f, 1f, 1f, alpha);
+            if (kind != PotionKind.None)
+            {
+                potionCounts[i].SetText("{0}", count);
+            }
+            else
+            {
+                potionCounts[i].text = string.Empty;
+            }
+            potionKeys[i].text = hub.GetKeyName(GameInput.KeyPotion1 + i, (i + 1).ToString());
         }
     }
 

@@ -1,4 +1,4 @@
-using System.Text;
+﻿using System.Text;
 using Mirror;
 using UnityEngine;
 
@@ -55,19 +55,41 @@ public class FloorDirector : NetworkBehaviour
     [SerializeField] private GameObject stairsObject;
     [SerializeField] private GameObject facilityObject;
     [SerializeField] private TMPro.TMP_Text facilityLabel;
+    [Tooltip("시설 그림(제단, 상점, 대장간, 낚시터, 광맥, 마구간)")]
+    [SerializeField] private SpriteRenderer facilityRenderer;
+    [Tooltip("방 종류(RoomType 순서)마다 방 그림. 비어 있으면 그림을 바꾸지 않는다.")]
+    [SerializeField] private Sprite[] roomBackgrounds;
+    [Tooltip("방 종류(RoomType 순서)마다 시설 그림(애니메이션이 없을 때만 쓴다)")]
+    [SerializeField] private Sprite[] facilitySprites;
+    [Tooltip("전투 방 그림 여러 장. 방마다 번갈아 쓴다.")]
+    [SerializeField] private Sprite[] combatBackgrounds;
+    [SerializeField] private FacilityView facilityView;
+    [Header("보물 상자")]
+    [SerializeField] private FrameAnimator chestAnimator;
+    [SerializeField] private Sprite[] chestIdleFrames;
+    [SerializeField] private Sprite[] chestOpenFrames;
+    [SerializeField] private Sprite[] chestOpenLoopFrames;
+    [SerializeField] private TMPro.TMP_Text chestLabel;
     [SerializeField] private RoomDecor decor;
 
     [Header("층 구조")]
     [SerializeField] private int minRooms = 10;
     [SerializeField] private int maxRooms = 12;
-    [SerializeField] private int maxFloors = 3;
+    [SerializeField] private int maxFloors = 5;
+    [Tooltip("층마다 방 전체에 입히는 분위기 색(1층 이끼 동굴, 2층 지하 수로, 3층 얼음 동굴, 4층 용암 지대, 5층 심연)")]
+    [SerializeField] private Color[] floorTints =
+    {
+        Color.white, new Color(0.88f, 1f, 0.9f), new Color(0.82f, 0.92f, 1.08f), new Color(1.08f, 0.82f, 0.74f), new Color(0.82f, 0.74f, 1.02f)
+    };
+    [SerializeField] private string[] floorNames = { "이끼 동굴", "지하 수로", "얼음 동굴", "용암 지대", "심연" };
     [Tooltip("RoomType 순서(시작, 전투, 엘리트, 보물, 상점, 대장간, 보스, 낚시터, 광맥, 마구간)")]
     [SerializeField] private string[] roomNames = { "시작", "전투", "엘리트", "보물", "상점", "대장간", "보스", "낚시터", "광맥", "마구간" };
+    // 방 그림이 종류마다 다르므로 색은 살짝만 입힌다(엘리트는 붉게, 보물은 금빛).
     [SerializeField] private Color[] roomTints =
     {
-        Color.white, Color.white, new Color(1f, 0.85f, 0.85f), new Color(1f, 0.97f, 0.75f),
-        new Color(0.85f, 0.95f, 1f), new Color(1f, 0.88f, 0.75f), new Color(0.85f, 0.75f, 0.9f),
-        new Color(0.78f, 0.92f, 1f), new Color(0.88f, 0.86f, 0.95f), new Color(0.95f, 0.9f, 0.78f)
+        Color.white, Color.white, new Color(1f, 0.88f, 0.86f), new Color(1f, 0.97f, 0.86f),
+        Color.white, new Color(1f, 0.95f, 0.9f), Color.white,
+        new Color(0.94f, 0.98f, 1f), Color.white, Color.white
     };
 
     [Header("이동")]
@@ -76,6 +98,10 @@ public class FloorDirector : NetworkBehaviour
     [SerializeField] private float doorHoldTime = 0.5f;
     [SerializeField] private float entryDistance = 1.8f;
     [SerializeField] private float stairsRadius = 1.2f;
+    [Tooltip("다음 층 포탈 자리(보스를 잡으면 열린다). 보스 보상은 아래쪽에 떨어뜨려 겹치지 않게 한다")]
+    [SerializeField] private Vector2 portalPosition = new Vector2(0f, 2.2f);
+    [Tooltip("순간이동: 떠나는 연출 뒤 이 시간이 지나면 옮긴다")]
+    [SerializeField] private float teleportDelay = 0.45f;
     [SerializeField] private float chestRadius = 1.1f;
 
     [Header("전투 방")]
@@ -115,6 +141,8 @@ public class FloorDirector : NetworkBehaviour
     private GameNetworkManager manager;
     private bool viewDirty = true;
     private int revision;
+    // 화면에 마지막으로 그린 방(층 x 100 + 방 번호). 바뀌면 남아 있는 장판 이펙트를 끈다.
+    private int shownRoomKey = -1;
 
     // 서버
     private System.Random random;
@@ -124,12 +152,47 @@ public class FloorDirector : NetworkBehaviour
     private bool runEnded;
     private float runEndTimer;
     private float runStartTime;
+    // 순간이동 대기(-1이면 없음)
+    private int teleportRoom = -1;
+    private float teleportTimer;
 
     public int RoomCount => rooms.Count;
     public int CurrentRoom => currentRoom;
     public int FloorNumber => floorNumber;
+    public int MaxFloors => maxFloors;
+    public bool StairsOpen => stairsOpen;
+    public Vector2 PortalPosition => portalPosition;
+    public float PortalRadius => stairsRadius;
+
+    // 큰 지도에서 순간이동할 수 있는 방: 가 본 특수방(상점, 대장간, 낚시터, 광맥, 마구간, 보물)
+    public bool IsTeleportRoom(int index)
+    {
+        bool can = false;
+        if (index >= 0 && index < rooms.Count)
+        {
+            RoomInfo room = rooms[index];
+            RoomType type = room.type;
+            bool special = type == RoomType.Shop || type == RoomType.Forge || type == RoomType.Fishing
+                || type == RoomType.Ore || type == RoomType.Stable || type == RoomType.Treasure;
+            can = special && room.visited != 0;
+        }
+        return can;
+    }
+
+    private Color FloorTint
+    {
+        get
+        {
+            Color tint = floorTints[Mathf.Clamp(floorNumber - 1, 0, floorTints.Length - 1)];
+            tint.a = 1f;
+            return tint;
+        }
+    }
+
+    public string FloorName => floorNames[Mathf.Clamp(floorNumber - 1, 0, floorNames.Length - 1)];
     public bool RoomLocked => roomLocked;
     public Vector2 FacilityPosition => facilityObject.transform.position;
+    public FacilityView FacilityView => facilityView;
 
     public RoomType CurrentRoomType
     {
@@ -338,6 +401,8 @@ public class FloorDirector : NetworkBehaviour
     // fromDirection은 지나온 문의 방향(이전 방 기준). -1이면 층의 시작이라 가운데에 선다.
     private void ServerEnterRoom(int index, int fromDirection)
     {
+        // 지난 방의 이펙트(순간이동 출발 자리 포함)·투사체를 먼저 지운다. 도착 이펙트는 이 뒤에 보낸다.
+        RpcClearRoomFx();
         RoomInfo room = rooms[index];
         bool firstVisit = room.visited == 0;
         room.visited = 1;
@@ -370,6 +435,7 @@ public class FloorDirector : NetworkBehaviour
         for (int i = 0; i < count; i++)
         {
             PlayerController player = hub.GetPlayer(i);
+            player.Skills.ServerClearZones();
             player.Inventory.ServerClearDrops();
             player.Facility.ServerOnRoomEntered(firstVisit, room.type);
             if (newShop)
@@ -395,7 +461,8 @@ public class FloorDirector : NetworkBehaviour
     {
         int count = Mathf.Min(maxMonsterCount, baseMonsterCount + room.depth + monstersPerFloor * (floorNumber - 1));
         float hpScale = 1f + hpScalePerDepth * room.depth + hpScalePerFloor * (floorNumber - 1);
-        int kinds = floorNumber + room.depth;
+        // 기본 3종에 층이 오를수록 상위 몬스터가 하나씩 섞인다(깊은 방일수록 더 다양하게).
+        int kinds = Mathf.Clamp(1 + floorNumber + room.depth / 4, 1, 3 + floorNumber);
         float rarityBonus = 0.2f * (floorNumber - 1);
         float damageScale = 1f + damageScalePerFloor * (floorNumber - 1);
         MonsterRank specialRank = MonsterRank.Normal;
@@ -457,8 +524,14 @@ public class FloorDirector : NetworkBehaviour
             }
             else if (room.type == RoomType.Boss)
             {
-                player.Inventory.ServerOfferDrop(player.Inventory.Balance.CreateRandom(bossRarityBonus), offset + new Vector2(-0.4f, 1.2f));
-                player.Inventory.ServerOfferDrop(player.Inventory.Balance.CreateRandom(bossRarityBonus), offset + new Vector2(0.4f, 1.2f));
+                // 포탈(위쪽)과 겹치지 않게 아래쪽에 떨어뜨린다.
+                player.Inventory.ServerOfferDrop(player.Inventory.Balance.CreateRandom(bossRarityBonus), offset + new Vector2(-0.4f, -1.2f));
+                player.Inventory.ServerOfferDrop(player.Inventory.Balance.CreateRandom(bossRarityBonus), offset + new Vector2(0.4f, -1.2f));
+            }
+            // 보스·엘리트 방을 깨면 유물을 하나 고른다.
+            if (room.type == RoomType.Boss || room.type == RoomType.Elite)
+            {
+                player.Facility.ServerOfferRelic();
             }
         }
         if (room.type == RoomType.Boss)
@@ -506,6 +579,90 @@ public class FloorDirector : NetworkBehaviour
         return moved;
     }
 
+    // 포탈 확인 창에서 "이동"을 눌렀을 때: 살아 있는 전원이 포탈 앞에 있어야 올라간다.
+    public bool ServerTryClimbPortal()
+    {
+        bool climbed = false;
+        // 통신 지연을 감안해 거리는 조금 너그럽게 본다.
+        if (stairsOpen && !roomLocked && !runEnded && teleportRoom < 0 && ServerAllAliveWithin(portalPosition, stairsRadius + 0.6f))
+        {
+            ServerClimb();
+            climbed = true;
+        }
+        return climbed;
+    }
+
+    // 큰 지도에서 고른 방으로 순간이동한다. 0: 성공, 1: 전투 중, 2: 갈 수 없는 방
+    public int ServerTryTeleport(int index)
+    {
+        int result = 2;
+        if (roomLocked)
+        {
+            result = 1;
+        }
+        else if (!runEnded && teleportRoom < 0 && index != currentRoom && IsTeleportRoom(index))
+        {
+            result = 0;
+            teleportRoom = index;
+            teleportTimer = teleportDelay;
+            int count = hub.PlayerCount;
+            for (int i = 0; i < count; i++)
+            {
+                PlayerController player = hub.GetPlayer(i);
+                if (!player.IsDead)
+                {
+                    RpcTeleportFx(player.Center);
+                }
+            }
+        }
+        return result;
+    }
+
+    // 떠나는 연출이 끝나면 옮기고, 도착한 자리에 같은 연출을 띄운다.
+    private void ServerTickTeleport(float deltaTime)
+    {
+        teleportTimer -= deltaTime;
+        if (teleportTimer <= 0f)
+        {
+            int index = teleportRoom;
+            teleportRoom = -1;
+            ServerEnterRoom(index, -1);
+            int count = hub.PlayerCount;
+            for (int i = 0; i < count; i++)
+            {
+                PlayerController player = hub.GetPlayer(i);
+                if (!player.IsDead)
+                {
+                    Vector2 centerOffset = player.Center - (Vector2)player.transform.position;
+                    RpcTeleportFx(hub.GetSpawnPoint(player.Slot) + centerOffset);
+                }
+            }
+        }
+    }
+
+    [ClientRpc]
+    private void RpcClearRoomFx()
+    {
+        if (hub.SkillFx != null)
+        {
+            hub.SkillFx.StopAll();
+        }
+        if (hub.ProjectilePool != null)
+        {
+            hub.ProjectilePool.ClearAll();
+        }
+    }
+
+    [ClientRpc]
+    private void RpcTeleportFx(Vector2 position)
+    {
+        if (hub.SkillFx != null)
+        {
+            hub.SkillFx.PlayTeleport(position);
+        }
+        hub.Sound.Play(SoundId.StairsOpen);
+    }
+
     // 계단: 다음 층으로. 마지막 층이었다면 탑을 정복한 것이다.
     public void ServerClimb()
     {
@@ -518,10 +675,6 @@ public class FloorDirector : NetworkBehaviour
             else
             {
                 floorNumber++;
-                for (int i = 0; i < hub.PlayerCount; i++)
-                {
-                    hub.GetPlayer(i).Inventory.ServerRefillPotions();
-                }
                 ServerGenerateFloor();
                 ServerEnterRoom(0, -1);
             }
@@ -612,6 +765,10 @@ public class FloorDirector : NetworkBehaviour
                     ServerClearRoom();
                 }
             }
+            else if (teleportRoom >= 0)
+            {
+                ServerTickTeleport(deltaTime);
+            }
             else
             {
                 ServerTickGathering(deltaTime);
@@ -638,15 +795,7 @@ public class FloorDirector : NetworkBehaviour
                 }
             }
         }
-        // 계단은 방향 번호 4로 취급한다.
-        if (gathered < 0 && stairsOpen)
-        {
-            if (ServerAllAliveWithin(Vector2.zero, stairsRadius))
-            {
-                gathered = DirectionCount;
-            }
-        }
-
+        // 다음 층 포탈은 밟아도 바로 넘어가지 않는다. 포탈 앞에서 뜨는 확인 창으로 넘어간다(ServerTryClimbPortal).
         if (gathered >= 0 && gathered == holdDirection)
         {
             holdTimer += deltaTime;
@@ -654,14 +803,7 @@ public class FloorDirector : NetworkBehaviour
             {
                 holdTimer = 0f;
                 holdDirection = -1;
-                if (gathered == DirectionCount)
-                {
-                    ServerClimb();
-                }
-                else
-                {
-                    ServerTravel(gathered);
-                }
+                ServerTravel(gathered);
             }
         }
         else
@@ -748,6 +890,12 @@ public class FloorDirector : NetworkBehaviour
         if (oldValue && !newValue)
         {
             hub.Sound.Play(SoundId.ChestOpen);
+            // 뚜껑이 열리는 연출 후 금화가 반짝이는 반복으로 넘어간다.
+            if (chestAnimator != null)
+            {
+                chestAnimator.PlayLoop(chestOpenLoopFrames, 8f);
+                chestAnimator.PlayOnce(chestOpenFrames, 12f);
+            }
         }
     }
 
@@ -764,12 +912,31 @@ public class FloorDirector : NetworkBehaviour
     private void RefreshView()
     {
         RoomInfo room = rooms[currentRoom];
+        int roomKey = floorNumber * 100 + currentRoom;
+        if (roomKey != shownRoomKey)
+        {
+            shownRoomKey = roomKey;
+            if (hub.SkillFx != null)
+            {
+                hub.SkillFx.StopLooping();
+            }
+        }
         for (int direction = 0; direction < doors.Length; direction++)
         {
             int neighbor = FindNeighbor(currentRoom, direction);
             if (neighbor >= 0)
             {
-                doors[direction].Show(roomLocked, roomNames[(int)rooms[neighbor].type]);
+                RoomType neighborType = rooms[neighbor].type;
+                int doorStyle = DoorView.StyleNormal;
+                if (neighborType == RoomType.Boss)
+                {
+                    doorStyle = DoorView.StyleBoss;
+                }
+                else if (neighborType == RoomType.Elite)
+                {
+                    doorStyle = DoorView.StyleElite;
+                }
+                doors[direction].Show(roomLocked, doorStyle);
             }
             else
             {
@@ -777,7 +944,16 @@ public class FloorDirector : NetworkBehaviour
             }
         }
 
-        backgroundRenderer.color = roomTints[(int)room.type];
+        backgroundRenderer.color = roomTints[(int)room.type] * FloorTint;
+        int typeIndex = (int)room.type;
+        if (room.type == RoomType.Combat && combatBackgrounds != null && combatBackgrounds.Length > 0)
+        {
+            backgroundRenderer.sprite = combatBackgrounds[(floorNumber * 3 + currentRoom) % combatBackgrounds.Length];
+        }
+        else if (roomBackgrounds != null && typeIndex < roomBackgrounds.Length && roomBackgrounds[typeIndex] != null)
+        {
+            backgroundRenderer.sprite = roomBackgrounds[typeIndex];
+        }
         decor.Apply(floorNumber, currentRoom, room.type);
         // 보스와 싸우는 동안만 보스 음악(같은 곡이면 그대로 이어진다)
         if (room.type == RoomType.Boss && roomLocked)
@@ -788,25 +964,50 @@ public class FloorDirector : NetworkBehaviour
         {
             hub.Sound.PlayMusic(MusicId.Combat);
         }
-        chestObject.SetActive(chestAvailable);
+        // 보물 방의 상자는 연 뒤에도 열린 채로 남는다.
+        bool treasureRoom = room.type == RoomType.Treasure;
+        chestObject.SetActive(treasureRoom);
+        if (treasureRoom && chestAnimator != null)
+        {
+            if (chestAvailable)
+            {
+                chestAnimator.PlayLoop(chestIdleFrames, 6f);
+            }
+            else if (!chestAnimator.IsPlayingOnce)
+            {
+                chestAnimator.PlayLoop(chestOpenLoopFrames, 8f);
+            }
+            if (chestLabel != null)
+            {
+                chestLabel.gameObject.SetActive(chestAvailable);
+            }
+        }
+        stairsObject.transform.position = portalPosition;
         stairsObject.SetActive(stairsOpen);
-        bool facility = room.type == RoomType.Shop || room.type == RoomType.Forge || room.type == RoomType.Start
+        bool facility = room.type == RoomType.Shop || room.type == RoomType.Forge
             || room.type == RoomType.Fishing || room.type == RoomType.Ore || room.type == RoomType.Stable;
         facilityObject.SetActive(facility);
+        if (facility && facilityView != null)
+        {
+            facilityView.SetKind(room.type);
+        }
+        else if (facility && facilityRenderer != null && facilitySprites != null && typeIndex < facilitySprites.Length)
+        {
+            facilityRenderer.sprite = facilitySprites[typeIndex];
+            // 낚시터 연못은 바닥에 깔고, 나머지는 캐릭터와 Y 정렬한다.
+            facilityRenderer.sortingOrder = 0;
+            if (room.type == RoomType.Fishing)
+            {
+                facilityRenderer.sortingOrder = -850;
+            }
+        }
         if (facility)
         {
-            if (room.type == RoomType.Start)
-            {
-                facilityLabel.text = "전직 제단";
-            }
-            else
-            {
-                facilityLabel.text = roomNames[(int)room.type] + "  (F)";
-            }
+            facilityLabel.text = roomNames[(int)room.type] + "  (" + hub.GetKeyName(GameInput.KeyInteract, "F") + ")";
         }
 
         labelBuilder.Clear();
-        labelBuilder.Append(floorNumber).Append("층  ").Append(roomNames[(int)room.type]);
+        labelBuilder.Append(floorNumber).Append("층 ").Append(FloorName).Append("  ").Append(roomNames[(int)room.type]);
         hub.Hud.SetTopLabel(labelBuilder);
     }
 }

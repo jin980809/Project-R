@@ -51,14 +51,65 @@ MonoBehaviour:
   buyMultiplier: 1.5
   sellMultiplier: 0.3
   shopStockCount: 4
-  potionPrice: 25
-  maxPotions: 3
-  potionHealFraction: 0.4
   maxUpgradeLevel: 5
   rerollBaseCost: 30
-  setRareHp: 15
-  setEpicDefensePercent: 8
-  setLegendaryDamagePercent: 12
+  potionNames:
+  - 
+  - "\uCCB4\uB825 \uD3EC\uC158(\uC18C)"
+  - "\uCCB4\uB825 \uD3EC\uC158(\uB300)"
+  - "\uB9C8\uB098 \uD3EC\uC158"
+  - "\uC815\uD654 \uD3EC\uC158"
+  - "\uD798\uC758 \uBB3C\uC57D"
+  - "\uC2E0\uC18D\uC758 \uBB3C\uC57D"
+  potionPrices: 0000000019000000370000001e000000230000002d00000028000000
+  potionDropWeights:
+  - 0
+  - 60
+  - 8
+  - 18
+  - 7
+  - 4
+  - 3
+  potionIcons:
+  - {fileID: 0}
+  - {fileID: 21300000, guid: bb07ae2e66ace4a859c5763d4f0f1202, type: 3}
+  - {fileID: 21300000, guid: b0d359c312dfa4661829040ebdf2786f, type: 3}
+  - {fileID: 21300000, guid: fb51a7effd58c4e98a8207bf5980be76, type: 3}
+  - {fileID: 21300000, guid: 2051c5e9c85214c1ab0f2872db7190cd, type: 3}
+  - {fileID: 21300000, guid: 3fd3b6e7852304737b762513c3ae8836, type: 3}
+  - {fileID: 21300000, guid: c210fb44d7cb54ba980c04e0079deda7, type: 3}
+  potionStackSize: 5
+  startPotions: 3
+  potionDropChance: 0.07
+  smallHealFraction: 0.35
+  largeHealFraction: 0.7
+  manaRestoreFraction: 0.8
+  cleanseImmuneTime: 4
+  tonicDuration: 20
+  powerDamageBonus: 0.25
+  swiftSpeedBonus: 0.25
+  potionCooldown: 0.6
+  gearClassNames:
+  - "\uC804\uC0AC"
+  - "\uC0AC\uC218"
+  - "\uB9C8\uBC95\uC0AC"
+  - "\uACF5\uC6A9"
+  setTierScale:
+  - 0.4
+  - 0.6
+  - 0.8
+  - 1
+  warriorSetHp: 30
+  warriorSetDefensePercent: 10
+  warriorSetMeleeDamagePercent: 15
+  shooterSetAttackSpeedPercent: 12
+  shooterSetMoveSpeedPercent: 8
+  shooterSetCritPercent: 10
+  mageSetMana: 30
+  mageSetCooldownPercent: 12
+  mageSetSkillDamagePercent: 15
+  helmetClasses: 01010202010103010103010202030101030202020203030000000202020203030000000002020303030101020303030303030101010101010000000202000000000000000101030302020000
+  armorClasses: 030101010101010101020201010101030101010302020202020202020202020202020203000303000001010000000000000000000000000000
   optionNames:
   - 
   - "\uACF5\uACA9\uB825 +{0}%"

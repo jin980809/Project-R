@@ -21,8 +21,16 @@ MonoBehaviour:
   castTime: 0.45
   damageFactor: 1.8
   radius: 2.4
+  arcDegrees: 0
+  impactDelay: 0
+  chargeTime: 0
+  chargeMinDamage: 0.35
+  chargeMinSize: 0.55
+  pierce: 0
   range: 0
   invulnerable: 0
+  groundTarget: 0
+  pullSpeed: 0
   count: 1
   spreadDegrees: 0
   projectileSpeed: 12
@@ -40,5 +48,49 @@ MonoBehaviour:
   animStartTime: 0
   animSpeed: 1.5
   fxColor: {r: 1, g: 0.45, b: 0.3, a: 1}
-  fx: 1
+  fx: 13
+  icon: {fileID: 21300000, guid: 6a13c0b60f735fd49affb16b0a1f6ceb, type: 3}
   sound: 26
+  vfx:
+    cast:
+    - {fileID: 21300000, guid: a7a34c764efb02243b92c25188c1bda3, type: 3}
+    - {fileID: 21300000, guid: 8be09850c572cb94983a84d05f8af959, type: 3}
+    - {fileID: 21300000, guid: f7b156f1f77b3c14d8dde183d95aedf0, type: 3}
+    - {fileID: 21300000, guid: 5b6982ab68e53d04692ecffc118ccc75, type: 3}
+    - {fileID: 21300000, guid: 87ca6b36765ad1c4292cafce6bda9cb4, type: 3}
+    - {fileID: 21300000, guid: 1948528aae319d346939c9d55d6e70b1, type: 3}
+    - {fileID: 21300000, guid: ad40da5ff99699b499c03329d83501d3, type: 3}
+    - {fileID: 21300000, guid: 3c7391b3c27177c46bfceaf5e23656a1, type: 3}
+    - {fileID: 21300000, guid: 8501116d49770904396ae91fc7dd7bff, type: 3}
+    - {fileID: 21300000, guid: 07c305395024b81458b2a1978baa7895, type: 3}
+    - {fileID: 21300000, guid: 087de63c17755de4b8af26b17d8a7f49, type: 3}
+    - {fileID: 21300000, guid: 8f9dd00b5040d334c96292f7445b738f, type: 3}
+    castFps: 16.5
+    castGround: 1
+    castDirectional: 0
+    castMirror: 0
+    castScale: 1.12
+    castSize: 0.9
+    castIntro: []
+    castIntroFps: 20
+    castOutro: []
+    castOutroFps: 20
+    trail: []
+    trailFps: 20
+    trailWidth: 1.4
+    projectile: []
+    projectileFps: 18
+    projectileSize: 1
+    projectileSpin: 0
+    projectileHidden: 0
+    impact: []
+    impactFps: 20
+    impactSize: 0.8
+    impactScale: 1
+    impactGround: 0
+    impactDirectional: 0
+    impactMirror: 0
+    muzzle: []
+    muzzleFps: 22
+    muzzleSize: 0.7
+    muzzleDirectional: 0

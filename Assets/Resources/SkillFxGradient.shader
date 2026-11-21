@@ -23,62 +23,82 @@ Shader "Tower/SkillFxGradient"
             "IgnoreProjector" = "True"
             "PreviewType" = "Plane"
             "CanUseSpriteAtlas" = "True"
+            "RenderPipeline" = "UniversalPipeline"
         }
 
         Cull Off
         ZWrite Off
-        Lighting Off
         Blend SrcAlpha OneMinusSrcAlpha
 
         Pass
         {
-            CGPROGRAM
-            #pragma vertex vert
-            #pragma fragment frag
-            #include "UnityCG.cginc"
+            // Unity 6 URP는 SpriteRenderer.color를 정점 색이 아니라 unity_SpriteColor로 넘기므로 URP 라이브러리로 쓴다(SpriteSilhouette와 같은 방식).
+            Tags { "LightMode" = "Universal2D" }
 
-            sampler2D _MainTex;
-            fixed4 _DarkColor;
-            fixed4 _HighColor;
-            half _DarkTint;
-            half _HighMix;
+            HLSLPROGRAM
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
+            #include "Packages/com.unity.render-pipelines.universal/Shaders/2D/Include/Core2D.hlsl"
 
-            struct appdata
+            #pragma vertex GradientVertex
+            #pragma fragment GradientFragment
+            #pragma multi_compile_instancing
+
+            struct Attributes
             {
-                float4 vertex : POSITION;
+                float3 positionOS : POSITION;
+                float4 color : COLOR;
                 float2 uv : TEXCOORD0;
-                fixed4 color : COLOR;
+                UNITY_VERTEX_INPUT_INSTANCE_ID
             };
 
-            struct v2f
+            struct Varyings
             {
-                float4 pos : SV_POSITION;
+                float4 positionCS : SV_POSITION;
+                half4 color : COLOR;
                 float2 uv : TEXCOORD0;
-                fixed4 color : COLOR;
+                UNITY_VERTEX_OUTPUT_STEREO
             };
 
-            v2f vert(appdata v)
+            TEXTURE2D(_MainTex);
+            SAMPLER(sampler_MainTex);
+
+            CBUFFER_START(UnityPerMaterial)
+                half4 _DarkColor;
+                half4 _HighColor;
+                half _DarkTint;
+                half _HighMix;
+            CBUFFER_END
+
+            Varyings GradientVertex(Attributes v)
             {
-                v2f o;
-                o.pos = UnityObjectToClipPos(v.vertex);
+                Varyings o = (Varyings)0;
+                UNITY_SETUP_INSTANCE_ID(v);
+                UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(o);
+                SetUpSpriteInstanceProperties();
+                v.positionOS = UnityFlipSprite(v.positionOS, unity_SpriteProps.xy);
+                o.positionCS = TransformObjectToHClip(v.positionOS);
                 o.uv = v.uv;
-                o.color = v.color;
+                o.color = v.color * unity_SpriteColor;
                 return o;
             }
 
-            fixed4 frag(v2f i) : SV_Target
+            half4 GradientFragment(Varyings i) : SV_Target
             {
-                fixed4 tex = tex2D(_MainTex, i.uv);
+                half4 tex = SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, i.uv);
                 half value = tex.r;
                 half3 tint = i.color.rgb;
                 half3 dark = lerp(_DarkColor.rgb, tint, _DarkTint);
                 half3 high = lerp(tint, _HighColor.rgb, _HighMix);
                 half3 low = lerp(dark, tint, saturate(value * 2));
                 half3 top = lerp(tint, high, saturate(value * 2 - 1));
-                half3 color = value < 0.5 ? low : top;
-                return fixed4(color, tex.a * i.color.a);
+                half3 color = top;
+                if (value < 0.5)
+                {
+                    color = low;
+                }
+                return half4(color, tex.a * i.color.a);
             }
-            ENDCG
+            ENDHLSL
         }
     }
 }

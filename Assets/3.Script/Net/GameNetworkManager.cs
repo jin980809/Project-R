@@ -33,7 +33,7 @@ public class GameNetworkManager : NetworkManager
     private readonly int[] slotConnection = new int[MaxPlayers];
     private readonly int[] slotWeapon = new int[MaxPlayers];
     // 자리별 로비에서 고른 시작 직업(PlayerSkills 직업 번호)
-    private readonly int[] slotStartJob = new int[MaxPlayers];
+    private readonly int[] slotStartClass = new int[MaxPlayers];
     // 자리별 장비 저장소(장착 4칸 + 가방 12칸). 씬이 바뀌어 플레이어 오브젝트가 새로 만들어져도 유지된다.
     private readonly ItemData[] slotItems = new ItemData[MaxPlayers * PlayerInventory.TotalSlotCount];
     private readonly bool[] slotKitReady = new bool[MaxPlayers];
@@ -255,14 +255,14 @@ public class GameNetworkManager : NetworkManager
         return slotWeapon[slot];
     }
 
-    public void SetSlotStartJob(int slot, int job)
+    public void SetSlotStartClass(int slot, int classNumber)
     {
-        slotStartJob[slot] = job;
+        slotStartClass[slot] = classNumber;
     }
 
-    public int GetSlotStartJob(int slot)
+    public int GetSlotStartClass(int slot)
     {
-        return slotStartJob[slot];
+        return slotStartClass[slot];
     }
 
     // 시작 장비를 이미 지급했는지
@@ -314,7 +314,7 @@ public class GameNetworkManager : NetworkManager
                 slotUsed[i] = true;
                 slotConnection[i] = connectionId;
                 slotWeapon[i] = 0;
-                slotStartJob[i] = 0;
+                slotStartClass[i] = 0;
                 slotKitReady[i] = false;
                 slotGold[i] = 0;
                 slot = i;

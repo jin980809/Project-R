@@ -1,0 +1,6 @@
+trail_width=1.750
+impact_size=1.875
+impact_dir=1
+trail_fps=9.4
+impact_fps=15.4
+impact_ground=0

@@ -1,4 +1,4 @@
-using Mirror;
+﻿using Mirror;
 using UnityEngine;
 
 public enum PlayerState : byte
@@ -16,7 +16,9 @@ public enum BufferedAction : byte
 {
     None,
     Attack,
-    Roll
+    Roll,
+    // 스킬 키(Q, E, R). 공격·차지·방어·구르기·시전 중에 눌러도 잠깐 기억했다가 쓸 수 있을 때 바로 쓴다.
+    Skill
 }
 
 // 플레이어 조작과 전투.
@@ -31,10 +33,16 @@ public class PlayerController : NetworkBehaviour, IDamageable
     public const byte StatusSlow = 4;
     public const byte StatusWeaken = 8;
     public const byte StatusStun = 16;
+    // 물약 효과 비트(tonicMask)
+    public const byte TonicPower = 1;
+    public const byte TonicSwift = 2;
+    public const byte TonicCleanse = 4;
 
     [Header("참조")]
     [SerializeField] private Rigidbody2D body;
     [SerializeField] private CharacterVisual visual;
+    [Tooltip("상태이상·강화 표시")]
+    [SerializeField] private StatusFxView statusView;
     [SerializeField] private PlayerInventory inventory;
     [SerializeField] private PlayerSkills skills;
     [SerializeField] private PlayerFacility facility;
@@ -49,6 +57,8 @@ public class PlayerController : NetworkBehaviour, IDamageable
     [SerializeField] private float rollInvulnTime = 0.32f;
     [SerializeField] private int maxRollCharges = 2;
     [SerializeField] private float rollRechargeTime = 1.1f;
+    [Tooltip("스킬 키를 기억하는 시간(공격·구르기·시전 중에 눌러도 끝나자마자 나간다)")]
+    [SerializeField] private float skillBufferTime = 0.5f;
     [SerializeField] private float inputBufferTime = 0.2f;
 
     [Header("무기")]
@@ -66,12 +76,36 @@ public class PlayerController : NetworkBehaviour, IDamageable
     [SerializeField] private Color aimColor = new Color(1f, 1f, 1f, 0.35f);
     [SerializeField] private Color aimChargedColor = new Color(1f, 0.85f, 0.3f, 0.9f);
 
+    [Header("커서 자리에 놓는 스킬 조준(본인에게만 보임)")]
+    [Tooltip("사거리 원(키를 누르고 있는 동안 몸 둘레에)")]
+    [SerializeField] private SpriteRenderer skillRangeRenderer;
+    [Tooltip("놓일 자리 원(커서, 사거리 밖이면 사거리 끝)")]
+    [SerializeField] private SpriteRenderer skillTargetRenderer;
+    [SerializeField] private Color skillRangeColor = new Color(1f, 1f, 1f, 0.6f);
+    [SerializeField] private Color skillTargetColor = new Color(0.65f, 0.85f, 1f, 0.85f);
+
     [Header("방패")]
     [SerializeField] private float blockMoveFactor = 0.4f;
     [SerializeField] private float blockArcDegrees = 140f;
     [SerializeField] private float parryWindow = 0.2f;
     [Tooltip("막기를 풀고 이 시간 안에 다시 들면 패링이 되지 않는다(연타 방지).")]
     [SerializeField] private float parryRearmTime = 0.4f;
+
+    [Header("강화 평타(좌클릭 차지)")]
+    [Tooltip("평타를 누른 채 계속 들고 있으면 평타가 끝난 뒤 차지한다. 차지하는 동안의 이동 속도 배율")]
+    [SerializeField] private float powerChargeMoveFactor = 0.45f;
+    [Tooltip("강화 평타 동작 중 이동 속도 배율(창 돌진은 따로 나아간다)")]
+    [SerializeField] private float powerMoveFactor = 0.15f;
+    [Tooltip("창 돌진: 강화 평타 시간 가운데 앞으로 나아가는 앞부분의 비율")]
+    [SerializeField] private float lungeTimeRatio = 0.45f;
+    [Tooltip("내려찍기 화면 흔들림(본인 화면만): 세기, 시간")]
+    [SerializeField] private float smashShakeAmplitude = 0.14f;
+    [SerializeField] private float smashShakeTime = 0.2f;
+    [Tooltip("강화 평타 화살·탄의 그림 크기 배율")]
+    [SerializeField] private float powerShotScale = 1.8f;
+
+    // CmdAttack의 charge가 이 값이면 강화 평타다(활은 다 당긴 차지를 놓으면 강화 평타가 된다).
+    private const float PowerChargeValue = 2f;
     [SerializeField] private float parryStaggerTime = 1f;
     [SerializeField] private float parryInvulnTime = 0.3f;
     [SerializeField] private float blockAimSendDegrees = 12f;
@@ -102,6 +136,20 @@ public class PlayerController : NetworkBehaviour, IDamageable
     [SyncVar] private Vector2 blockAim = Vector2.right;
     // 걸려 있는 상태이상 비트(StatusBurn 등). 몬스터의 공격이 건다.
     [SyncVar] private byte statusMask;
+    // 상태이상별(상태 비트 순서: 화상, 출혈, 둔화, 약화, 기절) 끝나는 네트워크 시각과 처음 지속 시간(HUD 디버프 칸)
+    public const int StatusCount = 5;
+    private readonly SyncList<double> statusEndTimes = new SyncList<double>();
+    private readonly SyncList<float> statusDurations = new SyncList<float>();
+    // 마신 물약 효과 비트(TonicPower 등). 정화는 상태이상 면역 중.
+    [SyncVar] private byte tonicMask;
+    // 힘·신속·정화 물약이 끝나는 네트워크 시각(HUD 남은 시간 표시용)
+    [SyncVar] private double powerEndTime;
+    [SyncVar] private double swiftEndTime;
+    [SyncVar] private double cleanseEndTime;
+    // 힘·신속·정화 물약의 처음 지속 시간(HUD 회전 게이지 비율용)
+    [SyncVar] private float powerDuration;
+    [SyncVar] private float swiftDuration;
+    [SyncVar] private float cleanseDuration;
     // 조준 각도(0~255 = 0~360도). 다른 사람 화면에서 무기가 가리키는 방향에 쓴다.
     [SyncVar(hook = nameof(OnAimChanged))] private byte aimByte;
     // 커스터마이징한 외형. 본인이 기기에 저장한 값을 접속할 때 보내고, 모두에게 같은 모습으로 보인다.
@@ -126,10 +174,26 @@ public class PlayerController : NetworkBehaviour, IDamageable
     private bool localFaceLeft;
     private bool locomotionSent;
     private bool attackAllowed;
+    // 강화 평타: 지금 공격이 강화 평타인지, 지금 차지가 강화 평타용(활 시위가 아닌)인지,
+    // 평타를 누른 좌클릭을 아직 떼지 않았는지, 공격을 시작한 조준 방향(창 돌진 방향)
+    private bool attackIsPower;
+    private bool chargingPower;
+    // 차징 스킬을 모으는 중인 장착 칸(-1이면 아님)과 그 스킬
+    private int chargeSkillSlot = -1;
+    private SkillDefinition chargeSkill;
+    // 이번 시전의 차징 크기 배율(돌진 거리)
+    private float castSizeScale = 1f;
+    private bool holdingSincePress;
+    private Vector2 attackAim = Vector2.right;
     private Vector2 sentBlockAim;
     private float blockAimSendDot;
     private SkillDefinition castSkill;
     private Vector2 castDirection;
+    // 커서 자리에 놓는 스킬: 누르고 있는 칸(-1이면 조준 중 아님)과 그 스킬, 커서의 월드 위치, 뗄 때 정한 놓을 자리(몸 가운데 기준)
+    private int aimingSlot = -1;
+    private SkillDefinition aimingSkill;
+    private Vector2 pointerWorld;
+    private Vector2 skillTargetOffset;
     private byte sentAimByte;
     private float aimSendTimer;
 
@@ -137,16 +201,33 @@ public class PlayerController : NetworkBehaviour, IDamageable
     private bool slashFlip;
     private float slashTimer;
     private float remoteActionTimer;
+    // 다른 사람 화면: 지금 동작이 몸 애니메이션을 쓰는지(구르기·스킬). 공격·차지는 무기 연출만 쓰므로 몸은 이동 상태를 따른다.
+    private bool remoteActionUsesBody;
     private float guardFlashTimer;
+    // 차지 빛(모든 화면): 모으는 중인지, 모은 시간, 다 모았는지
+    private bool chargeGlowing;
+    private float chargeGlowTimer;
+    private float chargeGlowDuration = 1f;
+    private bool chargeGlowFull;
+    // 강화 평타의 맞는 순간 그림(내려찍기 땅 충격, 창 돌진 끝)을 띄울 때까지 남은 시간과 자리
+    private float powerFxTimer;
+    private Vector2 powerFxPosition;
+    private float powerFxAngle;
 
     // 서버 상태
     private bool hasPendingHit;
     private float pendingHitTimer;
     private Vector2 pendingAim;
     private float pendingCharge;
+    // 강화 평타인지와 시작한 자리(창 돌진은 출발점부터 끝까지 판정한다)
+    private bool pendingPower;
+    private Vector2 pendingOrigin;
     private float invulnerableUntil;
     private float manaAccumulator;
     private float serverAttackLock;
+    // 서버: 지금 잠금이 기본 공격 때문인지(타격이 끝났으면 스킬로 끊을 수 있다).
+    private bool serverLockFromAttack;
+    private int bufferedSkill;
     private float blockStartTime;
     private float blockEndTime = -10f;
     private bool blockCanParry;
@@ -156,6 +237,9 @@ public class PlayerController : NetworkBehaviour, IDamageable
     private float slowTime;
     private float weakenTime;
     private float stunTime;
+    private float powerTime;
+    private float swiftTime;
+    private float cleanseTime;
     private int burnDamage;
     private int bleedDamage;
     private float statusTickTimer;
@@ -176,6 +260,60 @@ public class PlayerController : NetworkBehaviour, IDamageable
     public PlayerFacility Facility => facility;
     public byte StatusMask => statusMask;
 
+    // 상태이상(index = 상태 비트 순서)의 남은 시간과 처음 지속 시간(초)
+    public float GetStatusRemaining(int index)
+    {
+        float remaining = 0f;
+        if (index < statusEndTimes.Count)
+        {
+            remaining = Mathf.Max(0f, (float)(statusEndTimes[index] - NetworkTime.time));
+        }
+        return remaining;
+    }
+
+    public float GetStatusDuration(int index)
+    {
+        float duration = 0f;
+        if (index < statusDurations.Count)
+        {
+            duration = statusDurations[index];
+        }
+        return duration;
+    }
+    public byte TonicMask => tonicMask;
+
+    // 물약 효과의 남은 시간(초). 걸려 있지 않으면 0.
+    public float GetTonicRemaining(byte tonic)
+    {
+        double endTime = cleanseEndTime;
+        if (tonic == TonicPower)
+        {
+            endTime = powerEndTime;
+        }
+        else if (tonic == TonicSwift)
+        {
+            endTime = swiftEndTime;
+        }
+        return Mathf.Max(0f, (float)(endTime - NetworkTime.time));
+    }
+
+    // 물약 효과의 처음 지속 시간(초)
+    public float GetTonicDuration(byte tonic)
+    {
+        float duration = cleanseDuration;
+        if (tonic == TonicPower)
+        {
+            duration = powerDuration;
+        }
+        else if (tonic == TonicSwift)
+        {
+            duration = swiftDuration;
+        }
+        return duration;
+    }
+    // 본인 플레이어의 입력(키 설정 화면이 바꾼다). 다른 사람 캐릭터는 null.
+    public GameInput Input => input;
+
     private float MoveSpeed
     {
         get
@@ -184,6 +322,10 @@ public class PlayerController : NetworkBehaviour, IDamageable
             if ((statusMask & StatusSlow) != 0)
             {
                 speed *= slowSpeedFactor;
+            }
+            if ((tonicMask & TonicSwift) != 0)
+            {
+                speed *= 1f + inventory.Balance.SwiftSpeedBonus;
             }
             return speed;
         }
@@ -199,12 +341,32 @@ public class PlayerController : NetworkBehaviour, IDamageable
             {
                 factor = weakenDamageFactor;
             }
+            if ((tonicMask & TonicPower) != 0)
+            {
+                factor *= 1f + inventory.Balance.PowerDamageBonus;
+            }
             return factor;
         }
     }
 
     private float AttackDuration => weapon.Duration / inventory.Stats.attackSpeedMultiplier;
     private float AttackHitDelay => weapon.HitDelay / inventory.Stats.attackSpeedMultiplier;
+    private float PowerDuration => weapon.PowerDuration / inventory.Stats.attackSpeedMultiplier;
+    private float PowerHitDelay => weapon.PowerHitDelay / inventory.Stats.attackSpeedMultiplier;
+
+    // 다 모으는 데 걸리는 시간(활은 시위 차지, 나머지는 강화 평타 차지)
+    private float ChargeDuration
+    {
+        get
+        {
+            float duration = weapon.PowerChargeTime;
+            if (weapon.UsesCharge)
+            {
+                duration = weapon.ChargeTime;
+            }
+            return duration;
+        }
+    }
     public WeaponDefinition Weapon => weapon;
 
     // 서버에서 스폰 직전에 호출. 자리 번호(0~3)와 호스트 여부를 정한다. 장비는 PlayerInventory가 자리 번호로 불러온다.
@@ -232,6 +394,11 @@ public class PlayerController : NetworkBehaviour, IDamageable
         skills.ServerInit(hub);
         facility.ServerInit(hub);
         statusMask = 0;
+        for (int i = 0; i < StatusCount; i++)
+        {
+            statusEndTimes.Add(0d);
+            statusDurations.Add(0f);
+        }
         blockMinDot = Mathf.Cos(blockArcDegrees * 0.5f * Mathf.Deg2Rad);
         hp = MaxHp;
         mana = MaxMana;
@@ -285,7 +452,9 @@ public class PlayerController : NetworkBehaviour, IDamageable
     {
         body.bodyType = RigidbodyType2D.Dynamic;
         input = new GameInput();
+        hub.Meta.ApplyKeyBindings(input);
         input.Enable();
+        hub.SetLocalInput(input);
         state = PlayerState.Normal;
         hub.CameraFollow.SetTarget(transform);
         hub.Hud.Bind(this);
@@ -296,6 +465,7 @@ public class PlayerController : NetworkBehaviour, IDamageable
             hub.FacilityUi.Bind(inventory);
         }
         facility.OwnerStart();
+        skills.OwnerStart();
 
         // 저장한 외형이 있으면 보내고, 처음 실행이면 커스터마이징 화면부터 띄운다(로비에만 있다).
         MetaProgress meta = hub.Meta;
@@ -351,6 +521,10 @@ public class PlayerController : NetworkBehaviour, IDamageable
     {
         if (input != null)
         {
+            if (hub != null && hub.LocalInput == input)
+            {
+                hub.SetLocalInput(null);
+            }
             input.Dispose();
             input = null;
         }
@@ -388,6 +562,18 @@ public class PlayerController : NetworkBehaviour, IDamageable
             visual.Tick(deltaTime);
             TickSlash(deltaTime);
             TickGuard(deltaTime);
+            TickChargeGlow(deltaTime);
+            if (statusView != null)
+            {
+                if (dead)
+                {
+                    statusView.SetState(0, -1);
+                }
+                else
+                {
+                    statusView.SetState(statusMask, skills.ActiveBuffVisual);
+                }
+            }
         }
     }
 
@@ -407,6 +593,10 @@ public class PlayerController : NetworkBehaviour, IDamageable
         {
             HandleMenuKey();
         }
+        if (input.MapPressed && !hub.InputBlocked && hub.Minimap != null)
+        {
+            hub.Minimap.ToggleBig();
+        }
 
         // 주소 입력 중이거나 메뉴가 열려 있으면 조작을 막고, 마우스가 UI 위에 있으면 공격하지 않는다.
         bool blocked = hub.InputBlocked;
@@ -415,6 +605,7 @@ public class PlayerController : NetworkBehaviour, IDamageable
         RechargeRoll(deltaTime);
         ReadBufferedInput(deltaTime, blocked);
         UpdateAim();
+        UpdateGroundAim(blocked);
         visual.SetAim(aimDirection, false);
         SendAim(deltaTime);
         Vector2 moveInput = Vector2.zero;
@@ -426,6 +617,11 @@ public class PlayerController : NetworkBehaviour, IDamageable
             skills.OwnerTick(input, blocked);
         }
         facility.OwnerTick(input, blocked);
+        if (!blocked && input.RidePressed && state == PlayerState.Normal)
+        {
+            // Shift: 말에 타고 내린다(타 있는 동안 빨리 달린다).
+            facility.CmdSetRiding(!facility.Riding);
+        }
 
         // 기절 중에는 아무 행동도 할 수 없다.
         bool stunned = (statusMask & StatusStun) != 0 && state != PlayerState.Dead;
@@ -453,7 +649,14 @@ public class PlayerController : NetworkBehaviour, IDamageable
         }
         else if (state == PlayerState.Charging)
         {
-            TickCharging(moveInput, deltaTime);
+            if (chargeSkillSlot >= 0)
+            {
+                TickSkillCharging(moveInput, deltaTime);
+            }
+            else
+            {
+                TickCharging(moveInput, deltaTime);
+            }
         }
         else if (state == PlayerState.Blocking)
         {
@@ -516,6 +719,14 @@ public class PlayerController : NetworkBehaviour, IDamageable
                 hub.PauseMenu.Open();
             }
         }
+        else if (hub.ConfirmUi != null && hub.ConfirmUi.IsOpen)
+        {
+            hub.ConfirmUi.Cancel();
+        }
+        else if (hub.Minimap != null && hub.Minimap.IsBig)
+        {
+            hub.Minimap.SetBig(false);
+        }
         else if (hub.FacilityUi != null && hub.FacilityUi.IsOpen)
         {
             hub.FacilityUi.Close();
@@ -552,6 +763,36 @@ public class PlayerController : NetworkBehaviour, IDamageable
             bufferedAction = BufferedAction.Roll;
             bufferTimer = inputBufferTime;
         }
+        else if (input.SkillKeyPressed >= 0 && !hub.SkillUi.IsTreeOpen)
+        {
+            int pressedSlot = input.SkillKeyPressed;
+            SkillDefinition groundSkill = skills.GetGroundSkill(pressedSlot);
+            // 차징 스킬은 커서 자리에 놓더라도 모으는 동안 조준한다(TickSkillCharging).
+            if (groundSkill != null && groundSkill.IsCharge)
+            {
+                groundSkill = null;
+            }
+            bool groundReady = groundSkill != null && skills.GetSlotCooldown01(pressedSlot) <= 0f;
+            // 마나가 모자라거나 맞는 무기가 아니면 범위를 보여 주지 않고 알림만 띄운다.
+            if (groundReady)
+            {
+                groundReady = skills.CanBeginSkill(groundSkill);
+            }
+            if (groundReady)
+            {
+                // 커서 자리에 놓는 스킬: 누르고 있는 동안 사거리를 보여 주고, 떼면 나간다(UpdateGroundAim).
+                aimingSlot = pressedSlot;
+                aimingSkill = groundSkill;
+            }
+            else if (groundSkill == null)
+            {
+                bufferedAction = BufferedAction.Skill;
+                bufferedSkill = pressedSlot;
+                bufferTimer = skillBufferTime;
+                skillTargetOffset = Vector2.zero;
+            }
+            // 커서 자리에 놓는 스킬이 아직 재사용 대기 중이면 사거리도 보여 주지 않고 아무것도 하지 않는다.
+        }
         else if (input.AttackPressed && attackAllowed)
         {
             bufferedAction = BufferedAction.Attack;
@@ -573,6 +814,7 @@ public class PlayerController : NetworkBehaviour, IDamageable
         Vector2 pointer = input.PointerPosition;
         Vector3 world = mainCamera.ScreenToWorldPoint(new Vector3(pointer.x, pointer.y, -mainCamera.transform.position.z));
         Vector2 toPointer = (Vector2)world - ((Vector2)transform.position + centerOffset);
+        pointerWorld = world;
         if (toPointer.sqrMagnitude > 0.0001f)
         {
             aimDirection = toPointer.normalized;
@@ -581,8 +823,76 @@ public class PlayerController : NetworkBehaviour, IDamageable
         if (editorAimOverride.sqrMagnitude > 0.0001f)
         {
             aimDirection = editorAimOverride.normalized;
+            // 시험용: 조준 값을 그대로 몸 가운데에서 커서까지의 거리로 본다("aim 3 1"이면 오른쪽 3, 위 1).
+            pointerWorld = Center + editorAimOverride;
         }
 #endif
+    }
+
+    // 커서 자리에 놓는 스킬의 조준: 키를 떼면 커서 자리(사거리 밖이면 사거리 끝)로 정해 스킬을 기억시킨다.
+    // 우클릭·창 열기·조작 막힘이면 취소한다.
+    private void UpdateGroundAim(bool blocked)
+    {
+        if (aimingSlot >= 0)
+        {
+            // 조준하는 동안 마나가 모자라게 되어도 범위를 거둔다.
+            bool cancel = blocked || state == PlayerState.Dead || hub.SkillUi.IsTreeOpen || input.OffhandPressed || Mana < aimingSkill.ManaCost;
+            if (cancel)
+            {
+                aimingSlot = -1;
+            }
+            else if (!input.IsSkillKeyHeld(aimingSlot))
+            {
+                skillTargetOffset = GetGroundOffset(aimingSkill);
+                bufferedAction = BufferedAction.Skill;
+                bufferedSkill = aimingSlot;
+                bufferTimer = skillBufferTime;
+                aimingSlot = -1;
+            }
+        }
+        ShowGroundAim();
+    }
+
+    // 몸 가운데에서 커서까지(사거리를 넘으면 사거리 끝까지)
+    private Vector2 GetGroundOffset(SkillDefinition skill)
+    {
+        return Vector2.ClampMagnitude(pointerWorld - Center, skill.Range);
+    }
+
+    private void ShowGroundAim()
+    {
+        if (skillRangeRenderer != null && skillTargetRenderer != null)
+        {
+            // 커서 자리에 놓는 차징 스킬(메테오)은 모으는 동안 조준을 보여 주고, 떨어질 범위가 모은 만큼 커진다.
+            SkillDefinition shownSkill = aimingSkill;
+            float sizeScale = 1f;
+            bool chargingGround = state == PlayerState.Charging && chargeSkillSlot >= 0 && chargeSkill.GroundTarget;
+            if (chargingGround)
+            {
+                shownSkill = chargeSkill;
+                sizeScale = chargeSkill.GetChargeSize(SkillCharge01);
+            }
+            bool show = aimingSlot >= 0 || chargingGround;
+            if (skillRangeRenderer.enabled != show)
+            {
+                skillRangeRenderer.enabled = show;
+                skillTargetRenderer.enabled = show;
+                skillRangeRenderer.color = skillRangeColor;
+                skillTargetRenderer.color = skillTargetColor;
+            }
+            if (show)
+            {
+                Vector2 center = Center;
+                float ringSize = skillRangeRenderer.sprite.bounds.size.x;
+                float ringScale = shownSkill.Range * 2f / ringSize;
+                skillRangeRenderer.transform.position = center;
+                skillRangeRenderer.transform.localScale = new Vector3(ringScale, ringScale, 1f);
+                float targetSize = skillTargetRenderer.sprite.bounds.size.x;
+                float targetScale = Mathf.Max(0.3f, shownSkill.Radius * sizeScale) * 2f / targetSize;
+                skillTargetRenderer.transform.position = center + GetGroundOffset(shownSkill);
+                skillTargetRenderer.transform.localScale = new Vector3(targetScale, targetScale, 1f);
+            }
+        }
     }
 
 #if UNITY_EDITOR
@@ -606,13 +916,13 @@ public class PlayerController : NetworkBehaviour, IDamageable
         }
     }
 
-    private static byte EncodeAim(Vector2 aim)
+    private byte EncodeAim(Vector2 aim)
     {
         float degrees = Mathf.Repeat(Mathf.Atan2(aim.y, aim.x) * Mathf.Rad2Deg, 360f);
         return (byte)(Mathf.RoundToInt(degrees / 360f * 256f) & 255);
     }
 
-    private static Vector2 DecodeAim(byte value)
+    private Vector2 DecodeAim(byte value)
     {
         float radians = value * (360f / 256f) * Mathf.Deg2Rad;
         return new Vector2(Mathf.Cos(radians), Mathf.Sin(radians));
@@ -621,18 +931,12 @@ public class PlayerController : NetworkBehaviour, IDamageable
     private void TickNormal(Vector2 moveInput, bool blocked)
     {
         bool wantRoll = bufferedAction == BufferedAction.Roll && rollCharges > 0;
-        bool wantAttack = bufferedAction == BufferedAction.Attack || (input.AttackHeld && attackAllowed);
+        // 좌클릭은 누를 때마다 한 번 벤다(꾹 눌러도 연타하지 않고, 계속 들고 있으면 평타 뒤 강화 평타를 모은다).
+        // 활은 누르고 있는 동안 바로 시위를 당긴다.
+        bool wantAttack = bufferedAction == BufferedAction.Attack || (input.AttackHeld && attackAllowed && weapon.UsesCharge);
         bool wantBlock = !blocked && inventory.ShieldActive && input.OffhandHeld;
-        bool castStarted = false;
-        // 스킬 트리가 열려 있으면 Q, E, R은 장착에 쓴다(SkillUi가 처리).
-        if (!blocked && !hub.SkillUi.IsTreeOpen)
-        {
-            int skillKey = input.SkillKeyPressed;
-            if (skillKey >= 0)
-            {
-                castStarted = TryCast(skillKey);
-            }
-        }
+        // 스킬 트리가 열려 있으면 Q, E, R은 장착에 쓴다(SkillUi가 처리하고, 버퍼에도 넣지 않는다).
+        bool castStarted = !blocked && TryBufferedSkill();
 
         if (castStarted)
         {
@@ -664,18 +968,127 @@ public class PlayerController : NetworkBehaviour, IDamageable
         }
     }
 
-    // 스킬(Q, E, R). 쓸 수 있으면 시전 상태로 들어간다. 판정은 PlayerSkills가 서버에서 한다.
+    // 기억해 둔 스킬 키를 쓴다. 재사용 대기 중이면 기억한 시간 동안 기다렸다가(살짝 일찍 눌러도 나가게),
+    // 마나 부족·무기 불일치처럼 기다려도 안 되는 경우는 한 번 알리고 버린다.
+    private bool TryBufferedSkill()
+    {
+        bool started = false;
+        if (bufferedAction == BufferedAction.Skill && !skills.IsSlotCoolingDown(bufferedSkill))
+        {
+            bufferedAction = BufferedAction.None;
+            bufferTimer = 0f;
+            started = TryCast(bufferedSkill);
+        }
+        return started;
+    }
+
+    // 스킬(Q, E, R). 차징 스킬은 모으기를 시작하고, 나머지는 바로 시전한다.
     private bool TryCast(int skillIndex)
     {
-        SkillDefinition skill = skills.TryUse(skillIndex, aimDirection);
+        bool started = false;
+        SkillDefinition charged = skills.GetChargeSkill(skillIndex);
+        if (charged != null)
+        {
+            started = StartSkillCharge(skillIndex, charged);
+        }
+        else
+        {
+            started = CastSkill(skillIndex, 1f);
+        }
+        return started;
+    }
+
+    // 차징 스킬 모으기: 누르고 있는 동안 무기가 금빛으로 빛나며 젖혀지고, 떼면 모은 만큼 나간다.
+    private bool StartSkillCharge(int slot, SkillDefinition skill)
+    {
+        bool started = skills.CanBeginSkill(skill);
+        if (started)
+        {
+            Dismount();
+            state = PlayerState.Charging;
+            stateTimer = 0f;
+            chargingPower = false;
+            chargeSkillSlot = slot;
+            chargeSkill = skill;
+            PlaySkillChargeVisual(aimDirection, skill.ChargeTime);
+            CmdSkillCharge(aimDirection, skill.ChargeTime);
+        }
+        return started;
+    }
+
+    // 차징 스킬을 모으는 중: 느리게 움직이고, 키를 떼면 모은 만큼 시전한다. 구르기·우클릭이면 버린다.
+    private void TickSkillCharging(Vector2 moveInput, float deltaTime)
+    {
+        stateTimer += deltaTime;
+        desiredVelocity = moveInput * (MoveSpeed * powerChargeMoveFactor);
+        SetLocalLocomotion(moveInput.sqrMagnitude > 0.01f, aimDirection.x < 0f);
+        bool wantRoll = bufferedAction == BufferedAction.Roll && rollCharges > 0;
+        if (wantRoll)
+        {
+            EnterNormal();
+            CmdEndCharge();
+            StartRoll(moveInput);
+        }
+        else if (input.OffhandPressed || hub.SkillUi.IsTreeOpen)
+        {
+            EnterNormal();
+            CmdEndCharge();
+        }
+        else if (!input.IsSkillKeyHeld(chargeSkillSlot))
+        {
+            int slot = chargeSkillSlot;
+            SkillDefinition skill = chargeSkill;
+            float charge = Mathf.Clamp01(stateTimer / Mathf.Max(0.05f, skill.ChargeTime));
+            skillTargetOffset = Vector2.zero;
+            if (skill.GroundTarget)
+            {
+                skillTargetOffset = GetGroundOffset(skill);
+            }
+            EnterNormal();
+            if (!CastSkill(slot, charge))
+            {
+                CmdEndCharge();
+            }
+        }
+    }
+
+    // 차징 스킬을 모으는 중인지(HUD 차징 게이지)
+    public bool IsChargingSkill => state == PlayerState.Charging && chargeSkillSlot >= 0;
+
+    // 지금 모은 정도(0~1). 차징 스킬을 모으는 중이 아니면 1.
+    public float SkillCharge01
+    {
+        get
+        {
+            float charge = 1f;
+            if (chargeSkillSlot >= 0)
+            {
+                charge = Mathf.Clamp01(stateTimer / Mathf.Max(0.05f, chargeSkill.ChargeTime));
+            }
+            return charge;
+        }
+    }
+
+    // 스킬을 시전 상태로 들어간다. 판정은 PlayerSkills가 서버에서 한다. charge01: 차징 스킬을 모은 정도.
+    private bool CastSkill(int skillIndex, float charge01)
+    {
+        // 커서 자리에 놓는 스킬은 놓을 자리 쪽을 보고 시전한다.
+        Vector2 castAim = aimDirection;
+        if (skills.GetGroundSkill(skillIndex) != null && skillTargetOffset.sqrMagnitude > 0.01f)
+        {
+            castAim = skillTargetOffset.normalized;
+        }
+        SkillDefinition skill = skills.TryUse(skillIndex, castAim, skillTargetOffset, charge01);
         bool started = skill != null;
         if (started)
         {
+            castSizeScale = skill.GetChargeSize(charge01);
+            Dismount();
             state = PlayerState.Casting;
             stateTimer = 0f;
             castSkill = skill;
-            castDirection = aimDirection;
-            PlaySkillVisual(skill, aimDirection);
+            castDirection = castAim;
+            PlaySkillVisual(skill, castAim);
         }
         return started;
     }
@@ -686,7 +1099,7 @@ public class PlayerController : NetworkBehaviour, IDamageable
         stateTimer += deltaTime;
         if (castSkill.Kind == SkillKind.Dash)
         {
-            desiredVelocity = castDirection * (castSkill.Range / castSkill.CastTime);
+            desiredVelocity = castDirection * (castSkill.Range * castSizeScale / castSkill.CastTime);
         }
         else
         {
@@ -700,28 +1113,70 @@ public class PlayerController : NetworkBehaviour, IDamageable
 
     public void PlaySkillVisual(SkillDefinition skill, Vector2 aim)
     {
+        EndChargeGlow();
         if (!isLocalPlayer)
         {
             remoteActionTimer = skill.CastTime;
+            remoteActionUsesBody = true;
         }
         visual.SetFacing(aim.x < 0f);
+        // 무기도 시전 방향을 겨누게 한다(마법 스킬은 무기 끝에서 나간다).
+        visual.SetAim(aim, false);
         visual.PlayAction(skill.Anim, skill.AnimStartTime, skill.AnimSpeed, false);
+        if (skill.ImpactDelay > 0f && !skill.GroundTarget)
+        {
+            // 뛰어올라 무기를 머리 위로 들었다가 맞는 순간 내려찍는다.
+            visual.PlayLeapSmash(skill.CastTime, skill.ImpactDelay);
+        }
     }
 
     private void TickAttacking(Vector2 moveInput, float deltaTime)
     {
         stateTimer += deltaTime;
+        float duration = AttackDuration;
+        float hitDelay = AttackHitDelay;
         desiredVelocity = moveInput * (MoveSpeed * weapon.MoveFactor);
+        if (attackIsPower)
+        {
+            duration = PowerDuration;
+            hitDelay = PowerHitDelay;
+            desiredVelocity = moveInput * (MoveSpeed * powerMoveFactor);
+            // 창 돌진: 앞부분 동안 공격 방향으로 정해진 거리를 나아간다.
+            float lungeTime = duration * lungeTimeRatio;
+            if (weapon.Power == PowerAttack.Lunge && stateTimer < lungeTime)
+            {
+                desiredVelocity = attackAim * (weapon.PowerReach / lungeTime);
+            }
+        }
+        if (!input.AttackHeld)
+        {
+            holdingSincePress = false;
+        }
+        // 공격은 무기 연출만 쓰므로 몸은 걷기·대기 애니메이션을 계속 따른다(구르기 직후 공격해도 구르기 동작이 반복되지 않게).
+        SetLocalLocomotion(moveInput.sqrMagnitude > 0.01f, aimDirection.x < 0f);
 
-        bool canCancel = stateTimer >= AttackHitDelay;
+        bool canCancel = stateTimer >= hitDelay;
         bool wantRoll = bufferedAction == BufferedAction.Roll && rollCharges > 0;
         if (canCancel && wantRoll)
         {
             StartRoll(moveInput);
         }
-        else if (stateTimer >= AttackDuration)
+        else if (canCancel && TryBufferedSkill())
         {
-            EnterNormal();
+            // 타격이 나간 뒤에는 스킬로 공격 동작을 끊는다.
+        }
+        else if (stateTimer >= duration)
+        {
+            // 평타를 누른 좌클릭을 계속 들고 있으면 강화 평타 차지로 넘어간다(활은 처음부터 시위 차지).
+            bool keepHolding = holdingSincePress && input.AttackHeld && attackAllowed;
+            if (!attackIsPower && keepHolding && weapon.Power != PowerAttack.None && !weapon.UsesCharge)
+            {
+                StartPowerCharge();
+            }
+            else
+            {
+                EnterNormal();
+            }
         }
     }
 
@@ -739,17 +1194,42 @@ public class PlayerController : NetworkBehaviour, IDamageable
     private void TickCharging(Vector2 moveInput, float deltaTime)
     {
         stateTimer += deltaTime;
-        desiredVelocity = moveInput * (MoveSpeed * weapon.MoveFactor);
-        visual.SetFacing(aimDirection.x < 0f);
+        float moveFactor = weapon.MoveFactor;
+        if (chargingPower)
+        {
+            moveFactor = powerChargeMoveFactor;
+        }
+        desiredVelocity = moveInput * (MoveSpeed * moveFactor);
+        // 차지 중에도 몸은 걷기·대기 애니메이션을 따른다(구르기 직후 차지하면 구르기 동작이 계속 반복되던 문제).
+        SetLocalLocomotion(moveInput.sqrMagnitude > 0.01f, aimDirection.x < 0f);
 
         bool wantRoll = bufferedAction == BufferedAction.Roll && rollCharges > 0;
         if (wantRoll)
         {
             StartRoll(moveInput);
         }
+        else if (TryBufferedSkill())
+        {
+            // 차지를 버리고 스킬을 쓴다.
+        }
         else if (!(input.AttackHeld && attackAllowed))
         {
-            StartAttack(GetCharge01());
+            float charge = GetCharge01();
+            bool full = charge >= 1f && weapon.Power != PowerAttack.None;
+            if (full)
+            {
+                StartPowerAttack();
+            }
+            else if (chargingPower)
+            {
+                // 다 모으기 전에 떼면 강화 평타는 나가지 않는다.
+                EnterNormal();
+                CmdEndCharge();
+            }
+            else
+            {
+                StartAttack(charge);
+            }
         }
     }
 
@@ -758,7 +1238,7 @@ public class PlayerController : NetworkBehaviour, IDamageable
         float charge = 1f;
         if (state == PlayerState.Charging)
         {
-            charge = Mathf.Clamp01(stateTimer / weapon.ChargeTime);
+            charge = Mathf.Clamp01(stateTimer / ChargeDuration);
         }
         return charge;
     }
@@ -777,6 +1257,10 @@ public class PlayerController : NetworkBehaviour, IDamageable
         {
             CmdSetBlocking(false, aimDirection);
             StartRoll(moveInput);
+        }
+        else if (bufferedAction == BufferedAction.Skill && !skills.IsSlotCoolingDown(bufferedSkill) && TryBufferedSkill())
+        {
+            // 방패를 내리고 스킬(서버의 ServerBeginSkill이 방어를 끈다).
         }
         else if (wantAttack)
         {
@@ -798,6 +1282,9 @@ public class PlayerController : NetworkBehaviour, IDamageable
     private void EnterNormal()
     {
         state = PlayerState.Normal;
+        chargingPower = false;
+        chargeSkillSlot = -1;
+        EndChargeGlow();
         locomotionSent = false;
         desiredVelocity = Vector2.zero;
         visual.SetAimEnabled(true);
@@ -824,26 +1311,73 @@ public class PlayerController : NetworkBehaviour, IDamageable
         }
     }
 
+    // 말에 탄 채로는 싸우지 않는다. 공격·스킬·구르기·막기를 시작하면 내린다.
+    private void Dismount()
+    {
+        if (facility.Riding)
+        {
+            facility.CmdSetRiding(false);
+        }
+    }
+
     private void StartAttack(float charge)
     {
+        Dismount();
         state = PlayerState.Attacking;
         stateTimer = 0f;
         bufferedAction = BufferedAction.None;
+        attackIsPower = false;
+        chargingPower = false;
+        chargeSkillSlot = -1;
+        attackAim = aimDirection;
+        // 이 평타를 누른 좌클릭을 계속 들고 있으면 평타가 끝난 뒤 강화 평타를 모은다.
+        holdingSincePress = input.AttackHeld;
         PlayAttackVisual(aimDirection);
         CmdAttack(aimDirection, charge);
     }
 
+    // 다 모은 차지를 놓았다: 강화 평타(활은 꿰뚫는 화살).
+    private void StartPowerAttack()
+    {
+        Dismount();
+        state = PlayerState.Attacking;
+        stateTimer = 0f;
+        bufferedAction = BufferedAction.None;
+        attackIsPower = true;
+        chargingPower = false;
+        chargeSkillSlot = -1;
+        holdingSincePress = false;
+        attackAim = aimDirection;
+        PlayPowerVisual(aimDirection);
+        CmdAttack(aimDirection, PowerChargeValue);
+    }
+
     private void StartCharge()
+    {
+        Dismount();
+        state = PlayerState.Charging;
+        stateTimer = 0f;
+        bufferedAction = BufferedAction.None;
+        chargingPower = false;
+        chargeSkillSlot = -1;
+        PlayChargeVisual(aimDirection);
+        CmdCharge(aimDirection);
+    }
+
+    // 평타를 누른 채 들고 있으면 강화 평타를 모은다(활의 시위 차지와 같은 상태를 쓴다).
+    private void StartPowerCharge()
     {
         state = PlayerState.Charging;
         stateTimer = 0f;
         bufferedAction = BufferedAction.None;
+        chargingPower = true;
         PlayChargeVisual(aimDirection);
         CmdCharge(aimDirection);
     }
 
     private void StartBlock()
     {
+        Dismount();
         state = PlayerState.Blocking;
         locomotionSent = false;
         sentBlockAim = aimDirection;
@@ -864,6 +1398,7 @@ public class PlayerController : NetworkBehaviour, IDamageable
         stateTimer = 0f;
         bufferedAction = BufferedAction.None;
         rollCharges--;
+        Dismount();
         PlayRollVisual(rollDirection);
         CmdRoll(rollDirection);
     }
@@ -896,6 +1431,7 @@ public class PlayerController : NetworkBehaviour, IDamageable
 
     private void PlayAttackVisual(Vector2 aim)
     {
+        EndChargeGlow();
         visual.SetFacing(aim.x < 0f);
         // 패키지 공격 동작은 손을 머리 위로 올려 조준 회전과 어긋나므로 쓰지 않고, 무기 연출(휘두르기·찌르기·반동)만 쓴다.
         // 휘두르는 방향은 공격한 순간의 조준으로 맞춘다(다른 사람 화면도 같은 방향).
@@ -904,7 +1440,25 @@ public class PlayerController : NetworkBehaviour, IDamageable
         visual.PlayWeaponMotion(weapon.Motion, AttackDuration);
         hub.Sound.PlayAt(weapon.AttackSound, transform.position);
 
-        if (!weapon.IsRanged)
+        SkillVfx vfx = weapon.Vfx;
+        float angle = Mathf.Atan2(aim.y, aim.x) * Mathf.Rad2Deg;
+        if (!weapon.IsRanged && vfx.Has(vfx.cast) && hub.SkillFx != null)
+        {
+            // 픽셀 휘두르기 그림: 몸 가운데를 기준으로 조준 쪽으로 돌려 그린다.
+            // 그림은 위에서 아래로 베는 호라서, 무기가 아래에서 위로 올려 벨 차례면 위아래를 뒤집는다.
+            bool upward = weapon.Motion == WeaponMotion.Swing && visual.SwingUpward;
+            hub.SkillFx.PlayFrames(vfx.cast, vfx.castFps, false, Center, vfx.castSize, 0f, null, angle, true, upward);
+        }
+        else if (weapon.IsRanged && vfx.Has(vfx.muzzle) && hub.SkillFx != null)
+        {
+            Vector2 muzzle;
+            if (!visual.TryGetMuzzle(aim, out muzzle))
+            {
+                muzzle = Center + aim * 0.7f;
+            }
+            hub.SkillFx.PlayFrames(vfx.muzzle, vfx.muzzleFps, false, muzzle, vfx.muzzleSize, 0f, null, angle, vfx.muzzleDirectional);
+        }
+        else if (!weapon.IsRanged)
         {
             slashFlip = !slashFlip;
             slashTimer = slashDuration;
@@ -919,16 +1473,164 @@ public class PlayerController : NetworkBehaviour, IDamageable
         }
     }
 
-    // 공격 클립의 시작 자세에서 멈춰 시위를 당긴 모습으로 쓴다.
+    // 강화 평타 연출(모든 화면). 검은 한 바퀴 돌려 베고, 창은 찌르며 내달리고, 도끼·둔기는 높이 들어 내려찍고,
+    // 원거리는 평소 반동과 함께 큰 화살·탄(Projectile)이 나간다. 맞는 순간 그림(땅 충격, 돌진 끝)은 PowerHitDelay 뒤에 띄운다.
+    private void PlayPowerVisual(Vector2 aim)
+    {
+        EndChargeGlow();
+        visual.SetFacing(aim.x < 0f);
+        visual.SetAim(aim, false);
+        visual.SetAimEnabled(true);
+        float duration = PowerDuration;
+        PowerAttack kind = weapon.Power;
+        SkillVfx vfx = weapon.PowerVfx;
+        SkillFxPlayer fx = hub.SkillFx;
+        float angle = Mathf.Atan2(aim.y, aim.x) * Mathf.Rad2Deg;
+        powerFxAngle = angle;
+        if (kind == PowerAttack.Spin)
+        {
+            visual.PlayWeaponMotion(WeaponMotion.Spin, duration);
+            hub.Sound.PlayAt(SoundId.SkillSlash, transform.position);
+            if (fx != null && vfx.Has(vfx.cast))
+            {
+                fx.PlayFrames(vfx.cast, vfx.castFps, vfx.castGround, Center, weapon.PowerRadius * vfx.castScale, 0f, null, angle, vfx.castDirectional);
+            }
+        }
+        else if (kind == PowerAttack.Lunge)
+        {
+            visual.PlayWeaponMotion(WeaponMotion.Lunge, duration);
+            hub.Sound.PlayAt(SoundId.SkillDash, transform.position);
+            float length = weapon.PowerReach + weapon.Range;
+            if (fx != null && vfx.Has(vfx.trail))
+            {
+                fx.PlayFramesDirected(vfx.trail, vfx.trailFps, Center + aim * (length * 0.5f), length * 0.5f, vfx.trailWidth, aim);
+            }
+            powerFxTimer = PowerHitDelay;
+            powerFxPosition = Center + aim * length;
+        }
+        else if (kind == PowerAttack.Wave)
+        {
+            // 검기: 젖힌 자리에서 크게 내려 베거나(검, 도끼, 둔기) 길게 찌르며(창) 검기를 날린다.
+            WeaponMotion motion = WeaponMotion.Smash;
+            if (weapon.Motion == WeaponMotion.Thrust)
+            {
+                motion = WeaponMotion.Lunge;
+            }
+            visual.PlayWeaponMotion(motion, duration);
+            hub.Sound.PlayAt(SoundId.SkillSlash, transform.position);
+        }
+        else if (kind == PowerAttack.Smash)
+        {
+            visual.PlayWeaponMotion(WeaponMotion.Smash, duration);
+            hub.Sound.PlayAt(SoundId.HeavySwing, transform.position);
+            powerFxTimer = PowerHitDelay;
+            powerFxPosition = Center + aim * weapon.PowerReach;
+        }
+        else
+        {
+            visual.PlayWeaponMotion(weapon.Motion, duration);
+            hub.Sound.PlayAt(weapon.AttackSound, transform.position);
+            SkillVfx muzzleVfx = weapon.Vfx;
+            if (fx != null && muzzleVfx.Has(muzzleVfx.muzzle))
+            {
+                Vector2 muzzle;
+                if (!visual.TryGetMuzzle(aim, out muzzle))
+                {
+                    muzzle = Center + aim * 0.7f;
+                }
+                fx.PlayFrames(muzzleVfx.muzzle, muzzleVfx.muzzleFps, false, muzzle, muzzleVfx.muzzleSize * 1.4f, 0f, null, angle, muzzleVfx.muzzleDirectional);
+            }
+        }
+    }
+
+    // 강화 평타가 맞는 순간: 내려찍기는 땅 충격 그림과 화면 흔들림, 창 돌진은 끝자리 그림.
+    private void PlayPowerImpact()
+    {
+        SkillVfx vfx = weapon.PowerVfx;
+        SkillFxPlayer fx = hub.SkillFx;
+        if (weapon.Power == PowerAttack.Smash)
+        {
+            hub.Sound.PlayAt(SoundId.Explosion, powerFxPosition);
+            if (fx != null && vfx.Has(vfx.cast))
+            {
+                fx.PlayFrames(vfx.cast, vfx.castFps, vfx.castGround, powerFxPosition, weapon.PowerRadius * vfx.castScale, 0f, null, powerFxAngle, vfx.castDirectional);
+            }
+            if (isLocalPlayer && hub.CameraFollow != null)
+            {
+                hub.CameraFollow.Shake(smashShakeAmplitude, smashShakeTime);
+            }
+        }
+        else if (weapon.Power == PowerAttack.Lunge && fx != null && vfx.Has(vfx.impact))
+        {
+            fx.PlayFacing(vfx.impact, vfx.impactFps, vfx.impactGround, powerFxPosition, vfx.impactSize, 0f, null, powerFxAngle, vfx.impactDirectional, vfx.impactMirror);
+        }
+    }
+
+    // 공격 클립의 시작 자세에서 멈춰 시위를 당긴 모습으로 쓴다. 강화 평타 차지도 같은 자리에서 시작한다(무기 빛과 자세).
     private void PlayChargeVisual(Vector2 aim)
     {
         visual.SetFacing(aim.x < 0f);
         visual.SetAim(aim, false);
+        if (weapon.UsesCharge)
+        {
+            hub.Sound.PlayAt(SoundId.BowCharge, transform.position);
+        }
+        BeginChargeGlow(ChargeDuration);
+    }
+
+    // 차징 스킬 모으기 자세와 빛(모든 화면)
+    private void PlaySkillChargeVisual(Vector2 aim, float duration)
+    {
+        visual.SetFacing(aim.x < 0f);
+        visual.SetAim(aim, false);
         hub.Sound.PlayAt(SoundId.BowCharge, transform.position);
+        BeginChargeGlow(duration);
+    }
+
+    private void BeginChargeGlow(float duration)
+    {
+        chargeGlowDuration = Mathf.Max(0.05f, duration);
+        chargeGlowing = true;
+        chargeGlowTimer = 0f;
+        chargeGlowFull = false;
+    }
+
+    private void EndChargeGlow()
+    {
+        if (chargeGlowing)
+        {
+            chargeGlowing = false;
+            visual.SetCharge(0f, weapon.Motion);
+        }
+    }
+
+    // 차지 빛(모든 화면): 모으는 동안 무기 테두리가 점점 금빛으로 빛나며 젖혀지고, 다 모으면 소리가 난다.
+    private void TickChargeGlow(float deltaTime)
+    {
+        if (chargeGlowing)
+        {
+            chargeGlowTimer += deltaTime;
+            float amount = Mathf.Clamp01(chargeGlowTimer / chargeGlowDuration);
+            if (amount >= 1f && !chargeGlowFull)
+            {
+                chargeGlowFull = true;
+                hub.Sound.PlayAt(SoundId.NodeUnlock, transform.position);
+            }
+            visual.SetCharge(amount, weapon.Motion);
+        }
+        if (powerFxTimer > 0f)
+        {
+            powerFxTimer -= deltaTime;
+            if (powerFxTimer <= 0f)
+            {
+                PlayPowerImpact();
+            }
+        }
     }
 
     private void PlayRollVisual(Vector2 direction)
     {
+        EndChargeGlow();
         if (Mathf.Abs(direction.x) > 0.05f)
         {
             visual.SetFacing(direction.x < 0f);
@@ -1035,31 +1737,91 @@ public class PlayerController : NetworkBehaviour, IDamageable
         {
             if (serverAttackLock <= 0f)
             {
-                ServerStopBlocking();
-                serverAttackLock = AttackDuration * 0.8f;
-                pendingAim = aim.normalized;
+                // 강화 평타는 charge가 PowerChargeValue로 온다(그 무기에 강화 평타가 있을 때만 인정).
+                bool power = charge >= PowerChargeValue - 0.01f && weapon.Power != PowerAttack.None;
+                float duration = AttackDuration;
+                float hitDelay = AttackHitDelay;
                 pendingCharge = Mathf.Clamp01(charge);
-                pendingHitTimer = AttackHitDelay;
+                if (power)
+                {
+                    duration = PowerDuration;
+                    hitDelay = PowerHitDelay;
+                    pendingCharge = PowerChargeValue;
+                }
+                ServerStopBlocking();
+                serverAttackLock = duration * 0.8f;
+                serverLockFromAttack = true;
+                pendingAim = aim.normalized;
+                pendingPower = power;
+                pendingOrigin = (Vector2)transform.position + centerOffset;
+                pendingHitTimer = hitDelay;
                 hasPendingHit = true;
-                RpcAttack(pendingAim);
+                RpcAttack(pendingAim, power);
             }
         }
     }
 
     [ClientRpc(includeOwner = false)]
-    private void RpcAttack(Vector2 aim)
+    private void RpcAttack(Vector2 aim, bool power)
     {
-        remoteActionTimer = AttackDuration;
-        PlayAttackVisual(aim);
+        remoteActionUsesBody = false;
+        if (power)
+        {
+            remoteActionTimer = PowerDuration;
+            PlayPowerVisual(aim);
+        }
+        else
+        {
+            remoteActionTimer = AttackDuration;
+            PlayAttackVisual(aim);
+        }
+        PlayRemoteBodyLoop();
     }
 
     [Command]
     private void CmdCharge(Vector2 aim)
     {
-        if (!dead && weapon.UsesCharge)
+        if (!dead && (weapon.UsesCharge || weapon.Power != PowerAttack.None))
         {
             ServerStopBlocking();
             RpcCharge(aim.normalized);
+        }
+    }
+
+    // 차징 스킬을 모으기 시작했다(다른 사람 화면의 차지 빛·자세).
+    [Command]
+    private void CmdSkillCharge(Vector2 aim, float duration)
+    {
+        if (!dead)
+        {
+            ServerStopBlocking();
+            RpcSkillCharge(aim.normalized, Mathf.Clamp(duration, 0.05f, 5f));
+        }
+    }
+
+    [ClientRpc(includeOwner = false)]
+    private void RpcSkillCharge(Vector2 aim, float duration)
+    {
+        remoteActionTimer = 10f;
+        remoteActionUsesBody = false;
+        PlaySkillChargeVisual(aim, duration);
+        PlayRemoteBodyLoop();
+    }
+
+    // 다 모으기 전에 떼어 강화 평타가 취소됐다(다른 사람 화면의 차지 빛·자세를 끈다).
+    [Command]
+    private void CmdEndCharge()
+    {
+        RpcEndCharge();
+    }
+
+    [ClientRpc(includeOwner = false)]
+    private void RpcEndCharge()
+    {
+        EndChargeGlow();
+        if (remoteActionTimer > 0.01f)
+        {
+            remoteActionTimer = 0.01f;
         }
     }
 
@@ -1068,7 +1830,9 @@ public class PlayerController : NetworkBehaviour, IDamageable
     private void RpcCharge(Vector2 aim)
     {
         remoteActionTimer = 10f;
+        remoteActionUsesBody = false;
         PlayChargeVisual(aim);
+        PlayRemoteBodyLoop();
     }
 
     [Command]
@@ -1087,6 +1851,7 @@ public class PlayerController : NetworkBehaviour, IDamageable
     private void RpcRoll(Vector2 direction)
     {
         remoteActionTimer = rollDuration;
+        remoteActionUsesBody = true;
         PlayRollVisual(direction);
     }
 
@@ -1152,7 +1917,7 @@ public class PlayerController : NetworkBehaviour, IDamageable
     // 몬스터의 공격이 상태이상을 건다(서버). dotDamage는 화상·출혈이 0.5초마다 주는 피해.
     public void ServerApplyStatus(StatusKind kind, float duration, int dotDamage)
     {
-        if (!dead && kind != StatusKind.None)
+        if (!dead && kind != StatusKind.None && cleanseTime <= 0f)
         {
             if (kind == StatusKind.Burn)
             {
@@ -1178,8 +1943,41 @@ public class PlayerController : NetworkBehaviour, IDamageable
                 ServerStopBlocking();
                 hasPendingHit = false;
             }
+            int index = StatusIndex(kind);
+            if (index >= 0 && index < statusEndTimes.Count)
+            {
+                statusEndTimes[index] = NetworkTime.time + duration;
+                statusDurations[index] = duration;
+            }
             ServerRefreshStatusMask();
         }
+    }
+
+    // 상태 비트 순서(화상 0, 출혈 1, 둔화 2, 약화 3, 기절 4). 플레이어에게 걸리지 않는 종류는 -1.
+    private int StatusIndex(StatusKind kind)
+    {
+        int index = -1;
+        if (kind == StatusKind.Burn)
+        {
+            index = 0;
+        }
+        else if (kind == StatusKind.Bleed)
+        {
+            index = 1;
+        }
+        else if (kind == StatusKind.Slow)
+        {
+            index = 2;
+        }
+        else if (kind == StatusKind.Weaken)
+        {
+            index = 3;
+        }
+        else if (kind == StatusKind.Stun)
+        {
+            index = 4;
+        }
+        return index;
     }
 
     private void ServerClearStatus()
@@ -1260,6 +2058,7 @@ public class PlayerController : NetworkBehaviour, IDamageable
                         dead = true;
                         hasPendingHit = false;
                         ServerStopBlocking();
+                        facility.ServerDismount();
                     }
                 }
             }
@@ -1274,9 +2073,70 @@ public class PlayerController : NetworkBehaviour, IDamageable
         }
     }
 
+    // 정화 포션: 상태이상을 모두 풀고 immuneTime 동안 걸리지 않는다(서버).
+    public void ServerCleanse(float immuneTime)
+    {
+        ServerClearStatus();
+        cleanseTime = immuneTime;
+        cleanseEndTime = NetworkTime.time + immuneTime;
+        cleanseDuration = immuneTime;
+        ServerRefreshTonicMask();
+    }
+
+    // 힘·신속의 물약(서버). 다시 마시면 시간이 처음부터 다시 흐른다.
+    public void ServerApplyTonic(PotionKind kind, float duration)
+    {
+        if (kind == PotionKind.Power)
+        {
+            powerTime = duration;
+            powerEndTime = NetworkTime.time + duration;
+            powerDuration = duration;
+        }
+        else if (kind == PotionKind.Swift)
+        {
+            swiftTime = duration;
+            swiftEndTime = NetworkTime.time + duration;
+            swiftDuration = duration;
+        }
+        ServerRefreshTonicMask();
+    }
+
+    private void ServerTickTonics(float deltaTime)
+    {
+        if (tonicMask != 0)
+        {
+            powerTime -= deltaTime;
+            swiftTime -= deltaTime;
+            cleanseTime -= deltaTime;
+            ServerRefreshTonicMask();
+        }
+    }
+
+    private void ServerRefreshTonicMask()
+    {
+        byte mask = 0;
+        if (powerTime > 0f)
+        {
+            mask |= TonicPower;
+        }
+        if (swiftTime > 0f)
+        {
+            mask |= TonicSwift;
+        }
+        if (cleanseTime > 0f)
+        {
+            mask |= TonicCleanse;
+        }
+        if (mask != tonicMask)
+        {
+            tonicMask = mask;
+        }
+    }
+
     private void ServerUpdate(float deltaTime)
     {
         ServerTickStatus(deltaTime);
+        ServerTickTonics(deltaTime);
 
         if (serverAttackLock > 0f)
         {
@@ -1292,6 +2152,15 @@ public class PlayerController : NetworkBehaviour, IDamageable
                 if (weapon.IsRanged)
                 {
                     ServerFire();
+                }
+                else if (pendingPower && weapon.Power == PowerAttack.Wave)
+                {
+                    // 검기: 근접 무기지만 투사체로 날린다.
+                    ServerFire();
+                }
+                else if (pendingPower)
+                {
+                    ResolvePowerHit();
                 }
                 else
                 {
@@ -1340,6 +2209,10 @@ public class PlayerController : NetworkBehaviour, IDamageable
             if (chargeBroken || blockBroken)
             {
                 EnterNormal();
+            }
+            if (chargeBroken)
+            {
+                CmdEndCharge();
             }
         }
     }
@@ -1414,12 +2287,86 @@ public class PlayerController : NetworkBehaviour, IDamageable
         }
     }
 
+    // 강화 평타 판정. 회전 베기는 몸 둘레 원, 내려찍기는 앞쪽 원(기절), 창 돌진은 출발점부터 돌진 끝 + 창 길이까지의 직선.
+    private void ResolvePowerHit()
+    {
+        PowerAttack kind = weapon.Power;
+        Vector2 center = (Vector2)transform.position + centerOffset;
+        Vector2 origin = center;
+        float radius = weapon.PowerRadius;
+        float length = 0f;
+        float halfWidth = Mathf.Max(0.45f, weapon.LineHalfWidth + 0.15f);
+        if (kind == PowerAttack.Smash)
+        {
+            center += pendingAim * weapon.PowerReach;
+        }
+        else if (kind == PowerAttack.Lunge)
+        {
+            origin = pendingOrigin;
+            length = weapon.PowerReach + weapon.Range;
+            center = origin + pendingAim * (length * 0.5f);
+            radius = length * 0.5f + halfWidth + 0.5f;
+        }
+        HitInfo hit = inventory.RollWeaponHit(weapon, weapon.PowerDamageFactor);
+        if (kind == PowerAttack.Smash)
+        {
+            hit.status = StatusKind.Stun;
+            hit.statusDuration = weapon.PowerStunTime;
+            hit.statusPower = 0f;
+        }
+
+        int count = hub.OverlapMonsters(center, radius);
+        Collider2D[] buffer = hub.HitBuffer;
+        int hitCount = 0;
+        for (int i = 0; i < count; i++)
+        {
+            MonsterController monster;
+            if (buffer[i].TryGetComponent(out monster))
+            {
+                Vector2 targetCenter = buffer[i].bounds.center;
+                bool inside = true;
+                Vector2 direction = pendingAim;
+                if (kind == PowerAttack.Lunge)
+                {
+                    Vector2 toTarget = targetCenter - origin;
+                    float along = Vector2.Dot(toTarget, pendingAim);
+                    float side = Mathf.Abs(toTarget.x * pendingAim.y - toTarget.y * pendingAim.x);
+                    inside = along >= -0.3f && along <= length + 0.3f && side <= halfWidth + buffer[i].bounds.extents.x;
+                }
+                else
+                {
+                    Vector2 away = targetCenter - center;
+                    if (away.sqrMagnitude > 0.0001f)
+                    {
+                        direction = away.normalized;
+                    }
+                }
+                if (inside)
+                {
+                    monster.ServerTakeHit(hit, direction, netId);
+                    hitCount++;
+                }
+            }
+        }
+
+        if (hitCount > 0)
+        {
+            ServerOnAttackHit();
+        }
+    }
+
     // 원거리 발사. 로비에는 투사체 풀이 없으므로 동작만 한다.
     private void ServerFire()
     {
         if (hub.ProjectilePool != null)
         {
             Vector2 origin = (Vector2)transform.position + pendingAim * muzzleDistance;
+            Vector2 tip;
+            if (visual.TryGetMagicTip(pendingAim, out tip))
+            {
+                // 지팡이·완드: 판정도 무기 끝에서 나간다(위치는 그림 높이만큼 아래인 바닥 기준).
+                origin = tip - new Vector2(0f, Projectile.SpriteHeight);
+            }
             LaunchWeaponShot(origin, pendingAim, weapon, pendingCharge, true);
             RpcFire(origin, pendingAim, inventory.WeaponKindIndex, pendingCharge);
         }
@@ -1434,6 +2381,13 @@ public class PlayerController : NetworkBehaviour, IDamageable
             {
                 factor = Mathf.Lerp(firedWeapon.MinChargeFactor, 1f, charge);
             }
+            // 강화 평타(활은 다 당긴 차지): 더 세고 크게, 꿰뚫거나(활·석궁·총) 크게 터진다(지팡이·완드).
+            bool power = charge >= PowerChargeValue - 0.01f && firedWeapon.Power != PowerAttack.None;
+            float damageFactor = factor;
+            if (power)
+            {
+                damageFactor = factor * firedWeapon.PowerDamageFactor;
+            }
 
             ProjectileShot shot = new ProjectileShot();
             shot.origin = origin;
@@ -1445,11 +2399,43 @@ public class PlayerController : NetworkBehaviour, IDamageable
             shot.explosionRadius = firedWeapon.ExplosionRadius;
             shot.look = firedWeapon.ProjectileLook;
             shot.color = firedWeapon.ProjectileColor;
+            shot.vfx = firedWeapon.Vfx;
+            if (power)
+            {
+                shot.radius *= 1.5f;
+                shot.visualScale = powerShotScale;
+                shot.pierce = firedWeapon.PowerPierce;
+                if (firedWeapon.Power == PowerAttack.BigShot)
+                {
+                    shot.explosionRadius = firedWeapon.PowerRadius;
+                }
+                if (firedWeapon.PowerVfx.HasAny)
+                {
+                    shot.vfx = firedWeapon.PowerVfx;
+                }
+            }
+            bool wave = power && firedWeapon.Power == PowerAttack.Wave;
+            if (wave)
+            {
+                // 검기: 근접 무기에는 투사체 값이 없으므로 강화 평타 값으로 날린다(그림은 이미 월드 크기에 맞게 그렸다).
+                shot.speed = firedWeapon.PowerShotSpeed;
+                shot.lifetime = firedWeapon.PowerReach / Mathf.Max(0.1f, firedWeapon.PowerShotSpeed);
+                shot.radius = firedWeapon.PowerRadius;
+                shot.explosionRadius = 0f;
+                shot.visualScale = 1f;
+                shot.color = Color.white;
+            }
             shot.hitsMonsters = true;
             shot.authoritative = authoritative;
+            // 그림은 무기 끝(활 가운데, 지팡이 머리, 총구)에서 나가 보이게 한다. 판정 위치는 그대로다.
+            Vector2 muzzle;
+            if (!wave && visual.TryGetMuzzle(aim, out muzzle))
+            {
+                shot.visualOffset = Vector2.ClampMagnitude(muzzle - (origin + new Vector2(0f, Projectile.SpriteHeight)), 1.6f);
+            }
             if (authoritative)
             {
-                shot.hit = inventory.RollWeaponHit(firedWeapon, factor);
+                shot.hit = inventory.RollWeaponHit(firedWeapon, damageFactor);
                 shot.damage = shot.hit.damage;
                 shot.owner = this;
             }
@@ -1506,6 +2492,7 @@ public class PlayerController : NetworkBehaviour, IDamageable
                         dead = true;
                         hasPendingHit = false;
                         ServerStopBlocking();
+                        facility.ServerDismount();
                     }
                 }
             }
@@ -1532,9 +2519,12 @@ public class PlayerController : NetworkBehaviour, IDamageable
     // 스킬을 쓸 수 있으면 마나를 쓰고 시전 시간 동안 다른 공격을 막는다(서버, PlayerSkills가 부른다).
     public bool ServerBeginSkill(int manaCost, float castTime)
     {
-        bool started = !dead && mana >= manaCost && serverAttackLock <= 0.15f;
+        // 기본 공격의 타격이 이미 나갔으면 남은 공격 동작은 스킬로 끊을 수 있다(본인 화면과 같은 규칙).
+        bool unlocked = serverAttackLock <= 0.15f || (serverLockFromAttack && !hasPendingHit);
+        bool started = !dead && mana >= manaCost && unlocked;
         if (started)
         {
+            serverLockFromAttack = false;
             mana -= manaCost;
             ServerStopBlocking();
             hasPendingHit = false;
@@ -1554,6 +2544,15 @@ public class PlayerController : NetworkBehaviour, IDamageable
         if (!dead)
         {
             hp = Mathf.Min(MaxHp, hp + amount);
+        }
+    }
+
+    // 마나를 채운다(서버, 주술사 각성).
+    public void ServerRestoreMana(int amount)
+    {
+        if (!dead)
+        {
+            mana = Mathf.Min(MaxMana, mana + amount);
         }
     }
 
@@ -1635,6 +2634,26 @@ public class PlayerController : NetworkBehaviour, IDamageable
             if (remoteActionTimer <= 0f)
             {
                 ApplyRemoteLocomotion();
+            }
+            else if (!remoteActionUsesBody)
+            {
+                PlayRemoteBodyLoop();
+            }
+        }
+    }
+
+    // 다른 사람 화면: 무기 연출만 쓰는 동작(공격·차지) 중에도 몸은 이동 상태에 맞는 반복 애니메이션.
+    private void PlayRemoteBodyLoop()
+    {
+        if (!isLocalPlayer && !dead)
+        {
+            if (moving)
+            {
+                visual.PlayLoop(CharacterAnim.Run);
+            }
+            else
+            {
+                visual.PlayLoop(CharacterAnim.Idle);
             }
         }
     }

@@ -21,8 +21,16 @@ MonoBehaviour:
   castTime: 0.35
   damageFactor: 1.6
   radius: 2.2
+  arcDegrees: 0
+  impactDelay: 0
+  chargeTime: 0
+  chargeMinDamage: 0.35
+  chargeMinSize: 0.55
+  pierce: 0
   range: 0
   invulnerable: 0
+  groundTarget: 0
+  pullSpeed: 0
   count: 1
   spreadDegrees: 0
   projectileSpeed: 12
@@ -40,5 +48,49 @@ MonoBehaviour:
   animStartTime: 0
   animSpeed: 1.5
   fxColor: {r: 1, g: 0.45, b: 0.3, a: 1}
-  fx: 1
+  fx: 13
+  icon: {fileID: 21300000, guid: cab8342920a34714383367f33caf1f1a, type: 3}
   sound: 26
+  vfx:
+    cast:
+    - {fileID: 21300000, guid: b99a21a5a916e484cb3b4beec941b4a2, type: 3}
+    - {fileID: 21300000, guid: b776ca9b220b5824992cfce173306884, type: 3}
+    - {fileID: 21300000, guid: fc9d93b7e258c0a49b19f38d360d4b43, type: 3}
+    - {fileID: 21300000, guid: 75968e529676a38408295d7f11a85946, type: 3}
+    - {fileID: 21300000, guid: 6a6519e2376fa6448927004b660faee0, type: 3}
+    - {fileID: 21300000, guid: 11cc418b037f2054db75db5b13c7b445, type: 3}
+    - {fileID: 21300000, guid: 4405a6898f3564e4089997c3079539d1, type: 3}
+    - {fileID: 21300000, guid: 25797bbaa564aa54da6b69e1ae4464d5, type: 3}
+    - {fileID: 21300000, guid: f7ab72e34fcaac044ba6e4b1f015f381, type: 3}
+    - {fileID: 21300000, guid: ed083cc9cd1bcde45bd4db80ee38ca14, type: 3}
+    - {fileID: 21300000, guid: cf9340b16367a6f4e818a40f4f64688a, type: 3}
+    - {fileID: 21300000, guid: 0dbf618bf59b59f4b9abf1794a1cede9, type: 3}
+    castFps: 19.4
+    castGround: 0
+    castDirectional: 0
+    castMirror: 0
+    castScale: 1.506
+    castSize: 0.9
+    castIntro: []
+    castIntroFps: 20
+    castOutro: []
+    castOutroFps: 20
+    trail: []
+    trailFps: 20
+    trailWidth: 1.4
+    projectile: []
+    projectileFps: 18
+    projectileSize: 1
+    projectileSpin: 0
+    projectileHidden: 0
+    impact: []
+    impactFps: 20
+    impactSize: 0.8
+    impactScale: 1
+    impactGround: 0
+    impactDirectional: 0
+    impactMirror: 0
+    muzzle: []
+    muzzleFps: 22
+    muzzleSize: 0.7
+    muzzleDirectional: 0

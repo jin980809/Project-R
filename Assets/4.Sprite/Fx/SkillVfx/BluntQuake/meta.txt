@@ -1,0 +1,5 @@
+cast_ground=1
+cast_scale=1.146
+cast_fps=10.5
+intro_fps=15.0
+outro_fps=12.7

@@ -18,11 +18,19 @@ MonoBehaviour:
   kind: 0
   manaCost: 16
   cooldown: 8
-  castTime: 0.45
+  castTime: 0.6
   damageFactor: 2.4
   radius: 1.8
+  arcDegrees: 0
+  impactDelay: 0.38
+  chargeTime: 0
+  chargeMinDamage: 0.35
+  chargeMinSize: 0.55
+  pierce: 0
   range: 0
   invulnerable: 0
+  groundTarget: 0
+  pullSpeed: 0
   count: 1
   spreadDegrees: 0
   projectileSpeed: 12
@@ -40,5 +48,49 @@ MonoBehaviour:
   animStartTime: 0
   animSpeed: 1.5
   fxColor: {r: 1, g: 0.65, b: 0.25, a: 1}
-  fx: 2
+  fx: 17
+  icon: {fileID: 21300000, guid: cb77671b69dba4e4bbdf3f914ae18c2a, type: 3}
   sound: 6
+  vfx:
+    cast:
+    - {fileID: 21300000, guid: d9f1645b7cd62c64bb955b3747022a33, type: 3}
+    - {fileID: 21300000, guid: e2a2718a913002f4baa9580c946ff203, type: 3}
+    - {fileID: 21300000, guid: 4f8b561eb1343b0478ce48062cd1b4ba, type: 3}
+    - {fileID: 21300000, guid: 21b57f66a940b9e4a94cb6dcc814d464, type: 3}
+    - {fileID: 21300000, guid: db753d121ed556648a9e8488478fc78a, type: 3}
+    - {fileID: 21300000, guid: 22e77a1b6029d394d81667241565c0b7, type: 3}
+    - {fileID: 21300000, guid: facb70ed4dc608a429aacf70ebf1a585, type: 3}
+    - {fileID: 21300000, guid: d6381d24b876a664bb4f02565b814319, type: 3}
+    - {fileID: 21300000, guid: 3096aa014a0805f4691b5f69f76a26b2, type: 3}
+    - {fileID: 21300000, guid: 1c1e85eda8b754c41a7c2d1ae1a0612a, type: 3}
+    - {fileID: 21300000, guid: e8ebea2416913d24188f656c6c0eed7c, type: 3}
+    - {fileID: 21300000, guid: d10badfeff9b9f643b0e8da8791fc330, type: 3}
+    castFps: 18
+    castGround: 1
+    castDirectional: 1
+    castMirror: 1
+    castScale: 1.563
+    castSize: 0.9
+    castIntro: []
+    castIntroFps: 20
+    castOutro: []
+    castOutroFps: 20
+    trail: []
+    trailFps: 20
+    trailWidth: 1.4
+    projectile: []
+    projectileFps: 18
+    projectileSize: 1
+    projectileSpin: 0
+    projectileHidden: 0
+    impact: []
+    impactFps: 20
+    impactSize: 0.8
+    impactScale: 1
+    impactGround: 0
+    impactDirectional: 0
+    impactMirror: 0
+    muzzle: []
+    muzzleFps: 22
+    muzzleSize: 0.7
+    muzzleDirectional: 0

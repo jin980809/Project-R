@@ -1,0 +1,113 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d31d9e92da8c0464aa4d1b02d82027ff, type: 3}
+  m_Name: WandSoul
+  m_EditorClassIdentifier: Assembly-CSharp::SkillDefinition
+  displayName: "\uC601\uD63C \uD3ED\uBC1C"
+  description: "[\uCC28\uC9D5] \uB5A0\uB3C4\uB294 \uC601\uD63C\uC744 \uBAA8\uC544
+    \uAD6C\uC2AC\uB85C \uB0A0\uB9BD\uB2C8\uB2E4. \uB2FF\uC73C\uBA74 \uD130\uC838
+    \uC8FC\uBCC0 \uC801\uC744 \uC57D\uD558\uAC8C \uB9CC\uB4E4\uACE0, \uBAA8\uC744\uC218\uB85D
+    \uD06C\uAC8C \uD130\uC9D1\uB2C8\uB2E4."
+  kind: 2
+  manaCost: 16
+  cooldown: 8
+  castTime: 0.3
+  damageFactor: 2.6
+  radius: 0.45
+  arcDegrees: 0
+  impactDelay: 0
+  chargeTime: 1
+  chargeMinDamage: 0.35
+  chargeMinSize: 0.45
+  pierce: 0
+  range: 0
+  invulnerable: 0
+  groundTarget: 0
+  pullSpeed: 0
+  count: 1
+  spreadDegrees: 0
+  projectileSpeed: 9
+  projectileLifetime: 1.1
+  explosionRadius: 2.6
+  projectileLook: 2
+  buffEffect: 1
+  buffValue: 30
+  buffDuration: 0
+  healPercent: 0
+  statusKind: 5
+  statusDuration: 4
+  statusPower: 0
+  anim: 4
+  animStartTime: 0
+  animSpeed: 1.5
+  fxColor: {r: 0.8, g: 0.55, b: 1, a: 1}
+  fx: 4
+  icon: {fileID: 21300000, guid: 5f87b3dfa772bcc4c95f96a02a4ec883, type: 3}
+  sound: 32
+  vfx:
+    cast: []
+    castFps: 20
+    castGround: 0
+    castDirectional: 0
+    castMirror: 0
+    castScale: 1
+    castSize: 0.9
+    castIntro: []
+    castIntroFps: 20
+    castOutro: []
+    castOutroFps: 20
+    trail: []
+    trailFps: 20
+    trailWidth: 1.4
+    projectile:
+    - {fileID: 21300000, guid: 927155f88161aca49801125a50cddf79, type: 3}
+    - {fileID: 21300000, guid: 2d86e40bc5e592b4fbea602ee4db2230, type: 3}
+    - {fileID: 21300000, guid: 9b03c3c7ab4f1704a93515b1e5939e2d, type: 3}
+    - {fileID: 21300000, guid: 71599e73e6b87ba4d8608c9376bf3509, type: 3}
+    - {fileID: 21300000, guid: 3660047f572f4d44694832934e2c2d2b, type: 3}
+    - {fileID: 21300000, guid: 6afa74828bd4e9f4ab83de90799ccc20, type: 3}
+    - {fileID: 21300000, guid: 1b52454bbd8b3dd4fa13cd850d1500cc, type: 3}
+    - {fileID: 21300000, guid: 262f2ecc9314baa4b8f5131129fd182d, type: 3}
+    - {fileID: 21300000, guid: b0b2b222741b18b40bc66dbeac38faaa, type: 3}
+    projectileFps: 15
+    projectileSize: 1.875
+    projectileSpin: 0
+    projectileHidden: 0
+    impact:
+    - {fileID: 21300000, guid: 60c9552019adad94e9c3e6158877433d, type: 3}
+    - {fileID: 21300000, guid: 3e544d23c637a024da5ed8b2dcf24d51, type: 3}
+    - {fileID: 21300000, guid: a934f11bdf2141c4d939a5bad9ccd784, type: 3}
+    - {fileID: 21300000, guid: 93ef45b7ee2bed448a9c4215d414e3b5, type: 3}
+    - {fileID: 21300000, guid: fe3297e43c9e8cc4390ceeaa3acaca69, type: 3}
+    - {fileID: 21300000, guid: 84522d7b00ae3f84c968873cf346e245, type: 3}
+    - {fileID: 21300000, guid: ad1c6ba918f03084d94b928d7c569c54, type: 3}
+    - {fileID: 21300000, guid: c0568da3d80323a4a856d30177bd900c, type: 3}
+    - {fileID: 21300000, guid: 68f59e5b99511d8429e8c46e187a7ab4, type: 3}
+    - {fileID: 21300000, guid: e45802eb4b1999743ba4584838cf4a32, type: 3}
+    - {fileID: 21300000, guid: 62a1633e8330e3f4ca01d4867736ebb8, type: 3}
+    - {fileID: 21300000, guid: 440ce4f592935624b9611c1c076ce9d9, type: 3}
+    - {fileID: 21300000, guid: c287e7a37734a4247acf982ed011b249, type: 3}
+    - {fileID: 21300000, guid: 3f93272eedbe4da44a7aee1594ba8866, type: 3}
+    - {fileID: 21300000, guid: b46258aa412d92f4399b87ed7aea337e, type: 3}
+    - {fileID: 21300000, guid: fbcd6d2ffbb5436489e5ffb6a90e87df, type: 3}
+    - {fileID: 21300000, guid: 5e295559ca091bc4ebb8e42509640184, type: 3}
+    - {fileID: 21300000, guid: 6a0415b5a4f4c7e4ea0bbf17f57c0e4f, type: 3}
+    impactFps: 11.3
+    impactSize: 0.8
+    impactScale: 0.889
+    impactGround: 0
+    impactDirectional: 0
+    impactMirror: 0
+    muzzle: []
+    muzzleFps: 22
+    muzzleSize: 0.7
+    muzzleDirectional: 0

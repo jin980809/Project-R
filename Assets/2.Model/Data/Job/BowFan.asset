@@ -21,8 +21,11 @@ MonoBehaviour:
   castTime: 0.3
   damageFactor: 0.9
   radius: 0.18
+  arcDegrees: 0
   range: 0
   invulnerable: 0
+  groundTarget: 0
+  pullSpeed: 0
   count: 5
   spreadDegrees: 40
   projectileSpeed: 14
@@ -41,4 +44,47 @@ MonoBehaviour:
   animSpeed: 1.5
   fxColor: {r: 1, g: 0.9, b: 0.4, a: 1}
   fx: 10
+  icon: {fileID: 21300000, guid: a3a72c8d1c0153d43bc59c22e727a654, type: 3}
   sound: 8
+  vfx:
+    cast: []
+    castFps: 20
+    castGround: 0
+    castDirectional: 0
+    castMirror: 0
+    castScale: 1
+    castSize: 0.9
+    trail: []
+    trailFps: 20
+    trailWidth: 1.4
+    projectile:
+    - {fileID: 21300000, guid: 3faa472ab63829247a21bef667514624, type: 3}
+    - {fileID: 21300000, guid: e91bd8a8322f69941bbcc54af7466b1a, type: 3}
+    - {fileID: 21300000, guid: ab81d6f31133c8d42a6cc1d3ecb215c9, type: 3}
+    - {fileID: 21300000, guid: fe771139a0c628b4e88d4a2433da5b63, type: 3}
+    - {fileID: 21300000, guid: 50408f2869503924b8c37af86711dbf6, type: 3}
+    - {fileID: 21300000, guid: 92714562e51f7e6409cecd0b4cbc5418, type: 3}
+    projectileFps: 10
+    projectileSize: 1.375
+    projectileSpin: 0
+    impact:
+    - {fileID: 21300000, guid: 1ed05ff6bcc6a044aa148c34c25169ad, type: 3}
+    - {fileID: 21300000, guid: 45cb230d2019f9d49ac20bc169c18aee, type: 3}
+    - {fileID: 21300000, guid: f9beb8e53bf5ac54daa4d26780a28089, type: 3}
+    - {fileID: 21300000, guid: 598167e88f9e97942b6a3956e5b46b05, type: 3}
+    - {fileID: 21300000, guid: 4b1eee7ee84d8294fa5549cfc1d8b8e1, type: 3}
+    - {fileID: 21300000, guid: 2f3d22eff571a8946bfb60dc2ee997c7, type: 3}
+    impactFps: 20
+    impactSize: 0.938
+    impactScale: 1
+    impactGround: 0
+    impactDirectional: 1
+    impactMirror: 0
+    muzzle:
+    - {fileID: 21300000, guid: 38b58f9acbd76d24cad4ab7923bdd7ed, type: 3}
+    - {fileID: 21300000, guid: 3f895bc547de0c044b39c9a5f7c7bf87, type: 3}
+    - {fileID: 21300000, guid: 5f31c7dff03ac874b8bd26eae08b8d1b, type: 3}
+    - {fileID: 21300000, guid: ae0e17a1984743f4faae66806eed9ef6, type: 3}
+    muzzleFps: 25
+    muzzleSize: 0.625
+    muzzleDirectional: 1

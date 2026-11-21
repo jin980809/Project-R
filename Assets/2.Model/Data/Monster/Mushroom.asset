@@ -18,6 +18,10 @@ MonoBehaviour:
   bodyRadius: 0.26
   shadowScale: 0.8
   knockbackSpeed: 3
+  tint: {r: 1, g: 1, b: 1, a: 1}
+  hitStatus: 0
+  projectileCount: 1
+  projectileSpread: 0
   attackKind: 2
   damage: 7
   attackRange: 5.5

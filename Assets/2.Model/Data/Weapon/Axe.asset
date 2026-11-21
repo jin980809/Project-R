@@ -39,5 +39,97 @@ MonoBehaviour:
   statusPower: 0.1
   projectileLook: 1
   projectileColor: {r: 1, g: 1, b: 1, a: 1}
+  vfx:
+    cast:
+    - {fileID: 21300000, guid: 6a23f95e188dab54db191b7b96376914, type: 3}
+    - {fileID: 21300000, guid: 2cf11f55ee20dbe41bee3b3b4a4fda7f, type: 3}
+    - {fileID: 21300000, guid: ccc76c2f1fd16124f8e3546489f08bd1, type: 3}
+    - {fileID: 21300000, guid: 9bfa98c7fa2d86843a1a40067765bca9, type: 3}
+    - {fileID: 21300000, guid: ca4273c2848def342a74d147592117b6, type: 3}
+    - {fileID: 21300000, guid: c8999a91f20943e48a34217ee101a2b0, type: 3}
+    - {fileID: 21300000, guid: 308b2e4881524424eb28e90d93275364, type: 3}
+    - {fileID: 21300000, guid: 7f23f6449fbc9754397ba988bdc30e44, type: 3}
+    castFps: 24.6
+    castGround: 0
+    castDirectional: 0
+    castMirror: 0
+    castScale: 1
+    castSize: 2.313
+    castIntro: []
+    castIntroFps: 20
+    castOutro: []
+    castOutroFps: 20
+    trail: []
+    trailFps: 20
+    trailWidth: 1.4
+    projectile: []
+    projectileFps: 18
+    projectileSize: 1
+    projectileSpin: 0
+    projectileHidden: 0
+    impact: []
+    impactFps: 20
+    impactSize: 0.8
+    impactScale: 1
+    impactGround: 0
+    impactDirectional: 0
+    impactMirror: 0
+    muzzle: []
+    muzzleFps: 22
+    muzzleSize: 0.7
+    muzzleDirectional: 0
   chargeTime: 0
   minChargeFactor: 0.35
+  powerAttack: 6
+  powerChargeTime: 0.8
+  powerDamageFactor: 2.8
+  powerRadius: 0.7
+  powerReach: 6
+  powerDuration: 0.5
+  powerHitDelay: 0.14
+  powerPierce: 8
+  powerStunTime: 1.2
+  powerShotSpeed: 12
+  powerVfx:
+    cast: []
+    castFps: 20
+    castGround: 0
+    castDirectional: 0
+    castMirror: 0
+    castScale: 1
+    castSize: 0.9
+    castIntro: []
+    castIntroFps: 20
+    castOutro: []
+    castOutroFps: 20
+    trail: []
+    trailFps: 20
+    trailWidth: 1.4
+    projectile:
+    - {fileID: 21300000, guid: d6534ce97d55c5c4aa5b2aba7d12b73e, type: 3}
+    - {fileID: 21300000, guid: 56c4ed8c74bfd8f428c740138a97b4fc, type: 3}
+    - {fileID: 21300000, guid: 0006a2f375bc0ac40906e6d8f0a1e28e, type: 3}
+    - {fileID: 21300000, guid: fb9a32f1dbfba674a96b613fba9dc390, type: 3}
+    - {fileID: 21300000, guid: 32beffce1dd58e04e8892049fad93a03, type: 3}
+    - {fileID: 21300000, guid: bda6f98f601e9bb42ae7bec011a7c0ee, type: 3}
+    projectileFps: 15
+    projectileSize: 1.5
+    projectileSpin: 0
+    projectileHidden: 0
+    impact:
+    - {fileID: 21300000, guid: b52891a475617ec4ba75b7b1eb6fc63d, type: 3}
+    - {fileID: 21300000, guid: b28d88ceba6dd52418770fccd547fc06, type: 3}
+    - {fileID: 21300000, guid: bdc7a72d4c460554fb6b4faa48c3f079, type: 3}
+    - {fileID: 21300000, guid: 616309d9c2084394685a8412d5f19593, type: 3}
+    - {fileID: 21300000, guid: 66f02fde7d5d9d94084d78de4b9697fe, type: 3}
+    - {fileID: 21300000, guid: 7d760b71cfe90b544b026c052b25743d, type: 3}
+    impactFps: 20
+    impactSize: 0.938
+    impactScale: 1
+    impactGround: 0
+    impactDirectional: 1
+    impactMirror: 0
+    muzzle: []
+    muzzleFps: 22
+    muzzleSize: 0.7
+    muzzleDirectional: 0

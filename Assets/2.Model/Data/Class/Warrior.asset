@@ -1,0 +1,375 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0847fce23e7166f4288804db4a625f6d, type: 3}
+  m_Name: Warrior
+  m_EditorClassIdentifier: Assembly-CSharp::ClassDefinition
+  displayName: "\uC804\uC0AC"
+  description: "\uAC80\xB7\uCC3D\xB7\uB3C4\uB07C\xB7\uB454\uAE30\uB97C \uC4F0\uB294
+    \uADFC\uC811 \uACC4\uC5F4."
+  weaponKinds: 00010405
+  jobBranches:
+  - displayName: "\uAC80\uC0AC"
+    weaponText: "\uAC80"
+    awakening: 0
+    awakenValueA: 15
+    awakenValueB: 3
+    awakeningText: "\uC218\uD638\uC758 \uB9F9\uC138: \uBC1B\uB294 \uD53C\uD574 -15%,
+      \uBC29\uC758 \uC801\uC774 \uC4F0\uB7EC\uC9C8 \uB54C\uB9C8\uB2E4 \uCD5C\uB300
+      \uCCB4\uB825\uC758 3%\uB97C \uD68C\uBCF5\uD569\uB2C8\uB2E4."
+  - displayName: "\uCC3D\uAE30\uC0AC"
+    weaponText: "\uCC3D"
+    awakening: 1
+    awakenValueA: 15
+    awakenValueB: 30
+    awakeningText: "\uC6A9\uAE30\uBCD1: \uC774\uB3D9 \uC18D\uB3C4 +15%, \uB3CC\uC9C4
+      \uC2A4\uD0AC\uC758 \uC7AC\uC0AC\uC6A9 \uC2DC\uAC04 -30%."
+  - displayName: "\uAD11\uC804\uC0AC"
+    weaponText: "\uB3C4\uB07C\xB7\uB454\uAE30"
+    awakening: 2
+    awakenValueA: 35
+    awakenValueB: 0
+    awakeningText: "\uAD11\uB780: \uCCB4\uB825\uC774 \uC808\uBC18 \uC774\uD558\uC77C
+      \uB54C \uACF5\uACA9\uB825 +35%."
+  skills:
+  - {fileID: 11400000, guid: 28faa4a595b40104893f5860afb97594, type: 2}
+  - {fileID: 11400000, guid: 054e8e8994777ca4e95bb9d2530af8cb, type: 2}
+  - {fileID: 11400000, guid: 05145ce4fdf389f4ca09678409a648cc, type: 2}
+  - {fileID: 11400000, guid: 385b419aa5312e24da681feeb900a4aa, type: 2}
+  - {fileID: 11400000, guid: 6fe42fb6831cfd74ab17937d1a3c1606, type: 2}
+  - {fileID: 11400000, guid: 2a8c187bfbabe7649921b39816696eca, type: 2}
+  - {fileID: 11400000, guid: 001bb568bd14420449cd9497669d1151, type: 2}
+  - {fileID: 11400000, guid: fb43d2f6d72b98843b39a6546057b3cc, type: 2}
+  - {fileID: 11400000, guid: 32f6a0093993fa64da9d4a64daa8a10c, type: 2}
+  - {fileID: 11400000, guid: c180e7b2cc5563740a69dbd2650f9163, type: 2}
+  - {fileID: 11400000, guid: c6b611c848072d64ea4448cf27a13fe0, type: 2}
+  - {fileID: 11400000, guid: be3e7a6b7a7fa4e48b031a32e04a859e, type: 2}
+  - {fileID: 11400000, guid: 1f871d9bb282b454ba8eefb9a0ac771e, type: 2}
+  - {fileID: 11400000, guid: 473c8a3999d9fb341b72dcbe12a039d3, type: 2}
+  - {fileID: 11400000, guid: 77d6cc9a4908cc34dae1b1b2cbf6f546, type: 2}
+  - {fileID: 11400000, guid: 73ab18d56b9d51a46a306aa37a0c7ca6, type: 2}
+  - {fileID: 11400000, guid: bde2967f77193ab4da88f2b28196c119, type: 2}
+  - {fileID: 11400000, guid: d718d65b306e3444ca37d9edc64811f9, type: 2}
+  - {fileID: 11400000, guid: 5258851b2d50f7a42a8ee14e09ef975d, type: 2}
+  - {fileID: 11400000, guid: f342465e31c56864c8de1c64d4590ac8, type: 2}
+  - {fileID: 11400000, guid: d1f1bcda8efcd584c977d37ec6404356, type: 2}
+  - {fileID: 11400000, guid: 63b327834e45f6348af3051ba265bbbc, type: 2}
+  - {fileID: 11400000, guid: 72b68d19adf9d3a47a45abb027df8588, type: 2}
+  - {fileID: 11400000, guid: c9f7c9544ced23441a504caca77275ce, type: 2}
+  nodes:
+  - displayName: "\uD68C\uC804 \uBCA0\uAE30"
+    effect: 0
+    value: 0
+    maxRank: 1
+    parent: -1
+    job: 0
+    cell: {x: 1.5, y: 0}
+  - displayName: "\uC2ED\uC790 \uBCA0\uAE30"
+    effect: 0
+    value: 1
+    maxRank: 1
+    parent: 0
+    job: 0
+    cell: {x: 0.5, y: 1}
+  - displayName: "\uB0A0 \uC138\uC6B0\uAE30"
+    effect: 1
+    value: 10
+    maxRank: 1
+    parent: 1
+    job: 0
+    cell: {x: 0.5, y: 2}
+  - displayName: "\uB3CC\uC9C4 \uBCA0\uAE30"
+    effect: 0
+    value: 2
+    maxRank: 1
+    parent: 2
+    job: 0
+    cell: {x: 0, y: 3}
+  - displayName: "\uAE09\uC18C \uB178\uB9AC\uAE30"
+    effect: 4
+    value: 8
+    maxRank: 1
+    parent: 2
+    job: 0
+    cell: {x: 1, y: 3}
+  - displayName: "\uC804\uD22C \uD568\uC131"
+    effect: 0
+    value: 3
+    maxRank: 1
+    parent: 3
+    job: 0
+    cell: {x: 0, y: 4}
+  - displayName: "\uAC00\uBCBC\uC6B4 \uBC1C"
+    effect: 3
+    value: 8
+    maxRank: 1
+    parent: 4
+    job: 0
+    cell: {x: 1, y: 4}
+  - displayName: "\uC219\uB828"
+    effect: 9
+    value: 10
+    maxRank: 1
+    parent: 5
+    job: 0
+    cell: {x: 0, y: 5}
+  - displayName: "\uBC1C\uB3C4 \uC77C\uC12C"
+    effect: 0
+    value: 4
+    maxRank: 1
+    parent: 0
+    job: 0
+    cell: {x: 2.5, y: 1}
+  - displayName: "\uB2E8\uB828"
+    effect: 5
+    value: 24
+    maxRank: 1
+    parent: 8
+    job: 0
+    cell: {x: 2.5, y: 2}
+  - displayName: "\uC218\uD638\uC758 \uD568\uC131"
+    effect: 0
+    value: 5
+    maxRank: 1
+    parent: 9
+    job: 0
+    cell: {x: 2, y: 3}
+  - displayName: "\uBC84\uD2F0\uAE30"
+    effect: 6
+    value: 8
+    maxRank: 1
+    parent: 9
+    job: 0
+    cell: {x: 3, y: 3}
+  - displayName: "\uCCA0\uBCBD"
+    effect: 0
+    value: 6
+    maxRank: 1
+    parent: 10
+    job: 0
+    cell: {x: 2, y: 4}
+  - displayName: "\uB300\uC9C0\uC758 \uD65C\uB825"
+    effect: 0
+    value: 7
+    maxRank: 1
+    parent: 11
+    job: 0
+    cell: {x: 3, y: 4}
+  - displayName: "\uAFF0\uB6AB\uAE30"
+    effect: 0
+    value: 8
+    maxRank: 1
+    parent: -1
+    job: 1
+    cell: {x: 5.5, y: 0}
+  - displayName: "\uD729\uC4F8\uAE30"
+    effect: 0
+    value: 9
+    maxRank: 1
+    parent: 14
+    job: 1
+    cell: {x: 4.5, y: 1}
+  - displayName: "\uD798 \uC2E3\uAE30"
+    effect: 1
+    value: 10
+    maxRank: 1
+    parent: 15
+    job: 1
+    cell: {x: 4.5, y: 2}
+  - displayName: "\uD30C\uC1C4 \uB3CC\uC9C4"
+    effect: 0
+    value: 10
+    maxRank: 1
+    parent: 16
+    job: 1
+    cell: {x: 4, y: 3}
+  - displayName: "\uBE60\uB978 \uC190"
+    effect: 2
+    value: 10
+    maxRank: 1
+    parent: 16
+    job: 1
+    cell: {x: 5, y: 3}
+  - displayName: "\uC9C8\uD48D"
+    effect: 0
+    value: 11
+    maxRank: 1
+    parent: 17
+    job: 1
+    cell: {x: 4, y: 4}
+  - displayName: "\uAE30\uC138"
+    effect: 8
+    value: 2
+    maxRank: 1
+    parent: 18
+    job: 1
+    cell: {x: 5, y: 4}
+  - displayName: "\uBC1C\uB180\uB9BC"
+    effect: 3
+    value: 8
+    maxRank: 1
+    parent: 19
+    job: 1
+    cell: {x: 4, y: 5}
+  - displayName: "\uB3C4\uC57D \uCC0D\uAE30"
+    effect: 0
+    value: 12
+    maxRank: 1
+    parent: 14
+    job: 1
+    cell: {x: 6.5, y: 1}
+  - displayName: "\uCC3D\uC220"
+    effect: 10
+    value: 16
+    maxRank: 1
+    parent: 22
+    job: 1
+    cell: {x: 6.5, y: 2}
+  - displayName: "\uB1CC\uCC3D \uD22C\uCC99"
+    effect: 0
+    value: 13
+    maxRank: 1
+    parent: 23
+    job: 1
+    cell: {x: 6, y: 3}
+  - displayName: "\uC6A9\uC758 \uD53C"
+    effect: 5
+    value: 24
+    maxRank: 1
+    parent: 23
+    job: 1
+    cell: {x: 7, y: 3}
+  - displayName: "\uB099\uB8B0 \uC9C0\uB300"
+    effect: 0
+    value: 14
+    maxRank: 1
+    parent: 24
+    job: 1
+    cell: {x: 6, y: 4}
+  - displayName: "\uC6A9\uCC3D \uD22C\uCC99"
+    effect: 0
+    value: 15
+    maxRank: 1
+    parent: 25
+    job: 1
+    cell: {x: 7, y: 4}
+  - displayName: "\uAD11\uD3ED \uD68C\uC804"
+    effect: 0
+    value: 16
+    maxRank: 1
+    parent: -1
+    job: 2
+    cell: {x: 9.5, y: 0}
+  - displayName: "\uB3C4\uB07C \uD22C\uCC99"
+    effect: 0
+    value: 17
+    maxRank: 1
+    parent: 28
+    job: 2
+    cell: {x: 8.5, y: 1}
+  - displayName: "\uAD11\uAE30"
+    effect: 1
+    value: 12
+    maxRank: 1
+    parent: 29
+    job: 2
+    cell: {x: 8.5, y: 2}
+  - displayName: "\uCC98\uD615"
+    effect: 0
+    value: 18
+    maxRank: 1
+    parent: 30
+    job: 2
+    cell: {x: 8, y: 3}
+  - displayName: "\uD53C \uB0C4\uC0C8"
+    effect: 8
+    value: 2
+    maxRank: 1
+    parent: 30
+    job: 2
+    cell: {x: 9, y: 3}
+  - displayName: "\uD53C\uC758 \uBD84\uB178"
+    effect: 0
+    value: 19
+    maxRank: 1
+    parent: 31
+    job: 2
+    cell: {x: 8, y: 4}
+  - displayName: "\uAE09\uC18C \uB178\uB9AC\uAE30"
+    effect: 4
+    value: 8
+    maxRank: 1
+    parent: 32
+    job: 2
+    cell: {x: 9, y: 4}
+  - displayName: "\uD22C\uC9C0"
+    effect: 6
+    value: 8
+    maxRank: 1
+    parent: 33
+    job: 2
+    cell: {x: 8, y: 5}
+  - displayName: "\uB300\uC9C0 \uAC00\uB974\uAE30"
+    effect: 0
+    value: 20
+    maxRank: 1
+    parent: 28
+    job: 2
+    cell: {x: 10.5, y: 1}
+  - displayName: "\uBB34\uAC70\uC6B4 \uC190"
+    effect: 10
+    value: 16
+    maxRank: 1
+    parent: 36
+    job: 2
+    cell: {x: 10.5, y: 2}
+  - displayName: "\uBD84\uC1C4 \uC77C\uACA9"
+    effect: 0
+    value: 21
+    maxRank: 1
+    parent: 37
+    job: 2
+    cell: {x: 10, y: 3}
+  - displayName: "\uC9C8\uAE34 \uBAB8"
+    effect: 5
+    value: 30
+    maxRank: 1
+    parent: 37
+    job: 2
+    cell: {x: 11, y: 3}
+  - displayName: "\uC9C0\uC9C4"
+    effect: 0
+    value: 22
+    maxRank: 1
+    parent: 38
+    job: 2
+    cell: {x: 10, y: 4}
+  - displayName: "\uBD88\uAD74"
+    effect: 0
+    value: 23
+    maxRank: 1
+    parent: 39
+    job: 2
+    cell: {x: 11, y: 4}
+  awakenSkillDamagePercent: 30
+  awakenCooldownPercent: 20
+  effectFormats:
+  - 
+  - "\uACF5\uACA9\uB825 +{0}%"
+  - "\uACF5\uACA9 \uC18D\uB3C4 +{0}%"
+  - "\uC774\uB3D9 \uC18D\uB3C4 +{0}%"
+  - "\uCE58\uBA85\uD0C0 \uD655\uB960 +{0}%"
+  - "\uCD5C\uB300 \uCCB4\uB825 +{0}"
+  - "\uBC1B\uB294 \uD53C\uD574 -{0}%"
+  - "\uCD5C\uB300 \uB9C8\uB098 +{0}"
+  - "\uC801\uC911 \uC2DC \uB9C8\uB098 +{0}"
+  - "\uC7AC\uC0AC\uC6A9 \uC2DC\uAC04 -{0}%"
+  - "\uC2A4\uD0AC \uD53C\uD574 +{0}%"

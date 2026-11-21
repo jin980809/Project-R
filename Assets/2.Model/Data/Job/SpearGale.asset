@@ -20,8 +20,16 @@ MonoBehaviour:
   castTime: 0.3
   damageFactor: 0
   radius: 0
+  arcDegrees: 0
+  impactDelay: 0
+  chargeTime: 0
+  chargeMinDamage: 0.35
+  chargeMinSize: 0.55
+  pierce: 0
   range: 0
   invulnerable: 0
+  groundTarget: 0
+  pullSpeed: 0
   count: 1
   spreadDegrees: 0
   projectileSpeed: 12
@@ -39,5 +47,51 @@ MonoBehaviour:
   animStartTime: 0
   animSpeed: 1.5
   fxColor: {r: 0.5, g: 0.75, b: 1, a: 1}
-  fx: 7
+  fx: 23
+  icon: {fileID: 21300000, guid: 963f5617d730e1a4e870a710a6702a0f, type: 3}
   sound: 33
+  vfx:
+    cast:
+    - {fileID: 21300000, guid: 10f7b386b4d3f684c87950fe0f73a5df, type: 3}
+    - {fileID: 21300000, guid: cb53d59eede025247a7fd5879370b124, type: 3}
+    - {fileID: 21300000, guid: fceb1dacd40fff742ae696c9f51f4043, type: 3}
+    - {fileID: 21300000, guid: 141f3dab7670aec4c9275cdc8a6c9223, type: 3}
+    - {fileID: 21300000, guid: 0b9b055a27ee71e4d9d00c733c33b982, type: 3}
+    - {fileID: 21300000, guid: 73a310f12465bdf40af08bda45bfde6c, type: 3}
+    - {fileID: 21300000, guid: 1d751a6da3cf8f34097e71e8929e06e4, type: 3}
+    - {fileID: 21300000, guid: 45f328bb87a4af642ba2001db3d90974, type: 3}
+    - {fileID: 21300000, guid: 89705b364bcb6dd449a4a41e9176e279, type: 3}
+    - {fileID: 21300000, guid: 62a45b1b63039944c9c8c1c1e9c73620, type: 3}
+    - {fileID: 21300000, guid: 989e37cb82e98d54ba13e6480531d70b, type: 3}
+    - {fileID: 21300000, guid: 74c17dd773c21b741a256fd432cd331b, type: 3}
+    - {fileID: 21300000, guid: 2ba05ba673257c640a29c663965bb5b2, type: 3}
+    - {fileID: 21300000, guid: 8072105032c282e4bad28686a2f71682, type: 3}
+    castFps: 14
+    castGround: 0
+    castDirectional: 0
+    castMirror: 0
+    castScale: 1.667
+    castSize: 0.9
+    castIntro: []
+    castIntroFps: 20
+    castOutro: []
+    castOutroFps: 20
+    trail: []
+    trailFps: 20
+    trailWidth: 1.4
+    projectile: []
+    projectileFps: 18
+    projectileSize: 1
+    projectileSpin: 0
+    projectileHidden: 0
+    impact: []
+    impactFps: 20
+    impactSize: 0.8
+    impactScale: 1
+    impactGround: 0
+    impactDirectional: 0
+    impactMirror: 0
+    muzzle: []
+    muzzleFps: 22
+    muzzleSize: 0.7
+    muzzleDirectional: 0

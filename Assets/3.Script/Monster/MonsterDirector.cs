@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Mirror;
 using UnityEngine;
 
@@ -63,6 +63,7 @@ public class MonsterDirector : NetworkBehaviour
     public bool IsGroupFinished => pendingSpawnCount == 0 && aliveCount == 0;
     public int DefinitionCount => definitions.Length;
     public int AliveCount => aliveCount;
+    public bool HasPendingSpawns => pendingSpawnCount > 0;
     // 이번 판에서 잡은 몬스터 수(서버)
     public int TotalKills => totalKills;
     // 지금 방에 살아 있는 보스(없으면 null). 화면 위 보스 체력 바가 쓴다.
@@ -347,7 +348,7 @@ public class MonsterDirector : NetworkBehaviour
             int goldAmount = Random.Range(goldMin, goldMax + 1);
             hub.GetPlayer(i).Inventory.ServerOnMonsterKilled(position, dropChance, groupRarityBonus, goldAmount);
             hub.GetPlayer(i).Skills.ServerAddXp(xpPerKill * rankXpFactors[(int)monster.Rank]);
-            hub.GetPlayer(i).Skills.ServerAddMastery();
+            hub.GetPlayer(i).Skills.ServerOnKill();
         }
     }
 
@@ -378,7 +379,7 @@ public class MonsterDirector : NetworkBehaviour
         shot.radius = definition.ProjectileRadius;
         shot.damage = damage;
         shot.look = ProjectileLook.Spore;
-        shot.color = Color.white;
+        shot.color = definition.Tint;
         shot.hitsMonsters = false;
         shot.authoritative = authoritative;
         shot.playerStatus = status;

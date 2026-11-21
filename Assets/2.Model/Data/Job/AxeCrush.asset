@@ -1,0 +1,100 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d31d9e92da8c0464aa4d1b02d82027ff, type: 3}
+  m_Name: AxeCrush
+  m_EditorClassIdentifier: Assembly-CSharp::SkillDefinition
+  displayName: "\uBD84\uC1C4 \uC77C\uACA9"
+  description: "[\uCC28\uC9D5] \uBB34\uAE30\uB97C \uB192\uC774 \uB4E4\uC5B4 \uD798\uC744
+    \uBAA8\uC558\uB2E4\uAC00 \uB6F0\uC5B4\uC62C\uB77C \uB545\uC744 \uAE68\uBD80\uC229\uB2C8\uB2E4.
+    \uBAA8\uC744\uC218\uB85D \uB113\uACE0 \uC138\uAC8C \uBD80\uC218\uBA70 \uB9DE\uC740
+    \uC801\uC744 \uAE30\uC808\uC2DC\uD0B5\uB2C8\uB2E4."
+  kind: 0
+  manaCost: 18
+  cooldown: 9
+  castTime: 0.6
+  damageFactor: 3
+  radius: 3.2
+  arcDegrees: 0
+  impactDelay: 0.38
+  chargeTime: 1.1
+  chargeMinDamage: 0.35
+  chargeMinSize: 0.45
+  pierce: 0
+  range: 0
+  invulnerable: 0
+  groundTarget: 0
+  pullSpeed: 0
+  count: 1
+  spreadDegrees: 0
+  projectileSpeed: 12
+  projectileLifetime: 1
+  explosionRadius: 0
+  projectileLook: 1
+  buffEffect: 1
+  buffValue: 30
+  buffDuration: 0
+  healPercent: 0
+  statusKind: 4
+  statusDuration: 0.8
+  statusPower: 0
+  anim: 6
+  animStartTime: 0
+  animSpeed: 1.5
+  fxColor: {r: 1, g: 0.65, b: 0.25, a: 1}
+  fx: 17
+  icon: {fileID: 21300000, guid: 75c77cebda9658749a6b9855af289215, type: 3}
+  sound: 6
+  vfx:
+    cast:
+    - {fileID: 21300000, guid: cefe4a4dd9dbdc8418c47d81f891c208, type: 3}
+    - {fileID: 21300000, guid: 8c6c40e2bd744704c9513fb0f8bae760, type: 3}
+    - {fileID: 21300000, guid: 84de5fc2cc2e8b440abaf5a5060781e0, type: 3}
+    - {fileID: 21300000, guid: 72f9bf1bb658c7c4faa7be438f34725a, type: 3}
+    - {fileID: 21300000, guid: 17f0831fbb2d6a54b94d6791ab4a69ec, type: 3}
+    - {fileID: 21300000, guid: d5ad0adac24edd940a83328d3b315dc1, type: 3}
+    - {fileID: 21300000, guid: 4215c31640bd1014e91ce9d894b2a016, type: 3}
+    - {fileID: 21300000, guid: e62e00cb97ecbe747bc16db839c469a3, type: 3}
+    - {fileID: 21300000, guid: 9cb18f826fd8a0a4085e0497a857d221, type: 3}
+    - {fileID: 21300000, guid: 8e8c0d3b6b12526438537222b1f4d9de, type: 3}
+    - {fileID: 21300000, guid: e87e6ab14965c60478bd509ec165773a, type: 3}
+    - {fileID: 21300000, guid: 922f3265c2f8105498b7b1c54756a38a, type: 3}
+    - {fileID: 21300000, guid: 718aeec18d8da5e4b9591b9c9e0cc380, type: 3}
+    - {fileID: 21300000, guid: c6cc91f39b1d7384eb8bd1e20d858dd6, type: 3}
+    castFps: 10.1
+    castGround: 1
+    castDirectional: 0
+    castMirror: 0
+    castScale: 1.25
+    castSize: 0.9
+    castIntro: []
+    castIntroFps: 20
+    castOutro: []
+    castOutroFps: 20
+    trail: []
+    trailFps: 20
+    trailWidth: 1.4
+    projectile: []
+    projectileFps: 18
+    projectileSize: 1
+    projectileSpin: 0
+    projectileHidden: 0
+    impact: []
+    impactFps: 20
+    impactSize: 0.8
+    impactScale: 1
+    impactGround: 0
+    impactDirectional: 0
+    impactMirror: 0
+    muzzle: []
+    muzzleFps: 22
+    muzzleSize: 0.7
+    muzzleDirectional: 0

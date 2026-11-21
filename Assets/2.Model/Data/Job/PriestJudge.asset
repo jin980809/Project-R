@@ -13,16 +13,24 @@ MonoBehaviour:
   m_Name: PriestJudge
   m_EditorClassIdentifier: Assembly-CSharp::SkillDefinition
   displayName: "\uC2EC\uD310"
-  description: "\uBE5B\uAE30\uB465\uC744 \uB0B4\uB824 \uC8FC\uBCC0 \uC801\uC744 \uC7A0\uC2DC
-    \uAE30\uC808\uC2DC\uD0B5\uB2C8\uB2E4."
+  description: "\uACE0\uB978 \uC790\uB9AC\uC5D0 \uBE5B\uAE30\uB465\uC744 \uB0B4\uB824
+    \uADF8 \uC8FC\uBCC0 \uC801\uC744 \uC7A0\uC2DC \uAE30\uC808\uC2DC\uD0B5\uB2C8\uB2E4."
   kind: 0
   manaCost: 20
   cooldown: 10
   castTime: 0.45
   damageFactor: 1.6
   radius: 2.4
-  range: 0
+  arcDegrees: 0
+  impactDelay: 0
+  chargeTime: 0
+  chargeMinDamage: 0.35
+  chargeMinSize: 0.55
+  pierce: 0
+  range: 6
   invulnerable: 0
+  groundTarget: 1
+  pullSpeed: 0
   count: 1
   spreadDegrees: 0
   projectileSpeed: 12
@@ -41,4 +49,50 @@ MonoBehaviour:
   animSpeed: 1.5
   fxColor: {r: 1, g: 0.85, b: 0.45, a: 1}
   fx: 5
+  icon: {fileID: 21300000, guid: 3de9e699a9b776940a55cbed3d95db06, type: 3}
   sound: 31
+  vfx:
+    cast:
+    - {fileID: 21300000, guid: 1fe371c44627f474bba30babd7422321, type: 3}
+    - {fileID: 21300000, guid: dc0b02d458ea7fc438560d3c50f081f7, type: 3}
+    - {fileID: 21300000, guid: a47abcd1b872ac84988b7014b5183539, type: 3}
+    - {fileID: 21300000, guid: 09fcc7b292bfd374a8b593967b0a10fb, type: 3}
+    - {fileID: 21300000, guid: 505bac4ab38a0dd4fb2ec36ccfd78ccc, type: 3}
+    - {fileID: 21300000, guid: 346cf521d7f43854282b2fcb0cede8f3, type: 3}
+    - {fileID: 21300000, guid: 5e27de1679a94e343812565c0e54d17b, type: 3}
+    - {fileID: 21300000, guid: 70a885c0b08989343bd6de8aa5ac6ba2, type: 3}
+    - {fileID: 21300000, guid: 851b73ae6299c01489b99f0de31e216a, type: 3}
+    - {fileID: 21300000, guid: f8d228db37828dd4c9b171e3a2bbcf0e, type: 3}
+    - {fileID: 21300000, guid: e1eb030cf23c54840b6a22260bdd2fc5, type: 3}
+    - {fileID: 21300000, guid: 3ff861b9401d30c49b35c61be59940c8, type: 3}
+    - {fileID: 21300000, guid: c654f5dcbbebb9441a561b9f1fdff5a4, type: 3}
+    - {fileID: 21300000, guid: 38d15c18b0fce4243b324537823b0d88, type: 3}
+    castFps: 13.1
+    castGround: 0
+    castDirectional: 0
+    castMirror: 0
+    castScale: 1.198
+    castSize: 0.9
+    castIntro: []
+    castIntroFps: 20
+    castOutro: []
+    castOutroFps: 20
+    trail: []
+    trailFps: 20
+    trailWidth: 1.4
+    projectile: []
+    projectileFps: 18
+    projectileSize: 1
+    projectileSpin: 0
+    projectileHidden: 0
+    impact: []
+    impactFps: 20
+    impactSize: 0.8
+    impactScale: 1
+    impactGround: 0
+    impactDirectional: 0
+    impactMirror: 0
+    muzzle: []
+    muzzleFps: 22
+    muzzleSize: 0.7
+    muzzleDirectional: 0

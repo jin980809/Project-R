@@ -1,0 +1,3 @@
+cast_scale=0.813
+cast_fps=14.0
+cast_ground=0

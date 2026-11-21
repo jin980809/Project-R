@@ -1,0 +1,101 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d31d9e92da8c0464aa4d1b02d82027ff, type: 3}
+  m_Name: PriestRadiance
+  m_EditorClassIdentifier: Assembly-CSharp::SkillDefinition
+  displayName: "\uC131\uAD11"
+  description: "[\uCC28\uC9D5] \uBE5B\uC744 \uBAA8\uC558\uB2E4\uAC00 \uBAB8 \uB458\uB808\uB85C
+    \uD130\uB728\uB9BD\uB2C8\uB2E4. \uC801\uC740 \uBD88\uD0DC\uC6B0\uACE0 \uC544\uAD70\uC740
+    \uD68C\uBCF5\uD558\uBA70, \uBAA8\uC744\uC218\uB85D \uB113\uAC8C \uD37C\uC9D1\uB2C8\uB2E4."
+  kind: 0
+  manaCost: 18
+  cooldown: 9
+  castTime: 0.4
+  damageFactor: 2
+  radius: 3.4
+  arcDegrees: 0
+  impactDelay: 0
+  chargeTime: 1
+  chargeMinDamage: 0.35
+  chargeMinSize: 0.45
+  pierce: 0
+  range: 0
+  invulnerable: 0
+  groundTarget: 0
+  pullSpeed: 0
+  count: 1
+  spreadDegrees: 0
+  projectileSpeed: 12
+  projectileLifetime: 1
+  explosionRadius: 0
+  projectileLook: 1
+  buffEffect: 1
+  buffValue: 30
+  buffDuration: 0
+  healPercent: 12
+  statusKind: 1
+  statusDuration: 2
+  statusPower: 0.1
+  anim: 7
+  animStartTime: 0
+  animSpeed: 1.5
+  fxColor: {r: 1, g: 0.85, b: 0.45, a: 1}
+  fx: 5
+  icon: {fileID: 21300000, guid: 9ccfc3e5572b57e41a404c2aee0e9a41, type: 3}
+  sound: 31
+  vfx:
+    cast:
+    - {fileID: 21300000, guid: 3b68576a2e3536f49ae9546cc3955156, type: 3}
+    - {fileID: 21300000, guid: 72468c3650ffcfd46bef582d9e37d39d, type: 3}
+    - {fileID: 21300000, guid: e10556613370f8146b1477d7e6e6dd1d, type: 3}
+    - {fileID: 21300000, guid: 97e881a91debed6478094cbc1672ca47, type: 3}
+    - {fileID: 21300000, guid: e9eb62462ca3d56489022c1635370b75, type: 3}
+    - {fileID: 21300000, guid: 1d2c31bf480a64f45982335f8153cb59, type: 3}
+    - {fileID: 21300000, guid: 2c1767c4565dfc743ba7027090fe7563, type: 3}
+    - {fileID: 21300000, guid: 1b5be22eb6a8b6049bf2569330c11dc7, type: 3}
+    - {fileID: 21300000, guid: 15ea2c53b417c514390e56ec85f7e641, type: 3}
+    - {fileID: 21300000, guid: ff4eb65d706b5cb4ebea602102bbe193, type: 3}
+    - {fileID: 21300000, guid: eef33defdef9cc447a4e262535b2ea64, type: 3}
+    - {fileID: 21300000, guid: b07f5140615604e48a0b9fb830617fd3, type: 3}
+    - {fileID: 21300000, guid: 1381591f6748c464c949e4e3cd79782b, type: 3}
+    - {fileID: 21300000, guid: dda5fe8eb4126014d942b9236071db95, type: 3}
+    - {fileID: 21300000, guid: 8cc42ba8bb0531e4aab775ffef427774, type: 3}
+    - {fileID: 21300000, guid: b5cf3c2ffdba122479840e9d0b9a3679, type: 3}
+    castFps: 13.7
+    castGround: 1
+    castDirectional: 0
+    castMirror: 0
+    castScale: 1.048
+    castSize: 0.9
+    castIntro: []
+    castIntroFps: 20
+    castOutro: []
+    castOutroFps: 20
+    trail: []
+    trailFps: 20
+    trailWidth: 1.4
+    projectile: []
+    projectileFps: 18
+    projectileSize: 1
+    projectileSpin: 0
+    projectileHidden: 0
+    impact: []
+    impactFps: 20
+    impactSize: 0.8
+    impactScale: 1
+    impactGround: 0
+    impactDirectional: 0
+    impactMirror: 0
+    muzzle: []
+    muzzleFps: 22
+    muzzleSize: 0.7
+    muzzleDirectional: 0

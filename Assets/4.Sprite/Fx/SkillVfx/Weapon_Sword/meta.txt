@@ -1,0 +1,3 @@
+cast_fps=28.1
+cast_size=2.000
+cast_ground=0

@@ -19,6 +19,14 @@ public class FacilityUi : SlotPanel
     [SerializeField] private Color emptyFrameColor = new Color(1f, 1f, 1f, 0.15f);
     [SerializeField] private Color selectedFrameColor = Color.white;
     [SerializeField] private string[] equipNames = { "무기", "보조", "투구", "갑옷" };
+    [Header("상점 포션 진열(PotionKind 1번부터). 칸 번호는 PotionSlotBase부터 붙는다.")]
+    [SerializeField] private GameObject potionRow;
+    [SerializeField] private InventorySlotView[] potionSlots;
+    [SerializeField] private TMP_Text[] potionLabels;
+    [SerializeField] private Color potionFrameColor = new Color(0.55f, 0.85f, 0.6f, 0.9f);
+    [SerializeField] private Color unaffordableFrameColor = new Color(1f, 1f, 1f, 0.25f);
+
+    public const int PotionSlotBase = 10;
 
     private readonly StringBuilder builder = new StringBuilder(256);
     private PlayerInventory inventory;
@@ -28,7 +36,6 @@ public class FacilityUi : SlotPanel
     private int lastRevision = -1;
     private int lastGold = -1;
     private int lastOre = -1;
-    private int lastPotions = -1;
 
     public bool IsOpen => panel.activeSelf;
     public bool IsShopOpen => panel.activeSelf && mode == RoomType.Shop;
@@ -61,6 +68,12 @@ public class FacilityUi : SlotPanel
         panel.SetActive(true);
     }
 
+    // 가방에서 끌어 온 아이템을 이 창 위에 놓았는지(상점이면 판다)
+    public bool Contains(GameObject target)
+    {
+        return panel.activeSelf && target.transform.IsChildOf(panel.transform);
+    }
+
     public void Close()
     {
         if (panel.activeSelf)
@@ -81,13 +94,12 @@ public class FacilityUi : SlotPanel
             else
             {
                 bool changed = inventory.Revision != lastRevision || inventory.Gold != lastGold
-                    || inventory.Ore != lastOre || inventory.Potions != lastPotions;
+                    || inventory.Ore != lastOre;
                 if (changed)
                 {
                     lastRevision = inventory.Revision;
                     lastGold = inventory.Gold;
                     lastOre = inventory.Ore;
-                    lastPotions = inventory.Potions;
                     Refresh();
                 }
             }
@@ -127,12 +139,10 @@ public class FacilityUi : SlotPanel
             builder.Clear();
             if (item.Exists)
             {
-                Color frame = balance.GetRarityColor(item.rarity);
-                if (!shop && i == selected)
-                {
-                    frame = selectedFrameColor;
-                }
-                slots[i].ShowItem(inventory.GetIcon(item), frame, 1f);
+                // 바탕은 등급 색, 테두리는 강화 단계 색. 대장간에서 고른 칸은 테두리 안쪽에 고리를 두른다.
+                slots[i].ShowItem(inventory.GetIcon(item), balance.GetRarityColor(item.rarity), 1f);
+                slots[i].SetLevel(item.level, balance.GetUpgradeBorderColor(item.level));
+                slots[i].SetSelected(!shop && i == selected, selectedFrameColor);
                 if (shop)
                 {
                     builder.Append(balance.GetBuyPrice(item)).Append(" G");
@@ -145,6 +155,7 @@ public class FacilityUi : SlotPanel
             else
             {
                 slots[i].ShowEmpty(emptyFrameColor);
+                slots[i].SetSelected(false, selectedFrameColor);
                 if (shop)
                 {
                     builder.Append("품절");
@@ -157,18 +168,30 @@ public class FacilityUi : SlotPanel
             slotLabels[i].SetText(builder);
         }
 
+        potionRow.SetActive(shop);
         if (shop)
         {
-            builder.Clear();
-            builder.Append("포션 구매  ").Append(balance.PotionPrice).Append(" G   (보유 ")
-                .Append(inventory.Potions).Append('/').Append(inventory.MaxPotions).Append(')');
-            buttonLabels[0].SetText(builder);
-            buttons[0].interactable = inventory.Potions < inventory.MaxPotions && inventory.Gold >= balance.PotionPrice;
+            buttons[0].gameObject.SetActive(false);
             buttons[1].gameObject.SetActive(false);
             buttons[2].gameObject.SetActive(false);
+            for (int i = 0; i < potionSlots.Length; i++)
+            {
+                PotionKind kind = (PotionKind)(i + 1);
+                int price = balance.GetPotionPrice(kind);
+                Color frame = potionFrameColor;
+                if (inventory.Gold < price)
+                {
+                    frame = unaffordableFrameColor;
+                }
+                potionSlots[i].ShowItem(balance.GetPotionIcon(kind), frame, 1f);
+                int owned = inventory.CountPotions(kind);
+                potionSlots[i].SetCount(owned);
+                potionLabels[i].SetText("{0} G", price);
+            }
         }
         else
         {
+            buttons[0].gameObject.SetActive(true);
             buttons[1].gameObject.SetActive(true);
             buttons[2].gameObject.SetActive(true);
             ItemData item = new ItemData();
@@ -229,7 +252,15 @@ public class FacilityUi : SlotPanel
         {
             index = selected;
         }
-        if (index >= 0)
+        if (index >= PotionSlotBase)
+        {
+            ItemBalance balance = inventory.Balance;
+            PotionKind kind = (PotionKind)(index - PotionSlotBase + 1);
+            builder.Append(balance.GetPotionName(kind)).Append("   ").Append(balance.GetPotionPrice(kind)).Append(" G\n");
+            balance.AppendPotionEffect(builder, kind);
+            builder.Append("가방에 ").Append(inventory.CountPotions(kind)).Append("개\n좌클릭으로 하나 삽니다.");
+        }
+        else if (index >= 0)
         {
             inventory.Balance.AppendDescription(builder, GetSlotItem(index), inventory.Weapons);
         }
@@ -264,7 +295,11 @@ public class FacilityUi : SlotPanel
     {
         if (inventory != null && !rightButton)
         {
-            if (mode == RoomType.Shop)
+            if (mode == RoomType.Shop && view.Index >= PotionSlotBase)
+            {
+                inventory.RequestBuyPotion((PotionKind)(view.Index - PotionSlotBase + 1));
+            }
+            else if (mode == RoomType.Shop)
             {
                 inventory.RequestBuy(view.Index);
             }
@@ -278,11 +313,7 @@ public class FacilityUi : SlotPanel
 
     private void OnClickButton0()
     {
-        if (mode == RoomType.Shop)
-        {
-            inventory.RequestBuyPotion();
-        }
-        else if (selected >= 0)
+        if (mode == RoomType.Forge && selected >= 0)
         {
             inventory.RequestUpgrade(selected);
         }

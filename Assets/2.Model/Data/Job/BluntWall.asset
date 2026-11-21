@@ -21,8 +21,16 @@ MonoBehaviour:
   castTime: 0.3
   damageFactor: 0
   radius: 0
+  arcDegrees: 0
+  impactDelay: 0
+  chargeTime: 0
+  chargeMinDamage: 0.35
+  chargeMinSize: 0.55
+  pierce: 0
   range: 0
   invulnerable: 0
+  groundTarget: 0
+  pullSpeed: 0
   count: 1
   spreadDegrees: 0
   projectileSpeed: 12
@@ -40,5 +48,49 @@ MonoBehaviour:
   animStartTime: 0
   animSpeed: 1.5
   fxColor: {r: 1, g: 0.85, b: 0.45, a: 1}
-  fx: 7
+  fx: 22
+  icon: {fileID: 21300000, guid: aa2c58ea1d047da46bfa5406af8c03ae, type: 3}
   sound: 33
+  vfx:
+    cast:
+    - {fileID: 21300000, guid: 14c9dd6162d0989478d24df7e66fd435, type: 3}
+    - {fileID: 21300000, guid: 816bc8eda8120374f88f2a286a3c15c0, type: 3}
+    - {fileID: 21300000, guid: 97bd21e75a2c95e4a8945318e8029293, type: 3}
+    - {fileID: 21300000, guid: 4ba8ac3bf0a7f4f41ba4dfaf30a092f1, type: 3}
+    - {fileID: 21300000, guid: 7e897ef84fd7339499b27ea5e1524766, type: 3}
+    - {fileID: 21300000, guid: 5754754f9684d6e4ab3d70bf09d24d93, type: 3}
+    - {fileID: 21300000, guid: b0a945358be84814183b8121704cafc7, type: 3}
+    - {fileID: 21300000, guid: 566ab857fa86c524394b7877743cd57e, type: 3}
+    - {fileID: 21300000, guid: 9331ba096e223c44ca04295cb83c504f, type: 3}
+    - {fileID: 21300000, guid: ee6a9510e2a3102449d0389618e8a952, type: 3}
+    - {fileID: 21300000, guid: 36c79b72e84135f418b851f0b1275384, type: 3}
+    - {fileID: 21300000, guid: 6b25ceaca6ad6c44699ef97e4b3f3272, type: 3}
+    castFps: 10
+    castGround: 0
+    castDirectional: 0
+    castMirror: 0
+    castScale: 1.944
+    castSize: 0.9
+    castIntro: []
+    castIntroFps: 20
+    castOutro: []
+    castOutroFps: 20
+    trail: []
+    trailFps: 20
+    trailWidth: 1.4
+    projectile: []
+    projectileFps: 18
+    projectileSize: 1
+    projectileSpin: 0
+    projectileHidden: 0
+    impact: []
+    impactFps: 20
+    impactSize: 0.8
+    impactScale: 1
+    impactGround: 0
+    impactDirectional: 0
+    impactMirror: 0
+    muzzle: []
+    muzzleFps: 22
+    muzzleSize: 0.7
+    muzzleDirectional: 0

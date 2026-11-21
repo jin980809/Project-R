@@ -16,6 +16,8 @@ public class GameHub : MonoBehaviour
     [SerializeField] private InventoryUi inventoryUi;
     [SerializeField] private FacilityUi facilityUi;
     [SerializeField] private ResultUi resultUi;
+    [Tooltip("예/아니오 확인 창(다음 층 포탈, 스킬 초기화)")]
+    [SerializeField] private ConfirmUi confirmUi;
     [SerializeField] private SkillUi skillUi;
     // 로비 마을 화면(해금 상인, 도감, 설정). 전투 씬에서는 비운다.
     [SerializeField] private MetaUi metaUi;
@@ -31,6 +33,8 @@ public class GameHub : MonoBehaviour
     [SerializeField] private ProjectilePool projectilePool;
     [SerializeField] private SkillFxPlayer skillFx;
     [SerializeField] private FloorDirector floorDirector;
+    [Tooltip("미니맵(M으로 큰 지도)")]
+    [SerializeField] private MinimapUi minimap;
 
     [Header("로비 전용")]
     [SerializeField] private bool hasStartZone;
@@ -59,6 +63,8 @@ public class GameHub : MonoBehaviour
     public InventoryUi InventoryUi => inventoryUi;
     public FacilityUi FacilityUi => facilityUi;
     public ResultUi ResultUi => resultUi;
+    public ConfirmUi ConfirmUi => confirmUi;
+    public MinimapUi Minimap => minimap;
     public SkillUi SkillUi => skillUi;
     public MetaUi MetaUi => metaUi;
     public Vector2 ArenaHalfSize => arenaHalfSize;
@@ -66,11 +72,55 @@ public class GameHub : MonoBehaviour
     public int PlayerCount => players.Count;
     public bool IsCombatScene => monsterDirector != null;
     public bool InputBlocked => inputBlocked || menuBlocked || customizeBlocked;
+    // 본인 플레이어의 입력(키 이름 표시와 키 설정 화면용). 본인 플레이어가 없으면 null.
+    public GameInput LocalInput => localInput;
+    private GameInput localInput;
+
+    public void SetLocalInput(GameInput value)
+    {
+        localInput = value;
+    }
+
+    // 상호작용 등 바꿀 수 있는 키의 지금 이름. 본인 입력이 없으면 기본 키 이름.
+    public string GetKeyName(int key, string fallback)
+    {
+        string name = fallback;
+        if (localInput != null)
+        {
+            name = localInput.GetKeyName(key);
+        }
+        return name;
+    }
     public CustomizeUi CustomizeUi => customizeUi;
     public SoundManager Sound => sound;
     public PauseMenuUi PauseMenu => pauseMenu;
     // 영혼석, 영구 해금, 도감, 설정(기기에 저장)
     public MetaProgress Meta => meta;
+
+    // 잠깐 느려지는 연출(보스·방 마지막 몬스터 처치). 혼자 호스트일 때만 시간을 늦춘다(여럿이면 화면만 흔든다).
+    private float slowMotionEnd;
+    private bool slowMotionActive;
+
+    public void RequestSlowMotion(float scale, float duration)
+    {
+        bool solo = Mirror.NetworkServer.active && players.Count <= 1;
+        if (solo && Time.timeScale > 0f)
+        {
+            slowMotionActive = true;
+            slowMotionEnd = Time.unscaledTime + duration;
+            Time.timeScale = Mathf.Min(Time.timeScale, scale);
+        }
+    }
+
+    private void LateUpdate()
+    {
+        // 일시정지(timeScale 0) 중에는 건드리지 않는다.
+        if (slowMotionActive && Time.timeScale > 0f && Time.unscaledTime >= slowMotionEnd)
+        {
+            slowMotionActive = false;
+            Time.timeScale = 1f;
+        }
+    }
 
     private void Awake()
     {
@@ -102,6 +152,10 @@ public class GameHub : MonoBehaviour
 
     private void OnDestroy()
     {
+        if (slowMotionActive)
+        {
+            Time.timeScale = 1f;
+        }
         meta.Save();
         if (monsterDirector != null)
         {

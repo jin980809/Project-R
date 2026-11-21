@@ -39,5 +39,90 @@ MonoBehaviour:
   statusPower: 0.12
   projectileLook: 3
   projectileColor: {r: 1, g: 0.85, b: 0.4, a: 1}
+  vfx:
+    cast: []
+    castFps: 20
+    castGround: 0
+    castDirectional: 0
+    castMirror: 0
+    castScale: 1
+    castSize: 0.9
+    castIntro: []
+    castIntroFps: 20
+    castOutro: []
+    castOutroFps: 20
+    trail: []
+    trailFps: 20
+    trailWidth: 1.4
+    projectile:
+    - {fileID: 21300000, guid: 6870e682ac408f44da6728c18980ef48, type: 3}
+    - {fileID: 21300000, guid: 8df90ec51b009b44286e857514389f2e, type: 3}
+    - {fileID: 21300000, guid: 274fa3d64bc85df41bfa2c1b519e0f6c, type: 3}
+    - {fileID: 21300000, guid: 9673f6cc11d2a39438c696e8790726d2, type: 3}
+    projectileFps: 6.7
+    projectileSize: 0.875
+    projectileSpin: 0
+    projectileHidden: 0
+    impact:
+    - {fileID: 21300000, guid: e975a52c0af583c4eab8333a6d513971, type: 3}
+    - {fileID: 21300000, guid: 0032c37fc9cdd534d9e9cf1a2a891eec, type: 3}
+    - {fileID: 21300000, guid: 37bcaa60713f7d7479976c9c4ffe1008, type: 3}
+    - {fileID: 21300000, guid: 9cae445d0e6d8204a92d6b9cd18bb7be, type: 3}
+    - {fileID: 21300000, guid: 17d9d0711aa507d448075dfa1bf5f10f, type: 3}
+    impactFps: 14.3
+    impactSize: 0.625
+    impactScale: 1
+    impactGround: 0
+    impactDirectional: 1
+    impactMirror: 0
+    muzzle:
+    - {fileID: 21300000, guid: 4974932f5985ccd4993bab4dcf760cdc, type: 3}
+    - {fileID: 21300000, guid: b65f49c19f0440d4aa97181a6692e52f, type: 3}
+    - {fileID: 21300000, guid: 1de4558db22a4e546893328e950a460d, type: 3}
+    - {fileID: 21300000, guid: 28ba0347d700bd84ab31d147f0e71dfa, type: 3}
+    muzzleFps: 16
+    muzzleSize: 0.5
+    muzzleDirectional: 1
   chargeTime: 0
   minChargeFactor: 0.35
+  powerAttack: 4
+  powerChargeTime: 0.8
+  powerDamageFactor: 2.2
+  powerRadius: 0
+  powerReach: 0
+  powerDuration: 0.35
+  powerHitDelay: 0.04
+  powerPierce: 3
+  powerStunTime: 1.2
+  powerShotSpeed: 13
+  powerVfx:
+    cast: []
+    castFps: 20
+    castGround: 0
+    castDirectional: 0
+    castMirror: 0
+    castScale: 1
+    castSize: 0.9
+    castIntro: []
+    castIntroFps: 20
+    castOutro: []
+    castOutroFps: 20
+    trail: []
+    trailFps: 20
+    trailWidth: 1.4
+    projectile: []
+    projectileFps: 18
+    projectileSize: 1
+    projectileSpin: 0
+    projectileHidden: 0
+    impact: []
+    impactFps: 20
+    impactSize: 0.8
+    impactScale: 1
+    impactGround: 0
+    impactDirectional: 0
+    impactMirror: 0
+    muzzle: []
+    muzzleFps: 22
+    muzzleSize: 0.7
+    muzzleDirectional: 0

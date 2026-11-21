@@ -1,0 +1,94 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d31d9e92da8c0464aa4d1b02d82027ff, type: 3}
+  m_Name: BowPower
+  m_EditorClassIdentifier: Assembly-CSharp::SkillDefinition
+  displayName: "\uAC15\uAD81"
+  description: "[\uCC28\uC9D5] \uC2DC\uC704\uB97C \uB05D\uAE4C\uC9C0 \uB2F9\uACA8
+    \uBC14\uB78C\uC744 \uB450\uB978 \uD654\uC0B4\uC744 \uC3E9\uB2C8\uB2E4. \uC801\uC744
+    \uAFF0\uB6AB\uACE0 \uB0A0\uC544\uAC00\uBA70, \uBAA8\uC744\uC218\uB85D \uAD75\uACE0
+    \uC138\uC9D1\uB2C8\uB2E4."
+  kind: 2
+  manaCost: 14
+  cooldown: 6
+  castTime: 0.3
+  damageFactor: 2.6
+  radius: 0.35
+  arcDegrees: 0
+  impactDelay: 0
+  chargeTime: 0.9
+  chargeMinDamage: 0.35
+  chargeMinSize: 0.6
+  pierce: 6
+  range: 0
+  invulnerable: 0
+  groundTarget: 0
+  pullSpeed: 0
+  count: 1
+  spreadDegrees: 0
+  projectileSpeed: 22
+  projectileLifetime: 0.85
+  explosionRadius: 0
+  projectileLook: 1
+  buffEffect: 1
+  buffValue: 30
+  buffDuration: 0
+  healPercent: 0
+  statusKind: 3
+  statusDuration: 2
+  statusPower: 0
+  anim: 4
+  animStartTime: 0
+  animSpeed: 1.5
+  fxColor: {r: 0.55, g: 0.95, b: 1, a: 1}
+  fx: 10
+  icon: {fileID: 21300000, guid: 4dd10260e63d4b14c88992e0d35b5af0, type: 3}
+  sound: 8
+  vfx:
+    cast: []
+    castFps: 20
+    castGround: 0
+    castDirectional: 0
+    castMirror: 0
+    castScale: 1
+    castSize: 0.9
+    castIntro: []
+    castIntroFps: 20
+    castOutro: []
+    castOutroFps: 20
+    trail: []
+    trailFps: 20
+    trailWidth: 1.4
+    projectile:
+    - {fileID: 21300000, guid: 0c3e6e3fe79ad3142b1b9afe5070eb7a, type: 3}
+    - {fileID: 21300000, guid: 269719c54d762c14ca416806e200ba9c, type: 3}
+    - {fileID: 21300000, guid: 0e12eebc761153c4b9fe26060f61a275, type: 3}
+    - {fileID: 21300000, guid: 6dd51a685c9f1e14faa2d39b712d7f86, type: 3}
+    - {fileID: 21300000, guid: b1519227212259f4e96878ca20373aef, type: 3}
+    - {fileID: 21300000, guid: d8c213ad7727b8a4db9f5b6e383f676d, type: 3}
+    - {fileID: 21300000, guid: f7fa9036869976547b768a7f7805dabc, type: 3}
+    - {fileID: 21300000, guid: a4417dcd9e5389f40b9893a5962ce4ae, type: 3}
+    projectileFps: 20
+    projectileSize: 2.625
+    projectileSpin: 0
+    projectileHidden: 0
+    impact: []
+    impactFps: 20
+    impactSize: 0.938
+    impactScale: 1
+    impactGround: 0
+    impactDirectional: 1
+    impactMirror: 0
+    muzzle: []
+    muzzleFps: 25
+    muzzleSize: 0.625
+    muzzleDirectional: 1

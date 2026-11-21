@@ -17,6 +17,14 @@ public static class EditorCommandWatcher
     private const int GcSampleFrames = 300;
 
     private static double nextPollTime;
+    // trace 명령: 정해진 프레임 동안 로컬 플레이어의 상태·애니메이션·무기 각도를 매 프레임 기록한다.
+    private static int traceFrames;
+    private static int traceLastFrame;
+    private static System.Text.StringBuilder traceBuilder;
+    // script 명령: Temp/tower_script.txt의 줄을 차례로 실행한다("wait 초"는 기다림). 결과는 Temp/tower_script_result.txt.
+    private static System.Collections.Generic.Queue<string> scriptLines;
+    private static double scriptNextTime;
+    private static System.Text.StringBuilder scriptLog;
     private static bool gcSampling;
     private static int parryHitFrame;
     private static ProfilerRecorder gcRecorder;
@@ -32,6 +40,12 @@ public static class EditorCommandWatcher
 
     private static void Poll()
     {
+        if (traceFrames > 0 && EditorApplication.isPlaying && Time.frameCount != traceLastFrame)
+        {
+            traceLastFrame = Time.frameCount;
+            TraceFrame();
+        }
+
         if (parryHitFrame > 0 && EditorApplication.isPlaying && Time.frameCount >= parryHitFrame)
         {
             parryHitFrame = 0;
@@ -43,6 +57,34 @@ public static class EditorCommandWatcher
             if (gcRecorder.Count >= GcSampleFrames)
             {
                 FinishGcSample();
+            }
+        }
+
+        if (scriptLines != null && EditorApplication.timeSinceStartup >= scriptNextTime)
+        {
+            if (scriptLines.Count == 0)
+            {
+                File.WriteAllText("Temp/tower_script_result.txt", scriptLog.ToString() + "done\n");
+                scriptLines = null;
+            }
+            else
+            {
+                string line = scriptLines.Dequeue().Trim();
+                if (line.StartsWith("wait "))
+                {
+                    scriptNextTime = EditorApplication.timeSinceStartup + double.Parse(line.Substring(5), System.Globalization.CultureInfo.InvariantCulture);
+                }
+                else if (line.Length > 0)
+                {
+                    Run(line);
+                    string scriptResult = "";
+                    if (File.Exists(ResultPath))
+                    {
+                        scriptResult = File.ReadAllText(ResultPath);
+                    }
+                    scriptLog.Append(line).Append(" => ").Append(scriptResult).Append('\n');
+                    scriptNextTime = EditorApplication.timeSinceStartup + 0.05;
+                }
             }
         }
 
@@ -79,6 +121,21 @@ public static class EditorCommandWatcher
             {
                 AssetDatabase.Refresh();
             }
+            else if (command.StartsWith("copyfile "))
+            {
+                // copyfile 원본|대상 : 프로젝트 안의 파일을 복사한다(깊은 폴더의 그림을 Temp로 꺼낼 때).
+                string[] paths = command.Substring(9).Split('|');
+                File.Copy(paths[0].Trim(), paths[1].Trim(), true);
+                result = "ok copy";
+            }
+            else if (command.StartsWith("unzip "))
+            {
+                // Temp/<이름>.zip을 프로젝트 폴더에 풀고(덮어씀) 에셋을 다시 읽는다. 파일을 한꺼번에 들여올 때 쓴다.
+                string zipPath = Path.Combine("Temp", command.Substring(6).Trim());
+                System.IO.Compression.ZipFile.ExtractToDirectory(zipPath, ".", true);
+                AssetDatabase.Refresh();
+                result = "ok unzip " + zipPath;
+            }
             else if (command.StartsWith("roomtype "))
             {
                 // 시험용: 지금 방의 종류를 바꾸고 처음 들어온 것처럼 처리한다. 예: "roomtype 7"
@@ -109,10 +166,47 @@ public static class EditorCommandWatcher
                     {
                         info.Append(renderers[i].name).Append(" mode=").Append(renderers[i].drawMode).Append(" size=").Append(renderers[i].size)
                             .Append(" scale=").Append(renderers[i].transform.lossyScale).Append(" bounds=").Append(renderers[i].bounds.size)
-                            .Append(" ppu=").Append(renderers[i].sprite.pixelsPerUnit).Append(" rect=").Append(renderers[i].sprite.rect).Append(" | ");
+                            .Append(" ppu=").Append(renderers[i].sprite.pixelsPerUnit).Append(" rect=").Append(renderers[i].sprite.rect)
+                            .Append(" color=").Append(renderers[i].color).Append(" order=").Append(renderers[i].sortingOrder).Append(" on=").Append(renderers[i].enabled).Append(" | ");
                     }
                 }
                 result = "ok " + info;
+            }
+            else if (command == "sortaudit")
+            {
+                // 켜진 스프라이트마다 정렬 값(순서, 정렬 기준점, 그림 기준점 높이 비율, 높이, 묶음 정렬)을 적는다. 플레이어·몬스터·투사체는 뺀다.
+                System.Text.StringBuilder info = new System.Text.StringBuilder();
+                SpriteRenderer[] renderers = Object.FindObjectsByType<SpriteRenderer>(FindObjectsSortMode.None);
+                for (int i = 0; i < renderers.Length; i++)
+                {
+                    SpriteRenderer renderer = renderers[i];
+                    bool skip = !renderer.enabled || renderer.sprite == null || !renderer.gameObject.activeInHierarchy;
+                    if (!skip && (renderer.GetComponentInParent<PlayerController>() != null || renderer.GetComponentInParent<MonsterController>() != null || renderer.GetComponentInParent<Projectile>() != null))
+                    {
+                        skip = true;
+                    }
+                    if (!skip)
+                    {
+                        UnityEngine.Rendering.SortingGroup group = renderer.GetComponentInParent<UnityEngine.Rendering.SortingGroup>();
+                        string groupText = "-";
+                        if (group != null)
+                        {
+                            groupText = group.name + ":" + group.sortingOrder;
+                        }
+                        string parentText = "";
+                        if (renderer.transform.parent != null)
+                        {
+                            parentText = renderer.transform.parent.name + "/";
+                        }
+                        float pivotRatio = renderer.sprite.pivot.y / Mathf.Max(1f, renderer.sprite.rect.height);
+                        info.Append(parentText).Append(renderer.name)
+                            .Append(" sprite=").Append(renderer.sprite.name).Append(" order=").Append(renderer.sortingOrder)
+                            .Append(" point=").Append(renderer.spriteSortPoint).Append(" pivotY=").Append(pivotRatio.ToString("0.00"))
+                            .Append(" h=").Append(renderer.bounds.size.y.ToString("0.00")).Append(" y=").Append(renderer.transform.position.y.ToString("0.00"))
+                            .Append(" group=").Append(groupText).Append('\n');
+                    }
+                }
+                result = "ok\n" + info;
             }
             else if (command == "lookreset")
             {
@@ -275,6 +369,25 @@ public static class EditorCommandWatcher
                 bool moved = (Mirror.NetworkManager.singleton as GameNetworkManager).Hub.FloorDirector.ServerTravel(int.Parse(command.Substring(5)));
                 result = "ok door moved=" + moved;
             }
+            else if (command.StartsWith("drag "))
+            {
+                // drag 시작칸 끝칸|x,y: UI 끌어 놓기를 EventSystem으로 바로 흉내 낸다. 칸 이름은 "부모/이름"도 된다(예: Panel/Bag0, SlotQ, Node3).
+                string[] parts = command.Split(' ');
+                result = SimulateDrag(parts[1], parts[2]);
+            }
+            else if (command.StartsWith("prefint "))
+            {
+                // 시험으로 바뀐 기기 저장값을 되돌린다(플레이 중이 아닐 때). 예: "prefint ProjectR.StartClass 0"
+                string[] parts = command.Split(' ');
+                PlayerPrefs.SetInt(parts[1], int.Parse(parts[2]));
+                PlayerPrefs.Save();
+                result = "ok prefint " + parts[1] + "=" + PlayerPrefs.GetInt(parts[1]);
+            }
+            else if (command.StartsWith("tproom "))
+            {
+                // 큰 지도에서 그 방을 누른 것과 같은 경로(본인 PlayerFacility의 순간이동 요청). 예: "tproom 3"
+                Mirror.NetworkClient.localPlayer.GetComponent<PlayerFacility>().RequestTeleport(int.Parse(command.Substring(7)));
+            }
             else if (command == "climb")
             {
                 (Mirror.NetworkManager.singleton as GameNetworkManager).Hub.FloorDirector.ServerClimb();
@@ -315,12 +428,44 @@ public static class EditorCommandWatcher
                 PlayerController player = Mirror.NetworkClient.localPlayer.GetComponent<PlayerController>();
                 player.ServerApplyStatus((StatusKind)int.Parse(command.Substring(8)), 3f, 2);
             }
-            else if (command == "interact" || command == "interactalt")
+            else if (command.StartsWith("ptonic "))
+            {
+                // 본인에게 물약 효과(PotionKind 번호)를 20초 건다(HUD 강화 아이콘 시험용). 정화는 8초 면역.
+                PlayerController player = Mirror.NetworkClient.localPlayer.GetComponent<PlayerController>();
+                PotionKind kind = (PotionKind)int.Parse(command.Substring(7));
+                if (kind == PotionKind.Cleanse)
+                {
+                    player.ServerCleanse(8f);
+                }
+                else
+                {
+                    player.ServerApplyTonic(kind, 20f);
+                }
+            }
+            else if (command == "pbuff")
+            {
+                // 본인 계열의 첫 강화 스킬을 그 지속 시간만큼 건다(HUD 강화 아이콘 시험용).
+                PlayerSkills skills = LocalSkills();
+                ClassDefinition[] classList = (ClassDefinition[])typeof(PlayerSkills).GetField("classes", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).GetValue(skills);
+                int classIndex = skills.ClassIndex;
+                ClassDefinition definition = classList[classIndex];
+                for (int i = 0; i < definition.SkillCount; i++)
+                {
+                    SkillDefinition skill = definition.GetSkill(i);
+                    if (skill != null && skill.Kind == SkillKind.Buff)
+                    {
+                        skills.ServerApplyBuff(classIndex * ClassDefinition.MaxSkills + i, skill.BuffDuration);
+                        result = "ok buff " + skill.name + " " + skill.BuffDuration;
+                        break;
+                    }
+                }
+            }
+            else if (command == "interact")
             {
                 // 방 시설에서 F를 누른 것과 같은 경로(제단, 광맥, 낚시터, 마구간).
                 PlayerFacility facility = Mirror.NetworkClient.localPlayer.GetComponent<PlayerFacility>();
                 typeof(PlayerFacility).GetMethod("CmdInteract", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)
-                    .Invoke(facility, new object[] { command == "interactalt" });
+                    .Invoke(facility, new object[0]);
             }
             else if (command.StartsWith("fallen "))
             {
@@ -362,18 +507,38 @@ public static class EditorCommandWatcher
                 GameHub hub = Object.FindFirstObjectByType<GameHub>();
                 System.Text.StringBuilder builder = new System.Text.StringBuilder();
                 builder.Append("status=").Append(player.StatusMask).Append(" mount=").Append(player.Facility.MountName)
-                    .Append(" job=").Append(skills.Job.DisplayName).Append(" holdingJobWeapon=").Append(skills.HoldingJobWeapon)
+                    .Append(" class=").Append(skills.Class.DisplayName).Append(" holdingClassWeapon=").Append(skills.HoldingClassWeapon)
                     .Append(" mastery=");
-                for (int i = 0; i < 4; i++)
+                for (int i = 0; i < PlayerSkills.ClassCount; i++)
                 {
                     builder.Append(skills.GetMastery(i)).Append(',');
                 }
                 builder.Append(" hp=").Append(player.Hp).Append('/').Append(player.MaxHp)
                     .Append(" mana=").Append(player.Mana).Append('/').Append(player.MaxMana)
-                    .Append(" potions=").Append(player.Inventory.Potions).Append('/').Append(player.Inventory.MaxPotions)
+                    .Append(" potions=").Append(player.Inventory.CountPotions(PotionKind.HealthSmall))
                     .Append(" gold=").Append(player.Inventory.Gold).Append(" ore=").Append(player.Inventory.Ore)
                     .Append(" soul=").Append(hub.Meta.Soulstones)
                     .Append(" unlock=").Append(hub.Meta.GetUnlockLevel(0)).Append(hub.Meta.GetUnlockLevel(1)).Append(hub.Meta.GetUnlockLevel(2));
+                result = "ok " + builder;
+            }
+            else if (command.StartsWith("timescale "))
+            {
+                // 시험용: 게임 시간을 느리게(빠르게) 한다. 짧은 동작을 화면으로 찍을 때 쓴다.
+                Time.timeScale = float.Parse(command.Substring(10), System.Globalization.CultureInfo.InvariantCulture);
+            }
+            else if (command == "pstate")
+            {
+                // 본인의 행동 상태(강화 평타 시험용): 상태, 상태 시간, 강화 평타 여부, 강화 차지 여부, 체력·몬스터 체력 합
+                PlayerController player = Mirror.NetworkClient.localPlayer.GetComponent<PlayerController>();
+                System.Reflection.BindingFlags flags = System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic;
+                System.Text.StringBuilder builder = new System.Text.StringBuilder();
+                builder.Append("state=").Append(typeof(PlayerController).GetField("state", flags).GetValue(player))
+                    .Append(" t=").Append(((float)typeof(PlayerController).GetField("stateTimer", flags).GetValue(player)).ToString("0.00"))
+                    .Append(" power=").Append(typeof(PlayerController).GetField("attackIsPower", flags).GetValue(player))
+                    .Append(" chargingPower=").Append(typeof(PlayerController).GetField("chargingPower", flags).GetValue(player))
+                    .Append(" glow=").Append(typeof(PlayerController).GetField("chargeGlowing", flags).GetValue(player))
+                    .Append(" full=").Append(typeof(PlayerController).GetField("chargeGlowFull", flags).GetValue(player))
+                    .Append(" pos=").Append(player.transform.position.ToString("0.00"));
                 result = "ok " + builder;
             }
             else if (command == "god")
@@ -392,7 +557,20 @@ public static class EditorCommandWatcher
                     if (monster.State != MonsterState.Dead)
                     {
                         builder.Append(monster.Rank).Append('/').Append(monster.Modifier).Append(' ').Append(monster.Hp).Append('/').Append(monster.MaxHp)
-                            .Append(" st=").Append(monster.StatusMask).Append(" enraged=").Append(monster.Enraged).Append(' ').Append(monster.State).Append("; ");
+                            .Append(" st=").Append(monster.StatusMask).Append(" enraged=").Append(monster.Enraged).Append(' ').Append(monster.State);
+                        SpriteRenderer[] renderers = monster.GetComponentsInChildren<SpriteRenderer>(false);
+                        int shown = 0;
+                        float minAlpha = 1f;
+                        for (int r = 0; r < renderers.Length; r++)
+                        {
+                            if (renderers[r].enabled && renderers[r].sprite != null)
+                            {
+                                shown++;
+                                minAlpha = Mathf.Min(minAlpha, renderers[r].color.a);
+                            }
+                        }
+                        builder.Append(" pos=").Append(monster.transform.position.ToString("F1")).Append(" fallen=").Append(monster.Fallen)
+                            .Append(" shown=").Append(shown).Append(" minA=").Append(minAlpha.ToString("F2")).Append(" scale=").Append(monster.transform.localScale.x.ToString("F2")).Append("; ");
                     }
                 }
                 result = "ok " + builder;
@@ -425,15 +603,157 @@ public static class EditorCommandWatcher
             {
                 // Q, E, R을 누른 것과 같은 경로(0, 1, 2).
                 PlayerController player = Mirror.NetworkClient.localPlayer.GetComponent<PlayerController>();
+                // 커서 자리에 놓는 스킬은 aim 명령 값(몸 가운데에서의 거리)을 놓을 자리로 쓴다.
+                typeof(PlayerController).GetField("skillTargetOffset", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).SetValue(player, player.editorAimOverride);
                 System.Reflection.MethodInfo method = typeof(PlayerController).GetMethod("TryCast",
                     System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
                 object started = method.Invoke(player, new object[] { int.Parse(command.Substring(5)) });
                 result = "ok cast started=" + started + " mana=" + player.Mana;
             }
+            else if (command.StartsWith("ccast "))
+            {
+                // 차징 스킬을 모은 정도(0~1)만큼 모았다가 뗀 것과 같다. 예: "ccast 0 1"
+                string[] parts = command.Split(' ');
+                PlayerController player = Mirror.NetworkClient.localPlayer.GetComponent<PlayerController>();
+                typeof(PlayerController).GetField("skillTargetOffset", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).SetValue(player, player.editorAimOverride);
+                System.Reflection.MethodInfo method = typeof(PlayerController).GetMethod("CastSkill",
+                    System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+                object started = method.Invoke(player, new object[] { int.Parse(parts[1]), float.Parse(parts[2], System.Globalization.CultureInfo.InvariantCulture) });
+                result = "ok ccast started=" + started + " mana=" + player.Mana;
+            }
+            else if (command.StartsWith("keys"))
+            {
+                // keys W D Space: 키보드를 그 키들이 눌린 상태로 만든다(빈 목록이면 모두 뗀다). 입력 시험용.
+                string[] parts = command.Split(new[] { ' ' }, System.StringSplitOptions.RemoveEmptyEntries);
+                UnityEngine.InputSystem.Key[] keys = new UnityEngine.InputSystem.Key[parts.Length - 1];
+                for (int i = 1; i < parts.Length; i++)
+                {
+                    keys[i - 1] = (UnityEngine.InputSystem.Key)System.Enum.Parse(typeof(UnityEngine.InputSystem.Key), parts[i], true);
+                }
+                UnityEngine.InputSystem.InputSystem.QueueStateEvent(UnityEngine.InputSystem.Keyboard.current, new UnityEngine.InputSystem.LowLevel.KeyboardState(keys));
+                result = "ok keys " + (parts.Length - 1);
+            }
+            else if (command.StartsWith("mouse "))
+            {
+                // mouse 0|1: 왼쪽 버튼을 누르거나 뗀다.
+                bool down = command.Substring(6).Trim() == "1";
+                // 게임 화면에 포커스가 없으면 입력이 무시되므로 먼저 포커스를 준다.
+                System.Type gameView = typeof(EditorWindow).Assembly.GetType("UnityEditor.GameView");
+                if (gameView != null)
+                {
+                    EditorWindow.FocusWindowIfItsOpen(gameView);
+                }
+                UnityEngine.InputSystem.LowLevel.MouseState state = new UnityEngine.InputSystem.LowLevel.MouseState();
+                state.position = UnityEngine.InputSystem.Mouse.current.position.ReadValue();
+                state = state.WithButton(UnityEngine.InputSystem.LowLevel.MouseButton.Left, down);
+                UnityEngine.InputSystem.InputSystem.QueueStateEvent(UnityEngine.InputSystem.Mouse.current, state);
+            }
+            else if (command == "relic")
+            {
+                // 유물 고르기 화면을 띄운다(서버에서 제안).
+                Mirror.NetworkClient.localPlayer.GetComponent<PlayerFacility>().ServerOfferRelic();
+            }
+            else if (command.StartsWith("pickrelic "))
+            {
+                Mirror.NetworkClient.localPlayer.GetComponent<PlayerFacility>().RequestPickRelic(int.Parse(command.Substring(10)));
+                result = "ok " + Mirror.NetworkClient.localPlayer.GetComponent<PlayerFacility>().OwnedRelicsText();
+            }
+            else if (command.StartsWith("spawnboss "))
+            {
+                // spawnboss 몬스터종류: 지금 방에 보스 한 마리를 내보낸다.
+                MonsterDirector director = Object.FindFirstObjectByType<MonsterDirector>();
+                director.ServerSpawnGroup(1, 1f, 1, 0f, 1f, MonsterRank.Boss, int.Parse(command.Substring(10)), false);
+            }
+            else if (command.StartsWith("spawn "))
+            {
+                // spawn 마리수: 지금 방에 일반 몬스터 무리를 내보낸다(관통 시험용).
+                MonsterDirector director = Object.FindFirstObjectByType<MonsterDirector>();
+                director.ServerSpawnGroup(int.Parse(command.Substring(6)), 1f, 1, 0f, 1f, MonsterRank.Normal, 0, false);
+            }
+            else if (command.StartsWith("spawnelite "))
+            {
+                // spawnelite 몬스터종류: 지금 방에 엘리트 한 마리를 내보낸다(타락한 모험가는 아님).
+                MonsterDirector director = Object.FindFirstObjectByType<MonsterDirector>();
+                director.ServerSpawnGroup(1, 1f, 1, 0f, 1f, MonsterRank.Elite, int.Parse(command.Substring(11)), false);
+            }
+            else if (command.StartsWith("hitall "))
+            {
+                // hitall 피해 상태이상번호 치명타(0/1): 살아 있는 몬스터 전부를 플레이어가 때린 것처럼 친다(연계 시험용).
+                string[] parts = command.Split(' ');
+                HitInfo hit = new HitInfo();
+                hit.damage = int.Parse(parts[1]);
+                hit.status = (StatusKind)int.Parse(parts[2]);
+                hit.crit = parts.Length > 3 && parts[3] == "1";
+                hit.statusDuration = 4f;
+                hit.statusPower = 0.3f;
+                uint attacker = Mirror.NetworkClient.localPlayer.netId;
+                MonsterController[] monsters = Object.FindObjectsByType<MonsterController>(FindObjectsSortMode.None);
+                System.Text.StringBuilder hits = new System.Text.StringBuilder();
+                for (int i = 0; i < monsters.Length; i++)
+                {
+                    if (monsters[i].isServer && monsters[i].State != MonsterState.Dead)
+                    {
+                        int before = monsters[i].Hp;
+                        monsters[i].ServerTakeHit(hit, Vector2.right, attacker);
+                        hits.Append(before).Append("->").Append(monsters[i].Hp).Append(" st=").Append(monsters[i].StatusMask).Append("; ");
+                    }
+                }
+                result = "ok " + hits;
+            }
+            else if (command == "script")
+            {
+                scriptLines = new System.Collections.Generic.Queue<string>(File.ReadAllLines("Temp/tower_script.txt"));
+                scriptLog = new System.Text.StringBuilder();
+                scriptNextTime = 0;
+            }
+            else if (command == "bones")
+            {
+                // 본인 무기 그림에서 캐릭터 뿌리까지 각 뼈의 로컬 z 회전과 월드 회전을 적는다(조준 각도 문제 확인용).
+                CharacterVisual characterVisual = LocalSkills().GetComponent<PlayerController>().Visual;
+                SpriteRenderer weaponSprite = (SpriteRenderer)typeof(CharacterVisual).GetField("weaponRenderer", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).GetValue(characterVisual);
+                System.Text.StringBuilder bonesText = new System.Text.StringBuilder("ok");
+                Transform boneNow = weaponSprite.transform;
+                while (boneNow != null && boneNow != characterVisual.transform.parent)
+                {
+                    bonesText.Append(" | ").Append(boneNow.name).Append(' ').Append(boneNow.localEulerAngles.z.ToString("0")).Append('/').Append(boneNow.eulerAngles.z.ToString("0")).Append(" s").Append(boneNow.localScale.x.ToString("0.#"));
+                    boneNow = boneNow.parent;
+                }
+                result = bonesText.ToString();
+            }
+            else if (command.StartsWith("trace "))
+            {
+                traceFrames = int.Parse(command.Substring(6));
+                traceBuilder = new System.Text.StringBuilder();
+            }
+            else if (command.StartsWith("vfx "))
+            {
+                // vfx 계열 스킬 [x y]: 해금·마나와 상관없이 그 스킬의 이펙트만 띄운다(투사체는 표시용으로 쏜다).
+                string[] parts = command.Split(' ');
+                PlayerSkills skills = LocalSkills();
+                PlayerController player = skills.GetComponent<PlayerController>();
+                ClassDefinition[] classList = (ClassDefinition[])typeof(PlayerSkills).GetField("classes", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).GetValue(skills);
+                SkillDefinition def = classList[int.Parse(parts[1])].GetSkill(int.Parse(parts[2]));
+                Vector2 aimDir = Vector2.right;
+                if (parts.Length >= 5)
+                {
+                    aimDir = new Vector2(float.Parse(parts[3], System.Globalization.CultureInfo.InvariantCulture), float.Parse(parts[4], System.Globalization.CultureInfo.InvariantCulture)).normalized;
+                }
+                System.Reflection.BindingFlags flags = System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic;
+                typeof(PlayerSkills).GetMethod("PlayCastFx", flags).Invoke(skills, new object[] { def, player.Center, aimDir, aimDir * def.Range });
+                if (def.Kind == SkillKind.Volley)
+                {
+                    typeof(PlayerSkills).GetMethod("LaunchVolley", flags).Invoke(skills, new object[] { def, player.Center, aimDir, false, 0f });
+                }
+                if (def.Kind == SkillKind.Dash && def.ExplosionRadius > 0f && def.Vfx.Has(def.Vfx.impact))
+                {
+                    Object.FindFirstObjectByType<SkillFxPlayer>().PlayFrames(def.Vfx.impact, def.Vfx.impactFps, def.Vfx.impactGround, player.Center + aimDir * def.Range, def.ExplosionRadius * def.Vfx.impactScale, 0f, null, 0f, false);
+                }
+                result = "ok vfx " + def.name;
+            }
             else if (command.StartsWith("job "))
             {
-                // 로비에서 숫자 키로 시작 직업을 고른 것과 같다(0~9).
-                LocalSkills().ServerSetStartJob(int.Parse(command.Substring(4)));
+                // 로비에서 숫자 키로 시작 계열을 고른 것과 같다(0~2).
+                LocalSkills().ServerSetStartClass(int.Parse(command.Substring(4)));
             }
             else if (command.StartsWith("slot "))
             {
@@ -456,6 +776,78 @@ public static class EditorCommandWatcher
             else if (command == "skills")
             {
                 result = "ok " + DescribeSkills();
+            }
+            else if (command.StartsWith("gearset "))
+            {
+                // 투구·갑옷을 파츠 번호로 바로 입히고(옵션 없음, 등급은 파츠 고정 등급) 세트와 능력치를 돌려준다. 예: "gearset 8 30"
+                string[] parts = command.Split(' ');
+                PlayerInventory inventory = LocalInventory();
+                ItemBalance balance = inventory.Balance;
+                Mirror.SyncList<ItemData> equipment = (Mirror.SyncList<ItemData>)typeof(PlayerInventory)
+                    .GetField("equipment", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).GetValue(inventory);
+                ItemSlot[] slots = { ItemSlot.Helmet, ItemSlot.Armor };
+                System.Text.StringBuilder info = new System.Text.StringBuilder();
+                for (int i = 0; i < 2; i++)
+                {
+                    ItemData item = new ItemData();
+                    item.exists = 1;
+                    item.slot = slots[i];
+                    item.partsIndex = (ushort)int.Parse(parts[i + 1]);
+                    item.rarity = balance.GetFixedRarity(slots[i], 0, item.partsIndex);
+                    equipment[(int)slots[i]] = item;
+                    balance.AppendDescription(info, item, null);
+                    info.Append(" | ");
+                }
+                inventory.RecomputeStats();
+                EquipStats stats = inventory.Stats;
+                info.Append("set=").Append(balance.GetSetClass(equipment[(int)ItemSlot.Helmet], equipment[(int)ItemSlot.Armor]))
+                    .Append(" hp+").Append(stats.maxHpBonus).Append(" mana+").Append(stats.maxManaBonus)
+                    .Append(" dmgx=").Append(stats.damageMultiplier.ToString("0.000")).Append(" taken=").Append(stats.damageTakenMultiplier.ToString("0.000"))
+                    .Append(" atkspd=").Append(stats.attackSpeedMultiplier.ToString("0.000")).Append(" move=").Append(stats.moveSpeedMultiplier.ToString("0.000"))
+                    .Append(" crit=").Append(stats.critChance.ToString("0.000")).Append(" cdx=").Append(stats.cooldownMultiplier.ToString("0.000"))
+                    .Append(" skillx=").Append(stats.skillDamageMultiplier.ToString("0.000"));
+                result = "ok " + info.Replace('\n', ' ');
+            }
+            else if (command.StartsWith("uplevel "))
+            {
+                // 장착 칸 S의 강화 단계를 L로 바꾼다(서버). 예: "uplevel 0 5"
+                string[] parts = command.Split(' ');
+                PlayerInventory inventory = LocalInventory();
+                Mirror.SyncList<ItemData> equipment = (Mirror.SyncList<ItemData>)typeof(PlayerInventory)
+                    .GetField("equipment", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).GetValue(inventory);
+                int slotIndex = int.Parse(parts[1]);
+                ItemData item = equipment[slotIndex];
+                item.level = (byte)int.Parse(parts[2]);
+                equipment[slotIndex] = item;
+                result = "ok uplevel " + item.level;
+            }
+            else if (command.StartsWith("uislot "))
+            {
+                // 이름이 같은 켜진 칸에 마우스를 올리거나(h) 좌·우클릭(l·r)한다. 예: "uislot Potion0 l", "uislot Bag0 h"
+                string[] parts = command.Split(' ');
+                InventorySlotView[] views = Object.FindObjectsByType<InventorySlotView>(FindObjectsSortMode.None);
+                int done = 0;
+                for (int i = 0; i < views.Length; i++)
+                {
+                    if (views[i].name == parts[1] && views[i].gameObject.activeInHierarchy)
+                    {
+                        UnityEngine.EventSystems.PointerEventData data = new UnityEngine.EventSystems.PointerEventData(UnityEngine.EventSystems.EventSystem.current);
+                        if (parts[2] == "h")
+                        {
+                            views[i].OnPointerEnter(data);
+                        }
+                        else
+                        {
+                            if (parts[2] == "r")
+                            {
+                                data.button = UnityEngine.EventSystems.PointerEventData.InputButton.Right;
+                            }
+                            views[i].OnPointerClick(data);
+                        }
+                        done++;
+                    }
+                }
+                result = "ok uislot " + done;
             }
             else if (command == "facility")
             {
@@ -533,6 +925,96 @@ public static class EditorCommandWatcher
         File.WriteAllText(ResultPath, result);
     }
 
+    // 켜져 있는 UI 가운데 이름(뒤에서부터 "부모/이름"으로 맞춘다)이 맞는 첫 물체
+    private static GameObject FindUi(string path)
+    {
+        string[] names = path.Split('/');
+        GameObject found = null;
+        RectTransform[] all = Object.FindObjectsByType<RectTransform>(FindObjectsSortMode.None);
+        for (int i = 0; i < all.Length && found == null; i++)
+        {
+            Transform current = all[i];
+            bool match = true;
+            for (int k = names.Length - 1; k >= 0 && match; k--)
+            {
+                if (current == null || current.name != names[k])
+                {
+                    match = false;
+                }
+                else
+                {
+                    current = current.parent;
+                }
+            }
+            if (match)
+            {
+                found = all[i].gameObject;
+            }
+        }
+        return found;
+    }
+
+    private static string SimulateDrag(string fromPath, string toPath)
+    {
+        GameObject from = FindUi(fromPath);
+        if (from == null)
+        {
+            return "fail no " + fromPath;
+        }
+        Vector2 start = RectTransformUtility.WorldToScreenPoint(null, from.transform.position);
+        Vector2 end;
+        if (toPath.Contains(","))
+        {
+            string[] xy = toPath.Split(',');
+            end = new Vector2(float.Parse(xy[0]), float.Parse(xy[1]));
+        }
+        else
+        {
+            GameObject to = FindUi(toPath);
+            if (to == null)
+            {
+                return "fail no " + toPath;
+            }
+            end = RectTransformUtility.WorldToScreenPoint(null, to.transform.position);
+        }
+        UnityEngine.EventSystems.EventSystem system = UnityEngine.EventSystems.EventSystem.current;
+        UnityEngine.EventSystems.PointerEventData data = new UnityEngine.EventSystems.PointerEventData(system);
+        data.button = UnityEngine.EventSystems.PointerEventData.InputButton.Left;
+        data.position = start;
+        data.pressPosition = start;
+        System.Collections.Generic.List<UnityEngine.EventSystems.RaycastResult> hits = new System.Collections.Generic.List<UnityEngine.EventSystems.RaycastResult>();
+        system.RaycastAll(data, hits);
+        if (hits.Count == 0)
+        {
+            return "fail nothing under " + fromPath;
+        }
+        data.pointerPressRaycast = hits[0];
+        data.pointerCurrentRaycast = hits[0];
+        GameObject handler = UnityEngine.EventSystems.ExecuteEvents.GetEventHandler<UnityEngine.EventSystems.IBeginDragHandler>(hits[0].gameObject);
+        if (handler == null)
+        {
+            return "fail no drag handler on " + hits[0].gameObject.name;
+        }
+        data.pointerDrag = handler;
+        UnityEngine.EventSystems.ExecuteEvents.Execute(handler, data, UnityEngine.EventSystems.ExecuteEvents.beginDragHandler);
+        data.position = (start + end) * 0.5f;
+        UnityEngine.EventSystems.ExecuteEvents.Execute(handler, data, UnityEngine.EventSystems.ExecuteEvents.dragHandler);
+        data.position = end;
+        hits.Clear();
+        system.RaycastAll(data, hits);
+        UnityEngine.EventSystems.RaycastResult endHit = new UnityEngine.EventSystems.RaycastResult();
+        string endName = "none";
+        if (hits.Count > 0)
+        {
+            endHit = hits[0];
+            endName = endHit.gameObject.name;
+        }
+        data.pointerCurrentRaycast = endHit;
+        UnityEngine.EventSystems.ExecuteEvents.Execute(handler, data, UnityEngine.EventSystems.ExecuteEvents.dragHandler);
+        UnityEngine.EventSystems.ExecuteEvents.Execute(handler, data, UnityEngine.EventSystems.ExecuteEvents.endDragHandler);
+        return "ok drag " + handler.name + " -> " + endName;
+    }
+
     private static string HitLocalPlayer(bool fromFront)
     {
         PlayerController player = Mirror.NetworkClient.localPlayer.GetComponent<PlayerController>();
@@ -574,6 +1056,61 @@ public static class EditorCommandWatcher
         return builder.ToString();
     }
 
+    private static void TraceFrame()
+    {
+        traceFrames--;
+        if (Mirror.NetworkClient.localPlayer != null)
+        {
+            PlayerController player = Mirror.NetworkClient.localPlayer.GetComponent<PlayerController>();
+            Animator animator = player.GetComponentInChildren<Animator>();
+            AnimatorStateInfo info = animator.GetCurrentAnimatorStateInfo(0);
+            string stateName = "?";
+            string[] names = { "Idle", "Walk", "Run", "Roll", "Attack", "Double Attack", "Jump Attack", "Skill", "Stun", "Dead1", "Victory" };
+            for (int i = 0; i < names.Length; i++)
+            {
+                if (info.IsName(names[i]))
+                {
+                    stateName = names[i];
+                }
+            }
+            string weaponInfo = "";
+            // 장착 무기 그림(CharacterVisual.weaponRenderer)의 각도와 캐릭터 기준 위치, 몸통 위치
+            SpriteRenderer heldWeapon = typeof(CharacterVisual).GetField("weaponRenderer", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)
+                .GetValue(player.GetComponentInChildren<CharacterVisual>()) as SpriteRenderer;
+            if (heldWeapon != null)
+            {
+                Transform body = animator.transform.Find("Body");
+                weaponInfo = " x=" + player.transform.position.x.ToString("F3") + " held=" + heldWeapon.transform.eulerAngles.z.ToString("0.0") + " hp=" + ((Vector2)(heldWeapon.transform.position - player.transform.position)).ToString("F3");
+                if (body != null)
+                {
+                    weaponInfo += " body=" + ((Vector2)(body.position - player.transform.position)).ToString("F3");
+                }
+            }
+            SpriteRenderer[] renderers = player.GetComponentsInChildren<SpriteRenderer>();
+            for (int i = 0; i < renderers.Length; i++)
+            {
+                if (renderers[i].transform.parent != null && renderers[i].transform.parent.parent != null && renderers[i].transform.parent.parent.name == "HandRight" && renderers[i].enabled && renderers[i].sprite != null && weaponInfo.Length == 0)
+                {
+                    Transform t = renderers[i].transform;
+                    weaponInfo = " w=" + t.eulerAngles.z.ToString("0.0") + " wp=" + ((Vector2)(t.position - player.transform.position)).ToString("F3") + " chain=";
+                    Transform c = t;
+                    while (c != null && c != player.transform)
+                    {
+                        weaponInfo += c.name + ":" + c.localEulerAngles.z.ToString("0.0") + "/";
+                        c = c.parent;
+                    }
+                }
+            }
+            object state = typeof(PlayerController).GetField("state", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).GetValue(player);
+            traceBuilder.Append(Time.frameCount).Append(' ').Append(state).Append(' ').Append(stateName).Append(" t=").Append(info.normalizedTime.ToString("0.00"))
+                .Append(" spd=").Append(animator.speed.ToString("0.00")).Append(weaponInfo).Append('\n');
+        }
+        if (traceFrames <= 0)
+        {
+            File.WriteAllText("Temp/tower_trace.txt", traceBuilder.ToString());
+        }
+    }
+
     private static PlayerSkills LocalSkills()
     {
         return Mirror.NetworkClient.localPlayer.GetComponent<PlayerSkills>();
@@ -585,23 +1122,31 @@ public static class EditorCommandWatcher
         PlayerSkills skills = LocalSkills();
         PlayerController player = skills.GetComponent<PlayerController>();
         System.Text.StringBuilder builder = new System.Text.StringBuilder();
-        builder.Append("job=").Append(skills.Job.DisplayName).Append(" level=").Append(skills.Level)
+        builder.Append("class=").Append(skills.Class.DisplayName).Append(" level=").Append(skills.Level)
             .Append(" xp=").Append(skills.Xp).Append('/').Append(skills.XpToNext)
             .Append(" points=").Append(skills.SkillPoints).Append(" ranks=");
-        for (int i = 0; i < JobDefinition.NodeCount; i++)
+        for (int i = 0; i < skills.Class.NodeCount; i++)
         {
             builder.Append(skills.GetRank(i));
         }
-        builder.Append(" unlocked=");
-        for (int i = 0; i < JobDefinition.SkillCount; i++)
+        builder.Append(" awakened=");
+        for (int i = 0; i < ClassDefinition.JobCount; i++)
         {
-            builder.Append(skills.IsSkillUnlocked(i)).Append(',');
+            builder.Append(skills.IsJobAwakened(i)).Append(',');
+        }
+        builder.Append(" unlocked=");
+        for (int i = 0; i < skills.Class.SkillCount; i++)
+        {
+            if (skills.IsSkillUnlocked(i))
+            {
+                builder.Append(i).Append(',');
+            }
         }
         System.Reflection.BindingFlags flags = System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic;
-        builder.Append(" rawJob=").Append(typeof(PlayerSkills).GetField("jobIndex", flags).GetValue(skills))
-            .Append(" lobbyJob=").Append(typeof(PlayerSkills).GetField("lobbyJob", flags).GetValue(skills));
+        builder.Append(" rawClass=").Append(typeof(PlayerSkills).GetField("classIndex", flags).GetValue(skills))
+            .Append(" lobbyClass=").Append(typeof(PlayerSkills).GetField("lobbyClass", flags).GetValue(skills));
         builder.Append(" slots=");
-        for (int i = 0; i < JobDefinition.SlotCount; i++)
+        for (int i = 0; i < ClassDefinition.SlotCount; i++)
         {
             builder.Append(skills.GetSlotSkill(i)).Append(',');
         }
@@ -649,7 +1194,7 @@ public static class EditorCommandWatcher
         {
             AppendItem(builder, inventory, inventory.GetShopItem(i));
         }
-        builder.Append("] gold=").Append(inventory.Gold).Append(" ore=").Append(inventory.Ore).Append(" potions=").Append(inventory.Potions)
+        builder.Append("] gold=").Append(inventory.Gold).Append(" ore=").Append(inventory.Ore).Append(" potions=").Append(inventory.CountPotions(PotionKind.HealthSmall)).Append(" quick=").Append(inventory.GetQuickPotion(0)).Append('/').Append(inventory.GetQuickPotion(1))
             .Append(" dmgx=").Append(stats.damageMultiplier.ToString("F2"))
             .Append(" aspd=").Append(stats.attackSpeedMultiplier.ToString("F2"))
             .Append(" move=").Append(stats.moveSpeedMultiplier.ToString("F2"))

@@ -1,0 +1,5 @@
+projectile_fps=15.0
+proj_size=1.875
+impact_fps=11.3
+impact_scale=0.889
+impact_ground=0

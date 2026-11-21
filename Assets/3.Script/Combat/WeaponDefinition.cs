@@ -14,6 +14,24 @@ public enum WeaponKind : byte
     Wand
 }
 
+// 강화 평타(좌클릭을 누른 채 평타 뒤 차지했다가 놓기, 활은 시위를 다 당기기)의 종류
+public enum PowerAttack : byte
+{
+    None,
+    // 몸 둘레를 한 바퀴 돌려 벤다(검)
+    Spin,
+    // 조준 방향으로 내달리며 길게 찌른다(창)
+    Lunge,
+    // 높이 들어 앞쪽 땅을 내려찍고 기절시킨다(도끼, 둔기)
+    Smash,
+    // 몬스터를 꿰뚫는 강한 화살·탄(활, 석궁, 총)
+    PierceShot,
+    // 크게 터지는 마법탄(지팡이, 완드)
+    BigShot,
+    // 휘두른 자리에서 몬스터를 꿰뚫는 검기를 날린다(전사 무기: 검, 창, 도끼, 둔기)
+    Wave
+}
+
 // 무기 한 자루의 능력치와 공격 방식. 무기 계열(Kind)이 조작감을 정한다.
 // - 검: 부채꼴 근접, 방패 사용 가능
 // - 창: 긴 직선 찌르기
@@ -71,12 +89,35 @@ public class WeaponDefinition : ScriptableObject
     [SerializeField] private float statusPower = 0.12f;
     [SerializeField] private ProjectileLook projectileLook = ProjectileLook.Arrow;
     [SerializeField] private Color projectileColor = Color.white;
+    [Tooltip("기본 공격 픽셀 그림(Assets/4.Sprite/Fx/SkillVfx/Weapon_<무기>/). cast는 근접 휘두르기, projectile·muzzle·impact는 원거리 탄")]
+    [SerializeField] private SkillVfx vfx = new SkillVfx();
 
     [Header("차지(활)")]
     [Tooltip("최대 차지까지 걸리는 시간. 0이면 차지하지 않는다.")]
     [SerializeField] private float chargeTime;
     [Tooltip("차지 없이 쐈을 때의 피해·속도 배율")]
     [SerializeField] private float minChargeFactor = 0.35f;
+
+    [Header("강화 평타(좌클릭을 누른 채 차지했다가 놓기)")]
+    [SerializeField] private PowerAttack powerAttack;
+    [Tooltip("다 모으는 데 걸리는 시간(활은 위의 차지 시간을 쓴다)")]
+    [SerializeField] private float powerChargeTime = 0.8f;
+    [Tooltip("평타 피해의 몇 배인지(활은 다 모은 화살 피해에 곱한다)")]
+    [SerializeField] private float powerDamageFactor = 2.5f;
+    [Tooltip("회전 베기·내려찍기 반지름, 큰 마법탄 폭발 반지름")]
+    [SerializeField] private float powerRadius = 2f;
+    [Tooltip("창 돌진 거리, 내려찍기 자리(몸에서 조준 방향으로 떨어진 거리)")]
+    [SerializeField] private float powerReach = 1f;
+    [SerializeField] private float powerDuration = 0.5f;
+    [SerializeField] private float powerHitDelay = 0.2f;
+    [Tooltip("꿰뚫는 화살·탄이 지나갈 수 있는 몬스터 수")]
+    [SerializeField] private int powerPierce;
+    [Tooltip("내려찍기 기절 시간")]
+    [SerializeField] private float powerStunTime = 1.2f;
+    [Tooltip("검기가 날아가는 속도(날아가는 거리는 powerReach, 판정 반지름은 powerRadius)")]
+    [SerializeField] private float powerShotSpeed = 13f;
+    [Tooltip("강화 평타 그림(비슷한 스킬의 이펙트 프레임을 빌려 쓴다). 비면 평타 그림")]
+    [SerializeField] private SkillVfx powerVfx = new SkillVfx();
 
     public string DisplayName => displayName;
     public WeaponKind Kind => kind;
@@ -105,8 +146,20 @@ public class WeaponDefinition : ScriptableObject
     public float StatusPower => statusPower;
     public ProjectileLook ProjectileLook => projectileLook;
     public Color ProjectileColor => projectileColor;
+    public SkillVfx Vfx => vfx;
     public float ChargeTime => chargeTime;
     public float MinChargeFactor => minChargeFactor;
+    public PowerAttack Power => powerAttack;
+    public float PowerChargeTime => powerChargeTime;
+    public float PowerDamageFactor => powerDamageFactor;
+    public float PowerRadius => powerRadius;
+    public float PowerReach => powerReach;
+    public float PowerDuration => powerDuration;
+    public float PowerHitDelay => powerHitDelay;
+    public int PowerPierce => powerPierce;
+    public float PowerStunTime => powerStunTime;
+    public float PowerShotSpeed => powerShotSpeed;
+    public SkillVfx PowerVfx => powerVfx;
 
     public bool IsRanged => kind == WeaponKind.Bow || kind == WeaponKind.Staff || kind == WeaponKind.Crossbow || kind == WeaponKind.Gun || kind == WeaponKind.Wand;
     public const int KindCount = 9;

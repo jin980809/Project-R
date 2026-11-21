@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 public class DamageTextPool : MonoBehaviour
@@ -53,6 +53,24 @@ public class DamageTextPool : MonoBehaviour
             text.Show(position, amount, color, duration, riseSpeed);
             activeTexts.Add(text);
         }
+    }
+
+    // 연계 이름 같은 글자. 피해 숫자 설정과 상관없이 보여 준다.
+    public void ShowLabel(Vector2 position, string label, Color color, float scale)
+    {
+        DamageText text;
+        if (freeTexts.Count > 0)
+        {
+            text = freeTexts.Pop();
+        }
+        else
+        {
+            text = CreateInstance();
+        }
+        text.gameObject.SetActive(true);
+        text.transform.localScale = new Vector3(scale, scale, 1f);
+        text.ShowText(position, label, color, duration * 1.6f, riseSpeed * 0.7f);
+        activeTexts.Add(text);
     }
 
     // 설정에서 피해 숫자를 끄면 더 이상 띄우지 않는다.

@@ -1,0 +1,9 @@
+proj_size=1.375
+impact_size=0.938
+muzzle_size=0.625
+muzzle_dir=1
+projectile_fps=10.0
+impact_fps=20.0
+muzzle_fps=25.0
+impact_dir=1
+impact_ground=0

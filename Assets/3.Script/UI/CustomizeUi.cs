@@ -209,7 +209,7 @@ public class CustomizeUi : MonoBehaviour
         Apply();
     }
 
-    private static int Wrap(int value, int count)
+    private int Wrap(int value, int count)
     {
         int result = 0;
         if (count > 0)

@@ -20,8 +20,16 @@ MonoBehaviour:
   castTime: 0.25
   damageFactor: 0.8
   radius: 0.7
+  arcDegrees: 0
+  impactDelay: 0
+  chargeTime: 0
+  chargeMinDamage: 0.35
+  chargeMinSize: 0.55
+  pierce: 0
   range: 4
   invulnerable: 1
+  groundTarget: 0
+  pullSpeed: 0
   count: 1
   spreadDegrees: 0
   projectileSpeed: 12
@@ -40,4 +48,60 @@ MonoBehaviour:
   animSpeed: 1.5
   fxColor: {r: 0.8, g: 0.55, b: 1, a: 1}
   fx: 4
+  icon: {fileID: 21300000, guid: cc3a2e0c5dac333408ec2be2556105df, type: 3}
   sound: 27
+  vfx:
+    cast: []
+    castFps: 20
+    castGround: 0
+    castDirectional: 0
+    castMirror: 0
+    castScale: 1
+    castSize: 0.9
+    castIntro: []
+    castIntroFps: 20
+    castOutro: []
+    castOutroFps: 20
+    trail:
+    - {fileID: 21300000, guid: 33f75f8de4668e04aa8227fee9e71f6a, type: 3}
+    - {fileID: 21300000, guid: 579f302dd1348824798a9c5e82a7b68d, type: 3}
+    - {fileID: 21300000, guid: 6fcee62bb1a2e9a47aacf21f566c5425, type: 3}
+    - {fileID: 21300000, guid: ea7fec47214ded94d9e6ea5026fa755e, type: 3}
+    - {fileID: 21300000, guid: 73bfeb10a9daace49a2ea25512d9985c, type: 3}
+    - {fileID: 21300000, guid: 97b6b9a7e1229e642a7242ce57715107, type: 3}
+    - {fileID: 21300000, guid: 22eefcd8a84e8574fa82b05e2becc6c4, type: 3}
+    - {fileID: 21300000, guid: dd56c1542562e3e4cb6a4c96900cdf3c, type: 3}
+    - {fileID: 21300000, guid: 8d4bbe4404da7154d9c2bb073c522f49, type: 3}
+    - {fileID: 21300000, guid: 809c524ef4a86c74186da04b62dae694, type: 3}
+    trailFps: 13.3
+    trailWidth: 1
+    projectile: []
+    projectileFps: 18
+    projectileSize: 1
+    projectileSpin: 0
+    projectileHidden: 0
+    impact:
+    - {fileID: 21300000, guid: 45005d72631072a4aa52e9e928e6f543, type: 3}
+    - {fileID: 21300000, guid: d3c2f16cb80d2694797a0b5e91974a16, type: 3}
+    - {fileID: 21300000, guid: 90e0bbad66a5b534bbe4a44f62e0545f, type: 3}
+    - {fileID: 21300000, guid: a03275ea3b8b63f40a8c799ea367ede0, type: 3}
+    - {fileID: 21300000, guid: 0064e64143bccb24789430ca3541e0e0, type: 3}
+    - {fileID: 21300000, guid: 639765c1719e50843a56d86b76b7d91a, type: 3}
+    - {fileID: 21300000, guid: fcfcd9819c993ee4ea2c1f1c90a2545f, type: 3}
+    - {fileID: 21300000, guid: 3fb710000f17cee4a911e16a414089b3, type: 3}
+    - {fileID: 21300000, guid: 485c2af3448ff964883ce1bc3456d040, type: 3}
+    - {fileID: 21300000, guid: b8c945f63e08582458b7824828d5f549, type: 3}
+    - {fileID: 21300000, guid: 93807ff91a91cde4f862c1f522cccb79, type: 3}
+    - {fileID: 21300000, guid: 076c578853cb19a41964c4f57ca31151, type: 3}
+    - {fileID: 21300000, guid: 58e3c46fa51d3b94e9ff14d28ab7114a, type: 3}
+    - {fileID: 21300000, guid: 42bbf98eefee73048a1d31558c8ac9a9, type: 3}
+    impactFps: 10.4
+    impactSize: 2.25
+    impactScale: 1
+    impactGround: 0
+    impactDirectional: 0
+    impactMirror: 0
+    muzzle: []
+    muzzleFps: 22
+    muzzleSize: 0.7
+    muzzleDirectional: 0

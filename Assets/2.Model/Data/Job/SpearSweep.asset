@@ -13,16 +13,24 @@ MonoBehaviour:
   m_Name: SpearSweep
   m_EditorClassIdentifier: Assembly-CSharp::SkillDefinition
   displayName: "\uD729\uC4F8\uAE30"
-  description: "\uAE34 \uCC3D\uC73C\uB85C \uB113\uAC8C \uD729\uC4F8\uC5B4 \uC801\uC744
-    \uB290\uB9AC\uAC8C \uD569\uB2C8\uB2E4."
+  description: "\uAE34 \uCC3D\uC73C\uB85C \uC55E\uCABD\uC744 \uB113\uAC8C \uD729\uC4F8\uC5B4
+    \uC801\uC744 \uB290\uB9AC\uAC8C \uD569\uB2C8\uB2E4."
   kind: 0
   manaCost: 12
   cooldown: 5
   castTime: 0.35
   damageFactor: 1.3
   radius: 2.8
+  arcDegrees: 200
+  impactDelay: 0
+  chargeTime: 0
+  chargeMinDamage: 0.35
+  chargeMinSize: 0.55
+  pierce: 0
   range: 0
   invulnerable: 0
+  groundTarget: 0
+  pullSpeed: 0
   count: 1
   spreadDegrees: 0
   projectileSpeed: 12
@@ -40,5 +48,47 @@ MonoBehaviour:
   animStartTime: 0
   animSpeed: 1.5
   fxColor: {r: 1, g: 0.9, b: 0.4, a: 1}
-  fx: 1
+  fx: 14
+  icon: {fileID: 21300000, guid: cc463aa2fb18c4a46afc33e67a39f8c8, type: 3}
   sound: 26
+  vfx:
+    cast:
+    - {fileID: 21300000, guid: 7c26c46fad7305e4d9475e7f5829a4b5, type: 3}
+    - {fileID: 21300000, guid: 0302ae64836274a438fcc4f52b43aba1, type: 3}
+    - {fileID: 21300000, guid: 5a8b58e4f78515d45b6ef31c32df65a0, type: 3}
+    - {fileID: 21300000, guid: 9f8370930372a89409ad2eec459b58dc, type: 3}
+    - {fileID: 21300000, guid: cf871949b76f7764ab161f830fd0b304, type: 3}
+    - {fileID: 21300000, guid: 05fcaf196f9ecdf449016a32ed2c6ad7, type: 3}
+    - {fileID: 21300000, guid: 23b073726fd036f4ebf60a36ec0d5835, type: 3}
+    - {fileID: 21300000, guid: fed6e1ddbb103364e9f4b78e877e37c5, type: 3}
+    - {fileID: 21300000, guid: 48d9358e4d4daf949a65af54f40ebf41, type: 3}
+    - {fileID: 21300000, guid: c1f50866d14ef2f45adad48cd0faa783, type: 3}
+    castFps: 10
+    castGround: 0
+    castDirectional: 1
+    castMirror: 0
+    castScale: 0.647
+    castSize: 0.9
+    castIntro: []
+    castIntroFps: 20
+    castOutro: []
+    castOutroFps: 20
+    trail: []
+    trailFps: 20
+    trailWidth: 1.4
+    projectile: []
+    projectileFps: 18
+    projectileSize: 1
+    projectileSpin: 0
+    projectileHidden: 0
+    impact: []
+    impactFps: 20
+    impactSize: 0.8
+    impactScale: 1
+    impactGround: 0
+    impactDirectional: 0
+    impactMirror: 0
+    muzzle: []
+    muzzleFps: 22
+    muzzleSize: 0.7
+    muzzleDirectional: 0

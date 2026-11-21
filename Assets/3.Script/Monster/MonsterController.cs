@@ -43,7 +43,22 @@ public enum BossPattern : byte
     // 부하 소환
     Summon,
     // 자기 주변 넓은 범위 내려찍기(2페이즈)
-    Slam
+    Slam,
+    // 플레이어가 있던 자리로 뛰어올라 내려찍기(2페이즈부터)
+    Leap,
+    // 제자리에서 돌며 나선으로 투사체를 뿌린다(3페이즈)
+    Spiral
+}
+
+// 연계 효과(상태이상 조합). 서버가 판정하고 모든 화면에 글자로 알린다.
+public enum ComboKind : byte
+{
+    // 출혈 중인 적에게 치명타: 남은 출혈 피해를 한 번에 터뜨린다.
+    BleedBurst,
+    // 화상 + 둔화(냉기): 열충격 폭발
+    ThermalShock,
+    // 둔화된 적을 기절: 얼어붙은 몸이 부서진다.
+    Shatter
 }
 
 // 몬스터 한 마리. AI와 피해 판정은 서버(호스트)가 처리하고, 클라이언트는 상태 값에 맞춰 프레임 애니메이션만 재생한다.
@@ -54,6 +69,9 @@ public class MonsterController : NetworkBehaviour, IDamageable
     private const byte BleedBit = 2;
     private const byte SlowBit = 4;
     private const byte WeakenBit = 8;
+    // 기절은 행동 불가(경직 상태)와 따로, 머리 위 별 표시용으로만 쓴다.
+    private const byte StunBit = 16;
+    private const byte PoisonBit = 32;
 
     [Header("참조")]
     [SerializeField] private Rigidbody2D body;
@@ -67,6 +85,8 @@ public class MonsterController : NetworkBehaviour, IDamageable
     // 타락한 모험가일 때만 켜는 인간형 외형(플레이어와 같은 캐릭터)
     [SerializeField] private GameObject humanoidRoot;
     [SerializeField] private CharacterVisual humanoid;
+    [Tooltip("상태이상 표시(불꽃, 핏방울, 얼음, 별, 약화 화살표)")]
+    [SerializeField] private StatusFxView statusView;
     [SerializeField] private ItemBalance balance;
 
     [Header("연출")]
@@ -116,6 +136,7 @@ public class MonsterController : NetworkBehaviour, IDamageable
     [SerializeField] private Color bleedColor = new Color(0.85f, 0.45f, 0.5f);
     [SerializeField] private Color slowColor = new Color(0.6f, 0.8f, 1f);
     [SerializeField] private Color weakenColor = new Color(0.8f, 0.65f, 1f);
+    [SerializeField] private Color poisonColor = new Color(0.65f, 1f, 0.5f);
 
     [Header("보스")]
     [SerializeField] private Color enragedColor = new Color(1f, 0.7f, 0.7f);
@@ -130,7 +151,34 @@ public class MonsterController : NetworkBehaviour, IDamageable
     [SerializeField] private float bossSlamDamageFactor = 1.5f;
     [SerializeField] private float bossEnragedCooldownFactor = 0.65f;
     [SerializeField] private float bossEnragedSpeedFactor = 1.25f;
+    [Tooltip("3페이즈(광폭, 체력 25% 이하) 공격 간격 배율")]
+    [SerializeField] private float bossFrenzyCooldownFactor = 0.5f;
+    [SerializeField] private float bossLeapTime = 0.38f;
+    [SerializeField] private float bossLeapRadiusFactor = 0.8f;
+    [SerializeField] private float bossSpiralDuration = 1.8f;
+    [SerializeField] private float bossSpiralInterval = 0.11f;
+    [SerializeField] private float bossSpiralTurnDegrees = 23f;
+    [SerializeField] private int bossSpiralArms = 3;
 
+    [Header("타격감")]
+    [Tooltip("맞은 순간 몬스터 애니메이션이 멈추는 시간(일반, 치명타)")]
+    [SerializeField] private float hitStopTime = 0.05f;
+    [SerializeField] private float critHitStopTime = 0.1f;
+    [Tooltip("맞을 때 눌렸다 돌아오는 정도와 시간")]
+    [SerializeField] private float hitSquash = 0.2f;
+    [SerializeField] private float hitSquashTime = 0.14f;
+    [SerializeField] private float knockbackBoost = 1.35f;
+    [SerializeField] private float critKnockbackBoost = 1.8f;
+
+    [Header("연계(상태이상 조합)")]
+    [SerializeField] private float stunVulnerability = 1.3f;
+    [SerializeField] private float bleedBurstFactor = 1.5f;
+    [SerializeField] private float thermalShockFactor = 1.6f;
+    [SerializeField] private float shatterFactor = 1.4f;
+    [Tooltip("약화된 적은 화상 피해를 더 받는다(부식)")]
+    [SerializeField] private float corrosionBurnFactor = 1.5f;
+    [SerializeField] private string[] comboNames = { "출혈 폭발!", "열충격!", "파쇄!" };
+    [SerializeField] private Color[] comboColors = { new Color(1f, 0.3f, 0.35f), new Color(1f, 0.6f, 0.2f), new Color(0.55f, 0.85f, 1f) };
     [SyncVar] private int definitionIndex;
     [SyncVar] private MonsterRank rank;
     [SyncVar] private EliteModifier modifier;
@@ -151,6 +199,8 @@ public class MonsterController : NetworkBehaviour, IDamageable
     [SyncVar(hook = nameof(OnFacingChanged))] private bool faceLeft;
     [SyncVar(hook = nameof(OnStatusMaskChanged))] private byte statusMask;
     [SyncVar(hook = nameof(OnEnragedChanged))] private bool enraged;
+    // 보스 페이즈(1, 2 분노, 3 광폭)
+    [SyncVar] private byte bossPhase = 1;
 
     private MonsterDirector director;
     private GameHub hub;
@@ -176,14 +226,22 @@ public class MonsterController : NetworkBehaviour, IDamageable
     private float strikeSpeed;
     private float strikeRadius;
     private BossPattern bossPattern;
+    private float spiralTimer;
+    private float spiralAngle;
+    private Vector2 leapStart;
+    private bool lastHitCrit;
+    private readonly BossPattern[] patternChoices = new BossPattern[8];
 
     // 서버 상태이상
     private float burnTime;
     private int burnDamage;
     private float bleedTime;
     private int bleedDamage;
+    private float poisonTime;
+    private int poisonDamage;
     private float slowTime;
     private float weakenTime;
+    private float stunTime;
     private float statusTickTimer;
 
     // 프레임 애니메이션
@@ -196,6 +254,9 @@ public class MonsterController : NetworkBehaviour, IDamageable
     private float telegraphTimer;
     private float telegraphDuration;
     private float telegraphScale;
+    private float hitStopTimer;
+    private float squashTimer;
+    private Vector3 spriteBaseScale = Vector3.one;
 
     public MonsterState State => state;
     public int Hp => hp;
@@ -234,6 +295,7 @@ public class MonsterController : NetworkBehaviour, IDamageable
         director = ownerDirector;
         hub = ownerHub;
         hpBarFillScale = hpBarFill.localScale;
+        spriteBaseScale = spriteRenderer.transform.localScale;
     }
 
     // 서버에서 스폰 직전에 호출
@@ -287,6 +349,7 @@ public class MonsterController : NetworkBehaviour, IDamageable
         hp = maxHp;
         faceLeft = false;
         enraged = false;
+        bossPhase = 1;
         statusMask = 0;
         telegraphRadius = 0f;
         state = MonsterState.Chase;
@@ -297,8 +360,10 @@ public class MonsterController : NetworkBehaviour, IDamageable
         lungeHit = false;
         burnTime = 0f;
         bleedTime = 0f;
+        poisonTime = 0f;
         slowTime = 0f;
         weakenTime = 0f;
+        stunTime = 0f;
         statusTickTimer = statusTickInterval;
         bossPattern = BossPattern.Basic;
         bodyCollider.enabled = true;
@@ -339,6 +404,7 @@ public class MonsterController : NetworkBehaviour, IDamageable
         if (fallen)
         {
             humanoid.Init();
+            humanoid.ResetForReuse();
             humanoid.EquipWeapon(balance.GetPartsType(wornWeapon), wornWeapon.partsIndex, false, 0);
             humanoid.EquipGear(true, wornHelmet.partsIndex, true, wornArmor.partsIndex, 0);
             humanoid.SetFacing(faceLeft);
@@ -601,6 +667,11 @@ public class MonsterController : NetworkBehaviour, IDamageable
             attackPoint = body.position + direction * (definition.LungeSpeed * definition.LungeDuration);
             telegraphRadius = attackRadius;
         }
+        else if (definition.AttackKind == MonsterAttackKind.Explode)
+        {
+            attackPoint = body.position;
+            telegraphRadius = attackRadius;
+        }
         else
         {
             attackPoint = targetPosition;
@@ -614,35 +685,31 @@ public class MonsterController : NetworkBehaviour, IDamageable
     // 보스: 공격할 차례가 되면 패턴을 하나 고른다. 가까이 있으면 기본 공격과 내려찍기를, 멀면 돌진과 발사를 더 쓴다.
     private void BeginBossPattern(Vector2 direction, float distance, bool inRange)
     {
-        BossPattern pattern = BossPattern.Burst;
-        int roll = Random.Range(0, 4);
-        if (roll == 0)
+        int choiceCount = 0;
+        patternChoices[choiceCount++] = BossPattern.Burst;
+        patternChoices[choiceCount++] = BossPattern.Charge;
+        if (director.AliveCount < bossSummonLimit)
         {
-            pattern = BossPattern.Burst;
+            patternChoices[choiceCount++] = BossPattern.Summon;
         }
-        else if (roll == 1)
+        if (inRange && definition.AttackKind != MonsterAttackKind.Explode)
         {
-            pattern = BossPattern.Charge;
+            patternChoices[choiceCount++] = BossPattern.Basic;
         }
-        else if (roll == 2)
+        if (enraged && distance <= bossSlamRadius)
         {
-            if (director.AliveCount < bossSummonLimit)
-            {
-                pattern = BossPattern.Summon;
-            }
+            patternChoices[choiceCount++] = BossPattern.Slam;
         }
-        else if (enraged && distance <= bossSlamRadius)
+        if (bossPhase >= 2)
         {
-            pattern = BossPattern.Slam;
+            patternChoices[choiceCount++] = BossPattern.Leap;
         }
-        else if (inRange)
+        if (bossPhase >= 3)
         {
-            pattern = BossPattern.Basic;
+            patternChoices[choiceCount++] = BossPattern.Spiral;
+            patternChoices[choiceCount++] = BossPattern.Leap;
         }
-        else
-        {
-            pattern = BossPattern.Charge;
-        }
+        BossPattern pattern = patternChoices[Random.Range(0, choiceCount)];
 
         if (pattern == BossPattern.Basic)
         {
@@ -663,6 +730,11 @@ public class MonsterController : NetworkBehaviour, IDamageable
                 attackPoint = body.position;
                 telegraphRadius = bossSlamRadius;
             }
+            else if (pattern == BossPattern.Leap)
+            {
+                attackPoint = target.transform.position;
+                telegraphRadius = bossSlamRadius * bossLeapRadiusFactor;
+            }
             else
             {
                 attackPoint = body.position;
@@ -677,12 +749,29 @@ public class MonsterController : NetworkBehaviour, IDamageable
     private void BeginStrike()
     {
         attackCooldown = definition.AttackCooldown;
-        if (enraged)
+        if (bossPhase >= 3)
+        {
+            attackCooldown *= bossFrenzyCooldownFactor;
+        }
+        else if (enraged)
         {
             attackCooldown *= bossEnragedCooldownFactor;
         }
 
-        if (bossPattern == BossPattern.Burst)
+        if (bossPattern == BossPattern.Leap)
+        {
+            leapStart = body.position;
+            stateTimer = bossLeapTime;
+            state = MonsterState.Strike;
+        }
+        else if (bossPattern == BossPattern.Spiral)
+        {
+            spiralTimer = 0f;
+            spiralAngle = Random.Range(0f, 360f);
+            stateTimer = bossSpiralDuration;
+            state = MonsterState.Strike;
+        }
+        else if (bossPattern == BossPattern.Burst)
         {
             int count = bossBurstCount;
             if (enraged)
@@ -720,6 +809,13 @@ public class MonsterController : NetworkBehaviour, IDamageable
             DamagePlayersInCircle(attackPoint, attackRadius, CurrentDamage, MeleeStatus());
             EnterRecover();
         }
+        else if (definition.AttackKind == MonsterAttackKind.Explode)
+        {
+            // 자폭: 예고한 범위 안의 플레이어에게 피해를 주고 스스로 쓰러진다.
+            DamagePlayersInCircle(body.position, attackRadius, CurrentDamage, MeleeStatus());
+            RpcExplode(body.position, attackRadius);
+            ServerDie();
+        }
         else if (definition.AttackKind == MonsterAttackKind.Lunge)
         {
             lungeHit = false;
@@ -730,14 +826,87 @@ public class MonsterController : NetworkBehaviour, IDamageable
         }
         else
         {
-            // 독버섯의 포자는 약화를 건다.
-            director.ServerFireProjectile(body.position, aimDirection, definitionIndex, CurrentDamage, StatusKind.Weaken);
+            // 원거리: 몬스터 종류의 상태이상(없으면 약화)을 거는 투사체. 여러 발이면 부채꼴로 퍼진다.
+            StatusKind shotStatus = definition.HitStatus;
+            if (shotStatus == StatusKind.None)
+            {
+                shotStatus = StatusKind.Weaken;
+            }
+            int shots = definition.ProjectileCount;
+            float baseAngle = Mathf.Atan2(aimDirection.y, aimDirection.x) * Mathf.Rad2Deg;
+            for (int i = 0; i < shots; i++)
+            {
+                float offset = 0f;
+                if (shots > 1)
+                {
+                    offset = Mathf.Lerp(-definition.ProjectileSpread * 0.5f, definition.ProjectileSpread * 0.5f, i / (shots - 1f));
+                }
+                float radians = (baseAngle + offset) * Mathf.Deg2Rad;
+                director.ServerFireProjectile(body.position, new Vector2(Mathf.Cos(radians), Mathf.Sin(radians)), definitionIndex, CurrentDamage, shotStatus);
+            }
             EnterRecover();
         }
-        bossPattern = BossPattern.Basic;
+        if (state != MonsterState.Strike)
+        {
+            bossPattern = BossPattern.Basic;
+        }
     }
 
     private void TickLunge(float deltaTime)
+    {
+        if (bossPattern == BossPattern.Leap)
+        {
+            TickLeap(deltaTime);
+        }
+        else if (bossPattern == BossPattern.Spiral)
+        {
+            TickSpiral(deltaTime);
+        }
+        else
+        {
+            TickCharge(deltaTime);
+        }
+    }
+
+    // 보스 도약: 예고한 자리까지 날아가 내려찍는다(벽에 막히면 그 자리에서).
+    private void TickLeap(float deltaTime)
+    {
+        body.linearVelocity = (attackPoint - leapStart) / bossLeapTime;
+        stateTimer -= deltaTime;
+        if (stateTimer <= 0f)
+        {
+            float radius = bossSlamRadius * bossLeapRadiusFactor;
+            DamagePlayersInCircle(body.position, radius, Mathf.RoundToInt(CurrentDamage * bossSlamDamageFactor), StatusKind.Slow);
+            RpcBossImpact(body.position, radius);
+            bossPattern = BossPattern.Basic;
+            EnterRecover();
+        }
+    }
+
+    // 보스 나선 탄막: 제자리에 서서 여러 갈래로 돌아가며 쏜다.
+    private void TickSpiral(float deltaTime)
+    {
+        body.linearVelocity = Vector2.zero;
+        spiralTimer -= deltaTime;
+        if (spiralTimer <= 0f)
+        {
+            spiralTimer = bossSpiralInterval;
+            spiralAngle += bossSpiralTurnDegrees;
+            for (int i = 0; i < bossSpiralArms; i++)
+            {
+                float radians = (spiralAngle + 360f * i / bossSpiralArms) * Mathf.Deg2Rad;
+                director.ServerFireProjectile(body.position, new Vector2(Mathf.Cos(radians), Mathf.Sin(radians)), definitionIndex, CurrentDamage, StatusKind.Burn);
+            }
+        }
+        stateTimer -= deltaTime;
+        if (stateTimer <= 0f)
+        {
+            bossPattern = BossPattern.Basic;
+            EnterRecover();
+        }
+    }
+
+    private void TickCharge(float deltaTime)
     {
         body.linearVelocity = aimDirection * strikeSpeed;
         if (!lungeHit)
@@ -747,8 +916,62 @@ public class MonsterController : NetworkBehaviour, IDamageable
         stateTimer -= deltaTime;
         if (stateTimer <= 0f)
         {
+            bossPattern = BossPattern.Basic;
             EnterRecover();
         }
+    }
+
+    [ClientRpc]
+    private void RpcExplode(Vector2 position, float radius)
+    {
+        if (hub.SkillFx != null)
+        {
+            if (!hub.SkillFx.PlayMonsterExplosion(position))
+            {
+                hub.SkillFx.Play(SkillFx.Fire, position, radius, new Color(1f, 0.55f, 0.25f), 0f, null);
+            }
+        }
+        hub.Sound.PlayAt(SoundId.Explosion, position);
+        hub.CameraFollow.Shake(0.12f, 0.2f);
+    }
+
+    [ClientRpc]
+    private void RpcBossImpact(Vector2 position, float radius)
+    {
+        if (hub.SkillFx != null)
+        {
+            if (!hub.SkillFx.PlayBossImpact(position))
+            {
+                hub.SkillFx.Play(SkillFx.Quake, position, radius, new Color(1f, 0.75f, 0.45f), 0f, null);
+            }
+        }
+        hub.Sound.PlayAt(SoundId.Explosion, position);
+        hub.CameraFollow.Shake(0.22f, 0.3f);
+    }
+
+    // 보스 페이즈가 바뀌면 모두에게 알린다.
+    [ClientRpc]
+    private void RpcBossPhase(byte phase)
+    {
+        if (phase >= 3)
+        {
+            hub.Hud.ShowNotice("보스가 광폭해졌다!");
+        }
+        else
+        {
+            hub.Hud.ShowNotice("보스가 분노했다!");
+        }
+        hub.CameraFollow.Shake(0.3f, 0.45f);
+        hub.Sound.PlayAt(SoundId.MonsterAttack, transform.position, 1f);
+    }
+
+    [ClientRpc]
+    private void RpcCombo(ComboKind kind)
+    {
+        int index = (int)kind;
+        Vector2 at = (Vector2)transform.position + new Vector2(0f, 1.25f * transform.localScale.y);
+        hub.DamageTextPool.ShowLabel(at, comboNames[index], comboColors[index], 1.35f);
+        hub.Sound.PlayAt(SoundId.CriticalHit, transform.position);
     }
 
     private void EnterRecover()
@@ -774,6 +997,10 @@ public class MonsterController : NetworkBehaviour, IDamageable
         else if (fallen)
         {
             status = StatusKind.Weaken;
+        }
+        else
+        {
+            status = definition.HitStatus;
         }
         return status;
     }
@@ -819,12 +1046,50 @@ public class MonsterController : NetworkBehaviour, IDamageable
             {
                 critCounter++;
             }
-            ServerTakeDamage(hit.damage, hitDirection, attackerNetId);
+            PlayerFacility attacker = FindAttackerFacility(attackerNetId);
+            float comboFactor = 1f;
+            if (attacker != null)
+            {
+                comboFactor = attacker.ComboDamageFactor;
+                if (hit.crit)
+                {
+                    attacker.ServerOnCritLanded();
+                }
+            }
+            int damage = hit.damage;
+            // 기절한 적은 더 아프게 맞는다(취약).
+            if (stunTime > 0f)
+            {
+                damage = Mathf.RoundToInt(damage * stunVulnerability);
+            }
+            // 출혈 중인 적에게 치명타: 남은 출혈을 한 번에 터뜨린다.
+            if (hit.crit && bleedTime > 0f && bleedDamage > 0)
+            {
+                int ticks = Mathf.CeilToInt(bleedTime / statusTickInterval);
+                damage += Mathf.RoundToInt(bleedDamage * ticks * bleedBurstFactor * comboFactor);
+                bleedTime = 0f;
+                ServerRefreshStatusMask();
+                RpcCombo(ComboKind.BleedBurst);
+            }
+            lastHitCrit = hit.crit;
+            ServerTakeDamage(damage, hitDirection, attackerNetId);
             if (state != MonsterState.Dead && hit.status != StatusKind.None)
             {
-                ServerApplyStatus(hit.status, hit.statusDuration, hit.statusPower, hit.damage);
+                ServerApplyStatus(hit.status, hit.statusDuration, hit.statusPower, hit.damage, comboFactor, hitDirection, attackerNetId);
             }
         }
+    }
+
+    // 공격한 플레이어(유물 효과용). 플레이어가 아니면 null.
+    private PlayerFacility FindAttackerFacility(uint attackerNetId)
+    {
+        PlayerFacility facility = null;
+        NetworkIdentity identity;
+        if (attackerNetId != 0 && NetworkServer.spawned.TryGetValue(attackerNetId, out identity) && identity != null)
+        {
+            facility = identity.GetComponent<PlayerFacility>();
+        }
+        return facility;
     }
 
     public void ServerTakeDamage(int amount, Vector2 hitDirection, uint attackerNetId)
@@ -838,19 +1103,34 @@ public class MonsterController : NetworkBehaviour, IDamageable
             }
             else if (rank == MonsterRank.Boss)
             {
-                // 보스는 맞아도 밀리거나 끊기지 않는다. 체력이 절반 아래로 내려가면 2페이즈가 된다.
-                if (!enraged && hp * 2 <= maxHp)
+                // 보스는 맞아도 밀리거나 끊기지 않는다. 체력 절반 아래 2페이즈(분노), 4분의 1 아래 3페이즈(광폭).
+                if (bossPhase < 2 && hp * 2 <= maxHp)
                 {
+                    bossPhase = 2;
                     enraged = true;
                     attackCooldown = Mathf.Min(attackCooldown, 0.4f);
+                    RpcBossPhase(2);
+                }
+                if (bossPhase < 3 && hp * 4 <= maxHp)
+                {
+                    bossPhase = 3;
+                    enraged = true;
+                    attackCooldown = Mathf.Min(attackCooldown, 0.3f);
+                    RpcBossPhase(3);
                 }
             }
             else if (state != MonsterState.Strike)
             {
-                body.linearVelocity = hitDirection * definition.KnockbackSpeed;
+                float boost = knockbackBoost;
+                if (lastHitCrit)
+                {
+                    boost = critKnockbackBoost;
+                }
+                body.linearVelocity = hitDirection * definition.KnockbackSpeed * boost;
                 stateTimer = staggerTime;
                 state = MonsterState.Stagger;
             }
+            lastHitCrit = false;
         }
     }
 
@@ -862,6 +1142,15 @@ public class MonsterController : NetworkBehaviour, IDamageable
         statusMask = 0;
         state = MonsterState.Dead;
         director.ServerOnMonsterKilled(this);
+        // 혼자 할 때: 보스를 쓰러뜨리거나 방의 마지막 몬스터를 쓰러뜨리면 잠깐 느려진다.
+        if (rank == MonsterRank.Boss)
+        {
+            hub.RequestSlowMotion(0.25f, 0.9f);
+        }
+        else if (director.AliveCount == 0 && !director.HasPendingSpawns)
+        {
+            hub.RequestSlowMotion(0.35f, 0.3f);
+        }
         if (fallen)
         {
             ServerDropWornGear();
@@ -892,6 +1181,19 @@ public class MonsterController : NetworkBehaviour, IDamageable
         }
     }
 
+    // 블랙홀이 끌어당긴다: 가운데 쪽으로 distance만큼 옮긴다(보스와 쓰러진 몬스터는 그대로).
+    public void ServerPull(Vector2 center, float distance)
+    {
+        if (state != MonsterState.Dead && rank != MonsterRank.Boss)
+        {
+            Vector2 offset = center - body.position;
+            if (offset.sqrMagnitude > 0.09f)
+            {
+                body.position = Vector2.MoveTowards(body.position, center, distance);
+            }
+        }
+    }
+
     // 패링당했을 때: 피해 없이 지정한 시간만큼 경직된다. 돌진 중이어도 끊긴다.
     public void ServerStagger(float duration, Vector2 pushDirection)
     {
@@ -905,33 +1207,72 @@ public class MonsterController : NetworkBehaviour, IDamageable
 
     // ------------------------------------------------------------ 서버 상태이상
 
-    public void ServerApplyStatus(StatusKind kind, float duration, float power, int hitDamage)
+    public void ServerApplyStatus(StatusKind kind, float duration, float power, int hitDamage, float comboFactor, Vector2 hitDirection, uint attackerNetId)
     {
         if (state != MonsterState.Dead)
         {
+            int comboDamage = 0;
             if (kind == StatusKind.Burn)
             {
-                burnTime = duration;
-                burnDamage = Mathf.Max(burnDamage, Mathf.Max(1, Mathf.RoundToInt(hitDamage * power)));
+                if (slowTime > 0f)
+                {
+                    // 열충격: 얼어 있는 몸에 불이 붙으면 터진다(둔화와 화상 모두 사라진다).
+                    comboDamage = Mathf.RoundToInt((hitDamage + burnDamage * 2) * thermalShockFactor * comboFactor);
+                    slowTime = 0f;
+                    burnTime = 0f;
+                    RpcCombo(ComboKind.ThermalShock);
+                }
+                else
+                {
+                    burnTime = duration;
+                    burnDamage = Mathf.Max(burnDamage, Mathf.Max(1, Mathf.RoundToInt(hitDamage * power)));
+                }
             }
             else if (kind == StatusKind.Bleed)
             {
                 bleedTime = duration;
                 bleedDamage = Mathf.Max(bleedDamage, Mathf.Max(1, Mathf.RoundToInt(hitDamage * power)));
             }
+            else if (kind == StatusKind.Poison)
+            {
+                poisonTime = duration;
+                poisonDamage = Mathf.Max(poisonDamage, Mathf.Max(1, Mathf.RoundToInt(hitDamage * power)));
+            }
             else if (kind == StatusKind.Slow)
             {
-                slowTime = duration;
+                if (burnTime > 0f)
+                {
+                    comboDamage = Mathf.RoundToInt((hitDamage + burnDamage * 2) * thermalShockFactor * comboFactor);
+                    slowTime = 0f;
+                    burnTime = 0f;
+                    RpcCombo(ComboKind.ThermalShock);
+                }
+                else
+                {
+                    slowTime = duration;
+                }
             }
             else if (kind == StatusKind.Stun)
             {
+                if (slowTime > 0f)
+                {
+                    // 파쇄: 얼어 있는 적을 기절시키면 부서지듯 큰 피해.
+                    comboDamage = Mathf.RoundToInt(hitDamage * shatterFactor * comboFactor);
+                    slowTime = 0f;
+                    RpcCombo(ComboKind.Shatter);
+                }
                 ServerStagger(duration, Vector2.zero);
+                stunTime = Mathf.Max(stunTime, duration);
             }
             else if (kind == StatusKind.Weaken)
             {
                 weakenTime = duration;
             }
             ServerRefreshStatusMask();
+            if (comboDamage > 0)
+            {
+                ServerTakeDamage(comboDamage, hitDirection, attackerNetId);
+            }
         }
     }
 
@@ -941,8 +1282,10 @@ public class MonsterController : NetworkBehaviour, IDamageable
         {
             burnTime -= deltaTime;
             bleedTime -= deltaTime;
+            poisonTime -= deltaTime;
             slowTime -= deltaTime;
             weakenTime -= deltaTime;
+            stunTime -= deltaTime;
 
             statusTickTimer -= deltaTime;
             if (statusTickTimer <= 0f)
@@ -951,11 +1294,21 @@ public class MonsterController : NetworkBehaviour, IDamageable
                 int damage = 0;
                 if (burnTime > 0f)
                 {
-                    damage += burnDamage;
+                    int burn = burnDamage;
+                    // 부식: 약화된 적은 화상이 더 아프다.
+                    if (weakenTime > 0f)
+                    {
+                        burn = Mathf.RoundToInt(burn * corrosionBurnFactor);
+                    }
+                    damage += burn;
                 }
                 if (bleedTime > 0f)
                 {
                     damage += bleedDamage;
+                }
+                if (poisonTime > 0f)
+                {
+                    damage += poisonDamage;
                 }
                 if (damage > 0)
                 {
@@ -993,6 +1346,14 @@ public class MonsterController : NetworkBehaviour, IDamageable
         {
             bleedDamage = 0;
         }
+        if (poisonTime > 0f)
+        {
+            mask |= PoisonBit;
+        }
+        else
+        {
+            poisonDamage = 0;
+        }
         if (slowTime > 0f)
         {
             mask |= SlowBit;
@@ -1000,6 +1361,10 @@ public class MonsterController : NetworkBehaviour, IDamageable
         if (weakenTime > 0f)
         {
             mask |= WeakenBit;
+        }
+        if (stunTime > 0f)
+        {
+            mask |= StunBit;
         }
         if (mask != statusMask)
         {
@@ -1013,7 +1378,33 @@ public class MonsterController : NetworkBehaviour, IDamageable
     {
         if (visualReady)
         {
-            TickFrames(deltaTime);
+            if (statusView != null)
+            {
+                byte shown = statusMask;
+                if (state == MonsterState.Dead)
+                {
+                    shown = 0;
+                }
+                else if (shown != 0)
+                {
+                    statusView.SetBodyHeight(GetVisualHeight());
+                }
+                statusView.SetState(shown, -1);
+            }
+            if (hitStopTimer > 0f)
+            {
+                hitStopTimer -= deltaTime;
+            }
+            else
+            {
+                TickFrames(deltaTime);
+            }
+            if (squashTimer > 0f)
+            {
+                squashTimer -= deltaTime;
+                float squash = hitSquash * Mathf.Clamp01(squashTimer / hitSquashTime);
+                spriteRenderer.transform.localScale = new Vector3(spriteBaseScale.x * (1f + squash), spriteBaseScale.y * (1f - squash * 0.7f), spriteBaseScale.z);
+            }
             if (fallen)
             {
                 humanoid.Tick(deltaTime);
@@ -1039,6 +1430,21 @@ public class MonsterController : NetworkBehaviour, IDamageable
     }
 
     // 평소 색: 상태이상이 걸려 있으면 그 색, 2페이즈 보스는 붉은 색.
+    // 그림의 높이(발밑 기준 로컬). 프레임 그림 위쪽 끝, 타락한 모험가는 사람 키.
+    private float GetVisualHeight()
+    {
+        float height = 0.9f;
+        if (fallen)
+        {
+            height = 1.25f;
+        }
+        else if (spriteRenderer.sprite != null)
+        {
+            height = Mathf.Max(0.4f, spriteRenderer.sprite.bounds.max.y * 0.92f);
+        }
+        return height;
+    }
+
     private void RefreshBaseColor()
     {
         Color color = Color.white;
@@ -1049,6 +1455,10 @@ public class MonsterController : NetworkBehaviour, IDamageable
         else if ((statusMask & BleedBit) != 0)
         {
             color = bleedColor;
+        }
+        else if ((statusMask & PoisonBit) != 0)
+        {
+            color = poisonColor;
         }
         else if ((statusMask & SlowBit) != 0)
         {
@@ -1061,6 +1471,10 @@ public class MonsterController : NetworkBehaviour, IDamageable
         else if (enraged)
         {
             color = enragedColor;
+        }
+        if (definition != null)
+        {
+            color *= definition.Tint;
         }
         baseColor = color;
         if (flashTimer <= 0f)
@@ -1216,10 +1630,15 @@ public class MonsterController : NetworkBehaviour, IDamageable
             if (newValue == MonsterState.Dead && oldValue != MonsterState.Dead)
             {
                 hub.Sound.PlayAt(SoundId.MonsterDie, transform.position);
+                // 도감 칸: 0~2 기본 몬스터, 3 타락한 모험가, 4부터 새 몬스터.
                 int codexIndex = definitionIndex;
                 if (fallen)
                 {
-                    codexIndex = director.DefinitionCount;
+                    codexIndex = 3;
+                }
+                else if (definitionIndex >= 3)
+                {
+                    codexIndex = definitionIndex + 1;
                 }
                 hub.Meta.RecordMonsterKill(codexIndex);
             }
@@ -1262,6 +1681,18 @@ public class MonsterController : NetworkBehaviour, IDamageable
             {
                 flashTimer = flashTime;
                 spriteRenderer.color = flashColor;
+                // 타격감: 잠깐 멈췄다가, 옆으로 눌렸다 돌아온다. 치명타는 더 길게 멈추고 화면이 흔들린다.
+                bool critHit = critCounter != seenCritCounter;
+                hitStopTimer = hitStopTime;
+                if (critHit)
+                {
+                    hitStopTimer = critHitStopTime;
+                }
+                squashTimer = hitSquashTime;
+                if (critHit)
+                {
+                    hub.CameraFollow.Shake(0.07f, 0.1f);
+                }
                 Vector2 textPosition = (Vector2)transform.position + new Vector2(0f, 0.9f * transform.localScale.y);
                 if (critCounter != seenCritCounter)
                 {

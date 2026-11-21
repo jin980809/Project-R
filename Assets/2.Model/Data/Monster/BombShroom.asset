@@ -1,0 +1,112 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: edb840e7182cea14caadc38e065cece2, type: 3}
+  m_Name: BombShroom
+  m_EditorClassIdentifier: Assembly-CSharp::MonsterDefinition
+  displayName: "\uD3ED\uD0C4 \uBC84\uC12F"
+  maxHp: 34
+  moveSpeed: 2.2
+  bodyRadius: 0.28
+  shadowScale: 0.85
+  knockbackSpeed: 3
+  tint: {r: 1, g: 0.45, b: 0.45, a: 1}
+  hitStatus: 1
+  projectileCount: 1
+  projectileSpread: 0
+  attackKind: 3
+  damage: 18
+  attackRange: 1.2
+  attackReach: 0.5
+  attackRadius: 1.7
+  attackWindup: 0.9
+  attackCooldown: 1
+  lungeSpeed: 7
+  lungeDuration: 0.25
+  preferredDistance: 4
+  projectileSpeed: 5
+  projectileLifetime: 3
+  projectileRadius: 0.3
+  idleFrames:
+  - {fileID: 21300000, guid: 6cac2691e272b5b4a97e6dca2e73cec4, type: 3}
+  - {fileID: 21300000, guid: 9a5d9a49db124a84a8dd4cce971a8789, type: 3}
+  - {fileID: 21300000, guid: b67133ac310fe0f4799b8913269e2f62, type: 3}
+  - {fileID: 21300000, guid: 7196036646415ee45bdd9d5a68f6d006, type: 3}
+  - {fileID: 21300000, guid: d7323fe5ca7e4384e8c65579cd57b9da, type: 3}
+  - {fileID: 21300000, guid: 314c3b1f7c35899409246e4742061c78, type: 3}
+  - {fileID: 21300000, guid: bf72f75dc4864194bb794b257a146a24, type: 3}
+  - {fileID: 21300000, guid: 64f2bd0a12033174ba4b5e86ddc45fb1, type: 3}
+  - {fileID: 21300000, guid: 65ac5a48d79d68d46985b7e74b3dc4a1, type: 3}
+  - {fileID: 21300000, guid: 51c6ce012bb89ff479dad1e36a1f8028, type: 3}
+  - {fileID: 21300000, guid: a24d65c6f1d33ce48b3bfe7f5ac78bff, type: 3}
+  - {fileID: 21300000, guid: 1833f1231ace6734f866753fb1446998, type: 3}
+  - {fileID: 21300000, guid: 822098c8c6dee7c49a4999d50a88f856, type: 3}
+  - {fileID: 21300000, guid: 0f57e9fb2a63c974dbfcd60847bf0fc5, type: 3}
+  - {fileID: 21300000, guid: 978d2c78c270cb843b58791138b01f13, type: 3}
+  - {fileID: 21300000, guid: fa2e558481e8b7342ba8ebcc26bba3e6, type: 3}
+  - {fileID: 21300000, guid: 34f6741c38876ea499eb21310954c67c, type: 3}
+  - {fileID: 21300000, guid: 132839d1175787249ab962ea0891ab21, type: 3}
+  - {fileID: 21300000, guid: e289faf7080c0ad45a7c8a7c248bc556, type: 3}
+  - {fileID: 21300000, guid: 77123e96ab7b6544ebeae333bdb05dab, type: 3}
+  walkFrames:
+  - {fileID: 21300000, guid: 5081c8384f8ee4142876cb2a06578532, type: 3}
+  - {fileID: 21300000, guid: c104208f075b8284a92661cc7ccedc19, type: 3}
+  - {fileID: 21300000, guid: 56e7abb7c5e6c814897fef49f0204f8b, type: 3}
+  - {fileID: 21300000, guid: a51293d8adffcbf4fac03ae49e683dfa, type: 3}
+  - {fileID: 21300000, guid: 51074aae0aedc9140afbd92c87365b20, type: 3}
+  - {fileID: 21300000, guid: 49ddd205aa77bd643ba464104b74154b, type: 3}
+  - {fileID: 21300000, guid: a8a1e12927e8b95469bbbeb3721f42e7, type: 3}
+  - {fileID: 21300000, guid: 759d30597d8329147962b89c8e4035cd, type: 3}
+  - {fileID: 21300000, guid: 29fcfbf715db8754483d42f0166181a7, type: 3}
+  - {fileID: 21300000, guid: 3fd6e6b3a117c8e498f23fa6a9715b6d, type: 3}
+  - {fileID: 21300000, guid: 4361367b7dfd43b4cb7df38da501c0b0, type: 3}
+  - {fileID: 21300000, guid: 76f771c653c9a0a45b6988550051a436, type: 3}
+  attackFrames:
+  - {fileID: 21300000, guid: 3ea409c3ff1570041afba5e2c0024762, type: 3}
+  - {fileID: 21300000, guid: 9b36828b670606f41b03eb6e96d49770, type: 3}
+  - {fileID: 21300000, guid: d476bc354a5a8fa459f7a8ce775afd33, type: 3}
+  - {fileID: 21300000, guid: bd0373c86e543c544b63d191a2bac406, type: 3}
+  - {fileID: 21300000, guid: f6f9e8ddae2d01741af48f0077b17c12, type: 3}
+  - {fileID: 21300000, guid: fa0fa5d28f249b14d925e64f17986200, type: 3}
+  - {fileID: 21300000, guid: ef62aa8ba82e1ec48bbfa1cb3ef1cd28, type: 3}
+  - {fileID: 21300000, guid: 96f18847581476b41ba372f69e48e94f, type: 3}
+  - {fileID: 21300000, guid: 07f592f04451b444891f1f3d15c05f12, type: 3}
+  - {fileID: 21300000, guid: ce4783d32524cdf4abedf0a92798f378, type: 3}
+  - {fileID: 21300000, guid: 5d1f9999710322140a77db03e5e4d5ac, type: 3}
+  - {fileID: 21300000, guid: c5ab159669cc43d42a9235605d00039c, type: 3}
+  - {fileID: 21300000, guid: 61a4e9bfc7905a34caa8a4aac20a4eb0, type: 3}
+  - {fileID: 21300000, guid: 255e57909910a474caa1590e42f9fabd, type: 3}
+  - {fileID: 21300000, guid: ac93375f1fe374d448f4727d18d6a0f1, type: 3}
+  - {fileID: 21300000, guid: d26099902a2ad1e4d876a7b1f119a634, type: 3}
+  hitFrames:
+  - {fileID: 21300000, guid: e2a1cc44abf56ed43b01b02a11003187, type: 3}
+  - {fileID: 21300000, guid: 8eda51ee04d26bd42a72a320f9ae0cee, type: 3}
+  - {fileID: 21300000, guid: 6e1a26ad2add3b1409acf16485b19006, type: 3}
+  - {fileID: 21300000, guid: 8ccf7645105305344ad93ef518b205d7, type: 3}
+  - {fileID: 21300000, guid: c5022d4c9bae429488341071ca3bd1fb, type: 3}
+  - {fileID: 21300000, guid: a64a9a1a183b6db47965fd518db4dcdb, type: 3}
+  deadFrames:
+  - {fileID: 21300000, guid: f04e86b423903d2469d6916805d2e6a3, type: 3}
+  - {fileID: 21300000, guid: e562153f53aff2142882e36ef9eb2515, type: 3}
+  - {fileID: 21300000, guid: a074d908011780b44a0a9217ec7a6269, type: 3}
+  - {fileID: 21300000, guid: 6f41c48a0b3b0944f9e77d34857b6921, type: 3}
+  - {fileID: 21300000, guid: 9d832966fc1ae0f4a89817b8db7fe485, type: 3}
+  - {fileID: 21300000, guid: 5a795f0447077b34dad31f577123a82f, type: 3}
+  - {fileID: 21300000, guid: 97f6241c44c47f340b866a3448ec79f7, type: 3}
+  - {fileID: 21300000, guid: 5de08ec2abaf7714f9b0e6ace420baf3, type: 3}
+  - {fileID: 21300000, guid: 40549dffc03454840b1cb91c921aa821, type: 3}
+  - {fileID: 21300000, guid: 83cc204803fec904582afaec28207894, type: 3}
+  - {fileID: 21300000, guid: b8094d16d7486f44787333d19a0f7acc, type: 3}
+  - {fileID: 21300000, guid: 2cb5f0879aa36e14fb3bb8708dc1d872, type: 3}
+  - {fileID: 21300000, guid: 3f59f25a857f8df4eaa52011c6c25a2d, type: 3}
+  - {fileID: 21300000, guid: 3c052a756107c0d45b44f2acc63cdd83, type: 3}
+  framesPerSecond: 20
+  attackHitNormalized: 0.58

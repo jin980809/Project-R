@@ -21,8 +21,16 @@ MonoBehaviour:
   castTime: 0.3
   damageFactor: 2
   radius: 0.32
+  arcDegrees: 0
+  impactDelay: 0
+  chargeTime: 0
+  chargeMinDamage: 0.35
+  chargeMinSize: 0.55
+  pierce: 0
   range: 0
   invulnerable: 0
+  groundTarget: 0
+  pullSpeed: 0
   count: 1
   spreadDegrees: 0
   projectileSpeed: 12
@@ -41,4 +49,42 @@ MonoBehaviour:
   animSpeed: 1.5
   fxColor: {r: 1, g: 0.65, b: 0.25, a: 1}
   fx: 1
+  icon: {fileID: 21300000, guid: e1384e6e1bacfa94d99566fea327533e, type: 3}
   sound: 6
+  vfx:
+    cast: []
+    castFps: 20
+    castGround: 0
+    castDirectional: 0
+    castMirror: 0
+    castScale: 1
+    castSize: 0.9
+    castIntro: []
+    castIntroFps: 20
+    castOutro: []
+    castOutroFps: 20
+    trail: []
+    trailFps: 20
+    trailWidth: 1.4
+    projectile:
+    - {fileID: 21300000, guid: 4a9dcfab7aa6d5f478f7cccb1a8b66ae, type: 3}
+    - {fileID: 21300000, guid: 4dce1c9122981d6458942f1cad98e380, type: 3}
+    - {fileID: 21300000, guid: a38f5f811b46e1342a3fc7b24ad2a6bd, type: 3}
+    - {fileID: 21300000, guid: fc9050110c908b34ead7298d2a001d19, type: 3}
+    - {fileID: 21300000, guid: 1d0af306dc4fae448a85c2eb6f1e5801, type: 3}
+    - {fileID: 21300000, guid: 4ee57fc9390447c4b95e1f66f42e3bc3, type: 3}
+    projectileFps: 12
+    projectileSize: 1
+    projectileSpin: 0
+    projectileHidden: 0
+    impact: []
+    impactFps: 20
+    impactSize: 0.938
+    impactScale: 1
+    impactGround: 0
+    impactDirectional: 1
+    impactMirror: 0
+    muzzle: []
+    muzzleFps: 22
+    muzzleSize: 0.7
+    muzzleDirectional: 0

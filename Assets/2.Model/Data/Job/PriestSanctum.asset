@@ -13,16 +13,24 @@ MonoBehaviour:
   m_Name: PriestSanctum
   m_EditorClassIdentifier: Assembly-CSharp::SkillDefinition
   displayName: "\uC131\uC5ED"
-  description: "\uBC1C\uBC11\uC5D0 \uC131\uC5ED\uC744 \uD3BC\uCCD0 \uC548\uC5D0 \uC788\uB294
-    \uC544\uAD70\uC744 \uACC4\uC18D \uD68C\uBCF5\uD569\uB2C8\uB2E4."
+  description: "\uACE0\uB978 \uC790\uB9AC\uC5D0 \uC131\uC5ED\uC744 \uD3BC\uCCD0 \uC548\uC5D0
+    \uC788\uB294 \uC544\uAD70\uC744 \uACC4\uC18D \uD68C\uBCF5\uD569\uB2C8\uB2E4."
   kind: 6
   manaCost: 24
   cooldown: 18
   castTime: 0.4
   damageFactor: 0
   radius: 2.4
-  range: 0
+  arcDegrees: 0
+  impactDelay: 0
+  chargeTime: 0
+  chargeMinDamage: 0.35
+  chargeMinSize: 0.55
+  pierce: 0
+  range: 4.5
   invulnerable: 0
+  groundTarget: 1
+  pullSpeed: 0
   count: 1
   spreadDegrees: 0
   projectileSpeed: 12
@@ -41,4 +49,58 @@ MonoBehaviour:
   animSpeed: 1.5
   fxColor: {r: 1, g: 0.85, b: 0.45, a: 1}
   fx: 5
+  icon: {fileID: 21300000, guid: 6f34a077fcf4f8a428ae8d88730c6e46, type: 3}
   sound: 31
+  vfx:
+    cast:
+    - {fileID: 21300000, guid: 4457011f9177dda4d8a101f400cf75dc, type: 3}
+    - {fileID: 21300000, guid: 174d80bbf9e3c6944b1e6da6e67a1ac8, type: 3}
+    - {fileID: 21300000, guid: 894f181aa1d9a96418d660fc580db217, type: 3}
+    - {fileID: 21300000, guid: b59ac165e868838479b0e14ea9f54225, type: 3}
+    - {fileID: 21300000, guid: 5516d350ee2e87741b2cc348a3b3e9de, type: 3}
+    - {fileID: 21300000, guid: 3ebf122604f85604b861c845c8fd37a2, type: 3}
+    - {fileID: 21300000, guid: 9fe2bcdc7dc04cb41a6168aae2d0a407, type: 3}
+    - {fileID: 21300000, guid: 651234b437ea0dc4c9f3d6fb2aae4020, type: 3}
+    - {fileID: 21300000, guid: a678d1dbe5a2a6b42807b79610697797, type: 3}
+    - {fileID: 21300000, guid: d59fc8b29fa64b5479acaedc4a00f492, type: 3}
+    - {fileID: 21300000, guid: 40259855698ab3946b8603504465f890, type: 3}
+    - {fileID: 21300000, guid: cbc5b8b939f08de48af1e60d91f90e80, type: 3}
+    - {fileID: 21300000, guid: 33df1c69eee2fc74fba92df9babae2b0, type: 3}
+    - {fileID: 21300000, guid: ccf607c24b01921488952f5cd734a530, type: 3}
+    - {fileID: 21300000, guid: 8a4a1b5d8203ee941ba5f07f3afe5aa5, type: 3}
+    - {fileID: 21300000, guid: cdb1c9f4c8dbe8a4c9a5f77525d7349c, type: 3}
+    castFps: 4
+    castGround: 1
+    castDirectional: 0
+    castMirror: 0
+    castScale: 0.729
+    castSize: 0.9
+    castIntro:
+    - {fileID: 21300000, guid: 50a5d46586709e14bb15cfde7092a569, type: 3}
+    - {fileID: 21300000, guid: 188a61f55745b1e449b73d5ffc616052, type: 3}
+    - {fileID: 21300000, guid: d123d73fc21ea7840a7630ac49e4b148, type: 3}
+    castIntroFps: 4
+    castOutro:
+    - {fileID: 21300000, guid: ee5e9eed543c3ec4e8863c839346f1d4, type: 3}
+    - {fileID: 21300000, guid: 9d9920d9f2e509b4ba37d00050c60af7, type: 3}
+    - {fileID: 21300000, guid: 368fd1d7dcc29184495e4aaf31027215, type: 3}
+    castOutroFps: 4
+    trail: []
+    trailFps: 20
+    trailWidth: 1.4
+    projectile: []
+    projectileFps: 18
+    projectileSize: 1
+    projectileSpin: 0
+    projectileHidden: 0
+    impact: []
+    impactFps: 20
+    impactSize: 0.8
+    impactScale: 1
+    impactGround: 0
+    impactDirectional: 0
+    impactMirror: 0
+    muzzle: []
+    muzzleFps: 22
+    muzzleSize: 0.7
+    muzzleDirectional: 0

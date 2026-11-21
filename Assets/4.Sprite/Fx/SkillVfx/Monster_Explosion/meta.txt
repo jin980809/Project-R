@@ -1,0 +1,3 @@
+impact_fps=14.4
+impact_size=2.000
+impact_ground=0

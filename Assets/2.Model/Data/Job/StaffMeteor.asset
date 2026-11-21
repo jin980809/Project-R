@@ -1,0 +1,105 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d31d9e92da8c0464aa4d1b02d82027ff, type: 3}
+  m_Name: StaffMeteor
+  m_EditorClassIdentifier: Assembly-CSharp::SkillDefinition
+  displayName: "\uBA54\uD14C\uC624"
+  description: "[\uCC28\uC9D5] \uB9C8\uB825\uC744 \uBAA8\uC544 \uACE0\uB978 \uC790\uB9AC\uC5D0
+    \uC6B4\uC11D\uC744 \uB5A8\uC5B4\uB728\uB9BD\uB2C8\uB2E4. \uBAA8\uC744\uC218\uB85D
+    \uD070 \uC6B4\uC11D\uC774 \uB113\uAC8C \uBD88\uD0DC\uC6C1\uB2C8\uB2E4."
+  kind: 0
+  manaCost: 22
+  cooldown: 12
+  castTime: 0.5
+  damageFactor: 3.2
+  radius: 2.8
+  arcDegrees: 0
+  impactDelay: 0.55
+  chargeTime: 1.2
+  chargeMinDamage: 0.35
+  chargeMinSize: 0.5
+  pierce: 0
+  range: 6.5
+  invulnerable: 0
+  groundTarget: 1
+  pullSpeed: 0
+  count: 1
+  spreadDegrees: 0
+  projectileSpeed: 12
+  projectileLifetime: 1
+  explosionRadius: 0
+  projectileLook: 1
+  buffEffect: 1
+  buffValue: 30
+  buffDuration: 0
+  healPercent: 0
+  statusKind: 1
+  statusDuration: 4
+  statusPower: 0.15
+  anim: 7
+  animStartTime: 0
+  animSpeed: 1.5
+  fxColor: {r: 1, g: 0.65, b: 0.25, a: 1}
+  fx: 3
+  icon: {fileID: 21300000, guid: a7923c97cbbea3245bfb30af8274f3e1, type: 3}
+  sound: 28
+  vfx:
+    cast:
+    - {fileID: 21300000, guid: 84b4b2f2cefd59443b3fabd999e225e9, type: 3}
+    - {fileID: 21300000, guid: 2031afc9f19c538429b626e3202a8dae, type: 3}
+    - {fileID: 21300000, guid: 9d3a77bddaa1e0d41a963b91df8c5284, type: 3}
+    - {fileID: 21300000, guid: 371551106fc7cec4daf12611e547aa70, type: 3}
+    - {fileID: 21300000, guid: 3c68f25bc50642042a1110122dd7f846, type: 3}
+    - {fileID: 21300000, guid: e4bb1fb135b8c8d4696d083ff51ac4b3, type: 3}
+    - {fileID: 21300000, guid: 6ea7f9ee9840bce4cb5419fae5dacd3f, type: 3}
+    - {fileID: 21300000, guid: a002827bbf8a62b448bf18a885aeac84, type: 3}
+    - {fileID: 21300000, guid: cbe3f358872308e4cb13e37973dd2b25, type: 3}
+    - {fileID: 21300000, guid: b5cd8547fcfa11e49a500734b03f8a2d, type: 3}
+    - {fileID: 21300000, guid: 8df998dc1fce90646a0a8d50de44d2d4, type: 3}
+    - {fileID: 21300000, guid: 411fd8efadbe557419b41d70e6fb981f, type: 3}
+    - {fileID: 21300000, guid: 16d9414553e2f1b418e18cbb83d07b01, type: 3}
+    - {fileID: 21300000, guid: e9be203fc9c190a42ac28039fae456db, type: 3}
+    - {fileID: 21300000, guid: c16824f8122e85444baffff2fa623f08, type: 3}
+    - {fileID: 21300000, guid: ae09c7d8b3552ba4f8d5cba55b835740, type: 3}
+    - {fileID: 21300000, guid: 445fb3fbff3f28d41b027d26ee074e8e, type: 3}
+    - {fileID: 21300000, guid: b719686e7be3c144c94e833be80b3ec0, type: 3}
+    - {fileID: 21300000, guid: 9e9441f9586f96f42824da23353760c1, type: 3}
+    - {fileID: 21300000, guid: 3408bed1443e0bf44977f7852d08d9d6, type: 3}
+    castFps: 10.5
+    castGround: 0
+    castDirectional: 0
+    castMirror: 0
+    castScale: 1.563
+    castSize: 0.9
+    castIntro: []
+    castIntroFps: 20
+    castOutro: []
+    castOutroFps: 20
+    trail: []
+    trailFps: 20
+    trailWidth: 1.4
+    projectile: []
+    projectileFps: 18
+    projectileSize: 1
+    projectileSpin: 0
+    projectileHidden: 0
+    impact: []
+    impactFps: 20
+    impactSize: 0.8
+    impactScale: 1
+    impactGround: 0
+    impactDirectional: 0
+    impactMirror: 0
+    muzzle: []
+    muzzleFps: 22
+    muzzleSize: 0.7
+    muzzleDirectional: 0

@@ -1,0 +1,100 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: edb840e7182cea14caadc38e065cece2, type: 3}
+  m_Name: FrostBat
+  m_EditorClassIdentifier: Assembly-CSharp::MonsterDefinition
+  displayName: "\uC11C\uB9AC \uBC15\uC950"
+  maxHp: 30
+  moveSpeed: 3
+  bodyRadius: 0.24
+  shadowScale: 0.65
+  knockbackSpeed: 3
+  tint: {r: 0.6, g: 0.85, b: 1, a: 1}
+  hitStatus: 3
+  projectileCount: 1
+  projectileSpread: 0
+  attackKind: 1
+  damage: 8
+  attackRange: 3.2
+  attackReach: 0.4
+  attackRadius: 0.5
+  attackWindup: 0.4
+  attackCooldown: 1.4
+  lungeSpeed: 10
+  lungeDuration: 0.3
+  preferredDistance: 4
+  projectileSpeed: 5
+  projectileLifetime: 3
+  projectileRadius: 0.3
+  idleFrames:
+  - {fileID: 21300000, guid: 106d29e762698d244a1fb49905b9cf6f, type: 3}
+  - {fileID: 21300000, guid: 9b0a218148b45d24789ec9bf781ea00b, type: 3}
+  - {fileID: 21300000, guid: c8809c37148e0a6459717363b68916b3, type: 3}
+  - {fileID: 21300000, guid: 9491da6079694744ba316cd55d3b50ea, type: 3}
+  - {fileID: 21300000, guid: 9f39c367046976d4ba4b7f0fed957ebc, type: 3}
+  - {fileID: 21300000, guid: 84997a184bbb44b458b316c2395c5b12, type: 3}
+  - {fileID: 21300000, guid: 604cee6003167364ab7555602b7719c0, type: 3}
+  - {fileID: 21300000, guid: cda6fde3c1503f24e8c040e86974cd1e, type: 3}
+  - {fileID: 21300000, guid: 5c3a331d85edf1e42bb845a7b8c5d664, type: 3}
+  - {fileID: 21300000, guid: 03d0eb7e54be6fd4e9ae16865359d988, type: 3}
+  - {fileID: 21300000, guid: e3449d1ffc806f44e950a123f557aee8, type: 3}
+  - {fileID: 21300000, guid: 611abf83fa3b7da41842e583382cda5a, type: 3}
+  walkFrames:
+  - {fileID: 21300000, guid: 7963b165d40f975438181ca1e391d5c6, type: 3}
+  - {fileID: 21300000, guid: 7f0fa0db95961b14d87218b312ada8eb, type: 3}
+  - {fileID: 21300000, guid: 23b1444b39b02d04bbda531a29d94a0d, type: 3}
+  - {fileID: 21300000, guid: a2d4f448911f6e1418a27b3d1607db77, type: 3}
+  - {fileID: 21300000, guid: 0c758acd10419ee4399b6918b84918b3, type: 3}
+  - {fileID: 21300000, guid: 54ae26cf80dab994a940f59a16509b5f, type: 3}
+  - {fileID: 21300000, guid: 57f84bf2805180e42809ed63f958dd64, type: 3}
+  - {fileID: 21300000, guid: 4935714a6562c5e4a985a6d857cf6d9b, type: 3}
+  attackFrames:
+  - {fileID: 21300000, guid: cc24b3f693119ed4cb49f34f381f7fe9, type: 3}
+  - {fileID: 21300000, guid: 0a17bd7a312126a4f842a908536a1a05, type: 3}
+  - {fileID: 21300000, guid: 88fa765915a89e54888c3ff3b6f22d4b, type: 3}
+  - {fileID: 21300000, guid: f485834d11a52f148914c7971f998e22, type: 3}
+  - {fileID: 21300000, guid: 6dcba960a62a1804487ceceb5874738f, type: 3}
+  - {fileID: 21300000, guid: cf3e34faaf3f8ad45a5fca7bad2422be, type: 3}
+  - {fileID: 21300000, guid: 523a5e31dd29c024aa4fcff6a496c835, type: 3}
+  - {fileID: 21300000, guid: d3e5d842612f1d740ac5d7a19620477e, type: 3}
+  - {fileID: 21300000, guid: dee60290d8cf38543879c3b34977baf9, type: 3}
+  - {fileID: 21300000, guid: 8dc6987258d8e524199fa293328750da, type: 3}
+  - {fileID: 21300000, guid: 89030c290322be74eb20813d07ed7881, type: 3}
+  - {fileID: 21300000, guid: 1caaf258f9c3804469f51b183ab7d9d2, type: 3}
+  - {fileID: 21300000, guid: 2d28e4bad10ab8549895f71166f2ba48, type: 3}
+  - {fileID: 21300000, guid: 9c4ced70fe21f1b4f9744d5e70a75af2, type: 3}
+  - {fileID: 21300000, guid: f0cd102cd88f0d74d9f9b8bd0041a941, type: 3}
+  - {fileID: 21300000, guid: 2c1514756ea88ba4f95818a695c646e9, type: 3}
+  hitFrames:
+  - {fileID: 21300000, guid: d252c653e0a88104bb0f48d9bb43ca8a, type: 3}
+  - {fileID: 21300000, guid: cbc1ac92e92f1ae4882ed8b68f1751c3, type: 3}
+  - {fileID: 21300000, guid: 76145b0c7fdd3b34a96b192b5f8d8763, type: 3}
+  - {fileID: 21300000, guid: 732b411e62a4ef846a07550929b77b4c, type: 3}
+  - {fileID: 21300000, guid: 1f36771da08e0974ea2c43c1d7e62255, type: 3}
+  - {fileID: 21300000, guid: 15e6995ff006d2b4599c1e7792a75959, type: 3}
+  deadFrames:
+  - {fileID: 21300000, guid: 58f8037a16fe6c04481b559cd5d7201e, type: 3}
+  - {fileID: 21300000, guid: 1ec67ce7113bbce48ac8673d590fb173, type: 3}
+  - {fileID: 21300000, guid: 4f731a77c7ace144e9f0e96d92fb4523, type: 3}
+  - {fileID: 21300000, guid: 2c6573e7f59912243af1c187ca293df8, type: 3}
+  - {fileID: 21300000, guid: eba6d96e25f6ba64290a14ff5d6e1a45, type: 3}
+  - {fileID: 21300000, guid: f76a5dea675e66943927f24c0317b6fe, type: 3}
+  - {fileID: 21300000, guid: d93061e669dd2d143a68fe188453d5e8, type: 3}
+  - {fileID: 21300000, guid: ceee6494b80a5c149bdb49294827429e, type: 3}
+  - {fileID: 21300000, guid: 541be632196da4748852bfba8b82703a, type: 3}
+  - {fileID: 21300000, guid: f18bb6d055abd494590eeeed231ab00b, type: 3}
+  - {fileID: 21300000, guid: f2f3ca075b1f86d4a9ff1bef4860afc2, type: 3}
+  - {fileID: 21300000, guid: e15d88624baa9614c919e8e59e5d025c, type: 3}
+  - {fileID: 21300000, guid: 9d8122b50db93b04d98dd2c8e27342ce, type: 3}
+  - {fileID: 21300000, guid: c27bae3d4fe0ef74d8f647dc4fca8dd4, type: 3}
+  framesPerSecond: 20
+  attackHitNormalized: 0.4

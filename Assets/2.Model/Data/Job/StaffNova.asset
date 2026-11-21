@@ -13,16 +13,24 @@ MonoBehaviour:
   m_Name: StaffNova
   m_EditorClassIdentifier: Assembly-CSharp::SkillDefinition
   displayName: "\uC11C\uB9AC \uD3ED\uBC1C"
-  description: "\uC8FC\uBCC0\uC744 \uC5BC\uB824 \uC801\uC744 \uD06C\uAC8C \uB290\uB9AC\uAC8C
-    \uD569\uB2C8\uB2E4."
+  description: "\uACE0\uB978 \uC790\uB9AC\uB97C \uC5BC\uB824 \uADF8 \uC8FC\uBCC0
+    \uC801\uC744 \uD06C\uAC8C \uB290\uB9AC\uAC8C \uD569\uB2C8\uB2E4."
   kind: 0
   manaCost: 18
   cooldown: 9
   castTime: 0.4
   damageFactor: 1.4
   radius: 2.6
-  range: 0
+  arcDegrees: 0
+  impactDelay: 0
+  chargeTime: 0
+  chargeMinDamage: 0.35
+  chargeMinSize: 0.55
+  pierce: 0
+  range: 5.5
   invulnerable: 0
+  groundTarget: 1
+  pullSpeed: 0
   count: 1
   spreadDegrees: 0
   projectileSpeed: 12
@@ -40,5 +48,53 @@ MonoBehaviour:
   animStartTime: 0
   animSpeed: 1.5
   fxColor: {r: 0.55, g: 0.95, b: 1, a: 1}
-  fx: 11
+  fx: 18
+  icon: {fileID: 21300000, guid: d1ecb66d557b73843a167f620646f8b3, type: 3}
   sound: 29
+  vfx:
+    cast:
+    - {fileID: 21300000, guid: 361f987dff812a747b5cb2f99f14a2e7, type: 3}
+    - {fileID: 21300000, guid: cbef0442ca5ee054a9c70b066aff071c, type: 3}
+    - {fileID: 21300000, guid: 183db5c0d4bcf8b4bbe03c002d1e4021, type: 3}
+    - {fileID: 21300000, guid: 1be68b27a2e51024cb65f6bdfe769d76, type: 3}
+    - {fileID: 21300000, guid: 166541e45b807ce47a6446b80e055115, type: 3}
+    - {fileID: 21300000, guid: d4bf3f20e9c78d742963b1ccf11446ae, type: 3}
+    - {fileID: 21300000, guid: 63ef1f7b30040cf46bcd17c1ac64fd34, type: 3}
+    - {fileID: 21300000, guid: fe8f0b8b6727776439d3c5320373d530, type: 3}
+    - {fileID: 21300000, guid: c5e697a4e86b31b4dbade033470e015b, type: 3}
+    - {fileID: 21300000, guid: 4930f4ce3843f1245800df807f845d8c, type: 3}
+    - {fileID: 21300000, guid: ba562ecaa16692841b57d559c701800f, type: 3}
+    - {fileID: 21300000, guid: 239cab618aa9e764abe718d7eaa67bcb, type: 3}
+    - {fileID: 21300000, guid: 63940854e292acd448879c34005c49f0, type: 3}
+    - {fileID: 21300000, guid: 6c76239b2e4909f45b1f08a0f83864ba, type: 3}
+    - {fileID: 21300000, guid: 74ef39f0069de5f469788bd1f95ce5b6, type: 3}
+    - {fileID: 21300000, guid: 54da852e6f9220f45b0879f0c5320c00, type: 3}
+    castFps: 12
+    castGround: 1
+    castDirectional: 0
+    castMirror: 0
+    castScale: 1.058
+    castSize: 0.9
+    castIntro: []
+    castIntroFps: 20
+    castOutro: []
+    castOutroFps: 20
+    trail: []
+    trailFps: 20
+    trailWidth: 1.4
+    projectile: []
+    projectileFps: 18
+    projectileSize: 1
+    projectileSpin: 0
+    projectileHidden: 0
+    impact: []
+    impactFps: 20
+    impactSize: 0.8
+    impactScale: 1
+    impactGround: 0
+    impactDirectional: 0
+    impactMirror: 0
+    muzzle: []
+    muzzleFps: 22
+    muzzleSize: 0.7
+    muzzleDirectional: 0

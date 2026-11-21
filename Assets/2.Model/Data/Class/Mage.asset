@@ -1,0 +1,325 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0847fce23e7166f4288804db4a625f6d, type: 3}
+  m_Name: Mage
+  m_EditorClassIdentifier: Assembly-CSharp::ClassDefinition
+  displayName: "\uB9C8\uBC95\uC0AC"
+  description: "\uC9C0\uD321\uC774\xB7\uC644\uB4DC\uB97C \uC4F0\uB294 \uB9C8\uBC95
+    \uACC4\uC5F4."
+  weaponKinds: 0308
+  jobBranches:
+  - displayName: "\uC6D0\uC18C\uC220\uC0AC"
+    weaponText: "\uC9C0\uD321\uC774"
+    awakening: 6
+    awakenValueA: 50
+    awakenValueB: 0
+    awakeningText: "\uC6D0\uC18C \uC9C0\uBC30: \uC2A4\uD0AC\uC774 \uAC70\uB294 \uC0C1\uD0DC
+      \uC774\uC0C1\uC758 \uC9C0\uC18D \uC2DC\uAC04 +50%."
+  - displayName: "\uC8FC\uC220\uC0AC"
+    weaponText: "\uC644\uB4DC"
+    awakening: 7
+    awakenValueA: 5
+    awakenValueB: 0
+    awakeningText: "\uC800\uC8FC\uC758 \uAD70\uC8FC: \uBC29\uC758 \uC801\uC774 \uC4F0\uB7EC\uC9C8
+      \uB54C\uB9C8\uB2E4 \uB9C8\uB098 +5."
+  - displayName: "\uC0AC\uC81C"
+    weaponText: "\uC644\uB4DC"
+    awakening: 8
+    awakenValueA: 50
+    awakenValueB: 0
+    awakeningText: "\uC131\uC790: \uD68C\uBCF5\xB7\uBD80\uD65C \uD6A8\uACFC +50%."
+  skills:
+  - {fileID: 11400000, guid: 52b3b6903e5ef4845977fa624488e07e, type: 2}
+  - {fileID: 11400000, guid: ad288428aaa638741813e64e58d53d03, type: 2}
+  - {fileID: 11400000, guid: a1c9a49fff4c97f4b85a1d852c37ca47, type: 2}
+  - {fileID: 11400000, guid: a7c9b09de01b63145b6e1506db725c18, type: 2}
+  - {fileID: 11400000, guid: b6776f568ebbae64991964358bc65402, type: 2}
+  - {fileID: 11400000, guid: 780b0a71b3e99ad4fb9043d15adc6af4, type: 2}
+  - {fileID: 11400000, guid: 079de47bd0c20a04eaf700437f3093d4, type: 2}
+  - {fileID: 11400000, guid: 63822ac7971b2ce43beb459a56503df9, type: 2}
+  - {fileID: 11400000, guid: 2736dae19705bf044a7f965d25675cc6, type: 2}
+  - {fileID: 11400000, guid: 76650fe5f6994934da0a6046f54ae57f, type: 2}
+  - {fileID: 11400000, guid: 17b17d7e1e2662048a014f2f309a396e, type: 2}
+  - {fileID: 11400000, guid: 3cc53a7bb19889549870b2fe1822326d, type: 2}
+  - {fileID: 11400000, guid: 7cf369b2ce8ef454b8bb2a75474f07d2, type: 2}
+  - {fileID: 11400000, guid: a15400119675aaa49b4cd89922c0c58d, type: 2}
+  - {fileID: 11400000, guid: f5ad57db1482eed438f93f42aa29183c, type: 2}
+  - {fileID: 11400000, guid: b39897296269c884b93ce58d6faeee5a, type: 2}
+  - {fileID: 11400000, guid: 015fc371384ba38499f1757b43695215, type: 2}
+  - {fileID: 11400000, guid: e03e2a50fd1315049955a8e5fbf2a076, type: 2}
+  nodes:
+  - displayName: "\uD654\uC5FC\uAD6C"
+    effect: 0
+    value: 0
+    maxRank: 1
+    parent: -1
+    job: 0
+    cell: {x: 1.5, y: 0}
+  - displayName: "\uBA54\uD14C\uC624"
+    effect: 0
+    value: 1
+    maxRank: 1
+    parent: 0
+    job: 0
+    cell: {x: 0.5, y: 1}
+  - displayName: "\uBD88\uAE38"
+    effect: 10
+    value: 16
+    maxRank: 1
+    parent: 1
+    job: 0
+    cell: {x: 0.5, y: 2}
+  - displayName: "\uC5F0\uC1C4 \uBC88\uAC1C"
+    effect: 0
+    value: 2
+    maxRank: 1
+    parent: 2
+    job: 0
+    cell: {x: 0, y: 3}
+  - displayName: "\uB9C8\uB825 \uADF8\uB987"
+    effect: 7
+    value: 20
+    maxRank: 1
+    parent: 2
+    job: 0
+    cell: {x: 1, y: 3}
+  - displayName: "\uC9D1\uC911"
+    effect: 10
+    value: 12
+    maxRank: 1
+    parent: 3
+    job: 0
+    cell: {x: 0, y: 4}
+  - displayName: "\uC5BC\uC74C \uCC3D"
+    effect: 0
+    value: 3
+    maxRank: 1
+    parent: 0
+    job: 0
+    cell: {x: 2.5, y: 1}
+  - displayName: "\uB0C9\uC815"
+    effect: 6
+    value: 8
+    maxRank: 1
+    parent: 6
+    job: 0
+    cell: {x: 2.5, y: 2}
+  - displayName: "\uC11C\uB9AC \uD3ED\uBC1C"
+    effect: 0
+    value: 4
+    maxRank: 1
+    parent: 7
+    job: 0
+    cell: {x: 2, y: 3}
+  - displayName: "\uBE60\uB978 \uC601\uCC3D"
+    effect: 9
+    value: 10
+    maxRank: 1
+    parent: 7
+    job: 0
+    cell: {x: 3, y: 3}
+  - displayName: "\uC810\uBA78"
+    effect: 0
+    value: 5
+    maxRank: 1
+    parent: 8
+    job: 0
+    cell: {x: 2, y: 4}
+  - displayName: "\uB9C8\uB825 \uD761\uC218"
+    effect: 8
+    value: 2
+    maxRank: 1
+    parent: 9
+    job: 0
+    cell: {x: 3, y: 4}
+  - displayName: "\uC800\uC8FC \uD0C4"
+    effect: 0
+    value: 6
+    maxRank: 1
+    parent: -1
+    job: 1
+    cell: {x: 5.5, y: 0}
+  - displayName: "\uBE14\uB799\uD640"
+    effect: 0
+    value: 7
+    maxRank: 1
+    parent: 12
+    job: 1
+    cell: {x: 4.5, y: 1}
+  - displayName: "\uAE4A\uC740 \uC800\uC8FC"
+    effect: 10
+    value: 16
+    maxRank: 1
+    parent: 13
+    job: 1
+    cell: {x: 4.5, y: 2}
+  - displayName: "\uD63C\uB839 \uC9C8\uC8FC"
+    effect: 0
+    value: 8
+    maxRank: 1
+    parent: 14
+    job: 1
+    cell: {x: 4, y: 3}
+  - displayName: "\uB9C8\uB825 \uADF8\uB987"
+    effect: 7
+    value: 20
+    maxRank: 1
+    parent: 14
+    job: 1
+    cell: {x: 5, y: 3}
+  - displayName: "\uC601\uD63C \uD761\uC218"
+    effect: 0
+    value: 9
+    maxRank: 1
+    parent: 15
+    job: 1
+    cell: {x: 4, y: 4}
+  - displayName: "\uB3C5 \uAD6C\uB984"
+    effect: 0
+    value: 10
+    maxRank: 1
+    parent: 12
+    job: 1
+    cell: {x: 6.5, y: 1}
+  - displayName: "\uB3C5 \uB2E4\uB8E8\uAE30"
+    effect: 1
+    value: 10
+    maxRank: 1
+    parent: 18
+    job: 1
+    cell: {x: 6.5, y: 2}
+  - displayName: "\uC601\uD63C \uD3ED\uBC1C"
+    effect: 0
+    value: 11
+    maxRank: 1
+    parent: 19
+    job: 1
+    cell: {x: 6, y: 3}
+  - displayName: "\uBE60\uB978 \uC601\uCC3D"
+    effect: 9
+    value: 10
+    maxRank: 1
+    parent: 19
+    job: 1
+    cell: {x: 7, y: 3}
+  - displayName: "\uC601\uD63C \uADF8\uB987"
+    effect: 5
+    value: 20
+    maxRank: 1
+    parent: 20
+    job: 1
+    cell: {x: 6, y: 4}
+  - displayName: "\uB9C8\uB825 \uD761\uC218"
+    effect: 8
+    value: 2
+    maxRank: 1
+    parent: 21
+    job: 1
+    cell: {x: 7, y: 4}
+  - displayName: "\uCE58\uC720\uC758 \uBE5B"
+    effect: 0
+    value: 12
+    maxRank: 1
+    parent: -1
+    job: 2
+    cell: {x: 9.5, y: 0}
+  - displayName: "\uC131\uAD11"
+    effect: 0
+    value: 13
+    maxRank: 1
+    parent: 24
+    job: 2
+    cell: {x: 8.5, y: 1}
+  - displayName: "\uBE5B\uC758 \uD798"
+    effect: 10
+    value: 16
+    maxRank: 1
+    parent: 25
+    job: 2
+    cell: {x: 8.5, y: 2}
+  - displayName: "\uC2EC\uD310"
+    effect: 0
+    value: 14
+    maxRank: 1
+    parent: 26
+    job: 2
+    cell: {x: 8, y: 3}
+  - displayName: "\uBE60\uB978 \uC601\uCC3D"
+    effect: 8
+    value: 2
+    maxRank: 1
+    parent: 26
+    job: 2
+    cell: {x: 9, y: 3}
+  - displayName: "\uCD95\uBCF5"
+    effect: 0
+    value: 15
+    maxRank: 1
+    parent: 27
+    job: 2
+    cell: {x: 8, y: 4}
+  - displayName: "\uC131\uC5ED"
+    effect: 0
+    value: 16
+    maxRank: 1
+    parent: 24
+    job: 2
+    cell: {x: 10.5, y: 1}
+  - displayName: "\uB530\uB73B\uD55C \uC190"
+    effect: 7
+    value: 20
+    maxRank: 1
+    parent: 30
+    job: 2
+    cell: {x: 10.5, y: 2}
+  - displayName: "\uBD80\uD65C\uC758 \uAE30\uB3C4"
+    effect: 0
+    value: 17
+    maxRank: 1
+    parent: 31
+    job: 2
+    cell: {x: 10, y: 3}
+  - displayName: "\uAE4A\uC740 \uAE30\uB3C4"
+    effect: 9
+    value: 10
+    maxRank: 1
+    parent: 31
+    job: 2
+    cell: {x: 11, y: 3}
+  - displayName: "\uC2E0\uC559"
+    effect: 5
+    value: 24
+    maxRank: 1
+    parent: 32
+    job: 2
+    cell: {x: 10, y: 4}
+  - displayName: "\uC778\uB0B4"
+    effect: 6
+    value: 8
+    maxRank: 1
+    parent: 33
+    job: 2
+    cell: {x: 11, y: 4}
+  awakenSkillDamagePercent: 30
+  awakenCooldownPercent: 20
+  effectFormats:
+  - 
+  - "\uACF5\uACA9\uB825 +{0}%"
+  - "\uACF5\uACA9 \uC18D\uB3C4 +{0}%"
+  - "\uC774\uB3D9 \uC18D\uB3C4 +{0}%"
+  - "\uCE58\uBA85\uD0C0 \uD655\uB960 +{0}%"
+  - "\uCD5C\uB300 \uCCB4\uB825 +{0}"
+  - "\uBC1B\uB294 \uD53C\uD574 -{0}%"
+  - "\uCD5C\uB300 \uB9C8\uB098 +{0}"
+  - "\uC801\uC911 \uC2DC \uB9C8\uB098 +{0}"
+  - "\uC7AC\uC0AC\uC6A9 \uC2DC\uAC04 -{0}%"
+  - "\uC2A4\uD0AC \uD53C\uD574 +{0}%"

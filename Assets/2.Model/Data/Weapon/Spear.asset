@@ -16,8 +16,8 @@ MonoBehaviour:
   kind: 1
   damage: 16
   manaOnHit: 4
-  hitDelay: 0.16
-  duration: 0.5
+  hitDelay: 0.11
+  duration: 0.36
   moveFactor: 0.15
   allowsShield: 0
   partsType: 11
@@ -26,10 +26,10 @@ MonoBehaviour:
   animStartTime: 0.75
   animSpeed: 1.8
   attackSound: 7
-  range: 2.3
+  range: 2.9
   arcDegrees: 120
   lineHalfWidth: 0.35
-  slashScale: {x: 1.5, y: 0.4}
+  slashScale: {x: 1.9, y: 0.4}
   projectileSpeed: 12
   projectileLifetime: 1.2
   projectileRadius: 0.22
@@ -39,5 +39,97 @@ MonoBehaviour:
   statusPower: 0.08
   projectileLook: 1
   projectileColor: {r: 1, g: 1, b: 1, a: 1}
+  vfx:
+    cast:
+    - {fileID: 21300000, guid: 8df687e8ac23e0249b20e94815fa2c62, type: 3}
+    - {fileID: 21300000, guid: c20837b858e3bc94498a45f174d83af5, type: 3}
+    - {fileID: 21300000, guid: 791203f2581f19f47914f15191ee464b, type: 3}
+    - {fileID: 21300000, guid: ba8ce11d2507b0049992a97958a1555f, type: 3}
+    - {fileID: 21300000, guid: cc0a15c5985b1434dbc488fafd76895d, type: 3}
+    - {fileID: 21300000, guid: 7a1d964845693b74fb1fd6428891dac5, type: 3}
+    - {fileID: 21300000, guid: 4a1a5ba21437de44d93160f13f10272c, type: 3}
+    - {fileID: 21300000, guid: 7cef1dab1edae124c8e1d31fa1cb5f02, type: 3}
+    castFps: 28.1
+    castGround: 0
+    castDirectional: 0
+    castMirror: 0
+    castScale: 1
+    castSize: 3
+    castIntro: []
+    castIntroFps: 20
+    castOutro: []
+    castOutroFps: 20
+    trail: []
+    trailFps: 20
+    trailWidth: 1.4
+    projectile: []
+    projectileFps: 18
+    projectileSize: 1
+    projectileSpin: 0
+    projectileHidden: 0
+    impact: []
+    impactFps: 20
+    impactSize: 0.8
+    impactScale: 1
+    impactGround: 0
+    impactDirectional: 0
+    impactMirror: 0
+    muzzle: []
+    muzzleFps: 22
+    muzzleSize: 0.7
+    muzzleDirectional: 0
   chargeTime: 0
   minChargeFactor: 0.35
+  powerAttack: 6
+  powerChargeTime: 0.8
+  powerDamageFactor: 2.4
+  powerRadius: 0.45
+  powerReach: 8.5
+  powerDuration: 0.42
+  powerHitDelay: 0.12
+  powerPierce: 8
+  powerStunTime: 1.2
+  powerShotSpeed: 17
+  powerVfx:
+    cast: []
+    castFps: 20
+    castGround: 0
+    castDirectional: 0
+    castMirror: 0
+    castScale: 1
+    castSize: 0.9
+    castIntro: []
+    castIntroFps: 20
+    castOutro: []
+    castOutroFps: 20
+    trail: []
+    trailFps: 20
+    trailWidth: 1.4
+    projectile:
+    - {fileID: 21300000, guid: caa75ca8c9b080545a1eb8b9835e3bd1, type: 3}
+    - {fileID: 21300000, guid: 4e42cfd5bf94f07449124028b9acfe83, type: 3}
+    - {fileID: 21300000, guid: 86d687dc5d3483d4c98d4ee936267901, type: 3}
+    - {fileID: 21300000, guid: 76c05ad6c3e37b44785cdf6da0b1e8b2, type: 3}
+    - {fileID: 21300000, guid: 247f042a484afd345bb96fa384194226, type: 3}
+    - {fileID: 21300000, guid: 7626870f84df28d4fb6639a406a49274, type: 3}
+    projectileFps: 15
+    projectileSize: 1.125
+    projectileSpin: 0
+    projectileHidden: 0
+    impact:
+    - {fileID: 21300000, guid: 751b2e41cc881e748a82855e7cda2619, type: 3}
+    - {fileID: 21300000, guid: 556620cb043fad04b959b4b590310264, type: 3}
+    - {fileID: 21300000, guid: bdfa3cd13ea0c084aaac2c503e387dc2, type: 3}
+    - {fileID: 21300000, guid: 3a7b352c67c383d47bdecd25a4b480d9, type: 3}
+    - {fileID: 21300000, guid: e049b3204548ecd41917686341924199, type: 3}
+    - {fileID: 21300000, guid: d2639843fb659ef4cbdd5772ff817e1e, type: 3}
+    impactFps: 20
+    impactSize: 0.938
+    impactScale: 1
+    impactGround: 0
+    impactDirectional: 1
+    impactMirror: 0
+    muzzle: []
+    muzzleFps: 22
+    muzzleSize: 0.7
+    muzzleDirectional: 0

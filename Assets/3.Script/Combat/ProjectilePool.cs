@@ -41,6 +41,18 @@ public class ProjectilePool : MonoBehaviour
         activeProjectiles.Add(projectile);
     }
 
+    // 방을 옮기면 FloorDirector가 부른다. 날아가던 투사체를 모두 거둔다.
+    public void ClearAll()
+    {
+        for (int i = activeProjectiles.Count - 1; i >= 0; i--)
+        {
+            Projectile projectile = activeProjectiles[i];
+            projectile.gameObject.SetActive(false);
+            freeProjectiles.Push(projectile);
+        }
+        activeProjectiles.Clear();
+    }
+
     private void Update()
     {
         float deltaTime = Time.deltaTime;

@@ -26,18 +26,17 @@ public struct CharacterLook
         return hairColor | (skinColor << 8) | (beardColor << 16) | (valid << 24);
     }
 
-    public static CharacterLook Unpack(int parts, int colors)
+    // PackParts, PackColors로 나눠 담은 두 정수에서 되살린다.
+    public CharacterLook(int parts, int colors)
     {
-        CharacterLook look = new CharacterLook();
-        look.hair = (byte)(parts & 0xFF);
-        look.eye = (byte)((parts >> 8) & 0xFF);
-        look.beard = (byte)((parts >> 16) & 0xFF);
-        look.skin = (byte)((parts >> 24) & 0xFF);
-        look.hairColor = (byte)(colors & 0xFF);
-        look.skinColor = (byte)((colors >> 8) & 0xFF);
-        look.beardColor = (byte)((colors >> 16) & 0xFF);
-        look.valid = (byte)((colors >> 24) & 0xFF);
-        return look;
+        hair = (byte)(parts & 0xFF);
+        eye = (byte)((parts >> 8) & 0xFF);
+        beard = (byte)((parts >> 16) & 0xFF);
+        skin = (byte)((parts >> 24) & 0xFF);
+        hairColor = (byte)(colors & 0xFF);
+        skinColor = (byte)((colors >> 8) & 0xFF);
+        beardColor = (byte)((colors >> 16) & 0xFF);
+        valid = (byte)((colors >> 24) & 0xFF);
     }
 
     public bool SameAs(in CharacterLook other)

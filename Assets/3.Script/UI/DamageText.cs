@@ -1,4 +1,4 @@
-using TMPro;
+﻿using TMPro;
 using UnityEngine;
 
 // 떠오르며 사라지는 피해 숫자 하나. DamageTextPool이 Tick을 호출한다.
@@ -21,6 +21,18 @@ public class DamageText : MonoBehaviour
         label.color = textColor;
         // 숫자 서식 SetText는 문자열을 새로 만들지 않는다.
         label.SetText("{0}", amount);
+    }
+
+    // 숫자 대신 글자(연계 이름 등)를 띄운다.
+    public void ShowText(Vector2 position, string text, Color textColor, float showDuration, float showRiseSpeed)
+    {
+        transform.position = position;
+        duration = showDuration;
+        timer = showDuration;
+        riseSpeed = showRiseSpeed;
+        color = textColor;
+        label.color = textColor;
+        label.SetText(text);
     }
 
     // 표시가 끝나면 true를 반환한다.

@@ -1,0 +1,93 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d31d9e92da8c0464aa4d1b02d82027ff, type: 3}
+  m_Name: CrossSnipe
+  m_EditorClassIdentifier: Assembly-CSharp::SkillDefinition
+  displayName: "\uC800\uACA9"
+  description: "[\uCC28\uC9D5] \uC228\uC744 \uACE0\uB974\uBA70 \uC870\uC900\uD574
+    \uC544\uC8FC \uBE60\uB978 \uBCFC\uD2B8\uB97C \uC3E9\uB2C8\uB2E4. \uB2E4 \uBAA8\uC73C\uBA74
+    \uD55C \uBC1C\uC5D0 \uD070 \uD53C\uD574\uB97C \uC90D\uB2C8\uB2E4."
+  kind: 2
+  manaCost: 16
+  cooldown: 8
+  castTime: 0.35
+  damageFactor: 4.2
+  radius: 0.3
+  arcDegrees: 0
+  impactDelay: 0
+  chargeTime: 1.3
+  chargeMinDamage: 0.25
+  chargeMinSize: 0.7
+  pierce: 2
+  range: 0
+  invulnerable: 0
+  groundTarget: 0
+  pullSpeed: 0
+  count: 1
+  spreadDegrees: 0
+  projectileSpeed: 34
+  projectileLifetime: 0.6
+  explosionRadius: 0
+  projectileLook: 1
+  buffEffect: 1
+  buffValue: 30
+  buffDuration: 0
+  healPercent: 0
+  statusKind: 0
+  statusDuration: 3
+  statusPower: 0.12
+  anim: 4
+  animStartTime: 0
+  animSpeed: 1.5
+  fxColor: {r: 1, g: 0.45, b: 0.3, a: 1}
+  fx: 10
+  icon: {fileID: 21300000, guid: a3e58f74611561c45be5ce2670e568c7, type: 3}
+  sound: 9
+  vfx:
+    cast: []
+    castFps: 20
+    castGround: 0
+    castDirectional: 0
+    castMirror: 0
+    castScale: 1
+    castSize: 0.9
+    castIntro: []
+    castIntroFps: 20
+    castOutro: []
+    castOutroFps: 20
+    trail: []
+    trailFps: 20
+    trailWidth: 1.4
+    projectile:
+    - {fileID: 21300000, guid: 92f6b084c60cc3243b92b6f53fecd38d, type: 3}
+    - {fileID: 21300000, guid: 1010fe087e137844e86817eff37aa2e1, type: 3}
+    - {fileID: 21300000, guid: 0d717fddb55f8d24382ac4da062a84a2, type: 3}
+    - {fileID: 21300000, guid: e6db0161b6694cc4491492f978a9e20d, type: 3}
+    - {fileID: 21300000, guid: a5ad87079c2246e43b74ee687831f508, type: 3}
+    - {fileID: 21300000, guid: a6d6d4034f2b7604db4962925b24702a, type: 3}
+    - {fileID: 21300000, guid: c1971ec81e6ec2640ac08401c5d0df99, type: 3}
+    - {fileID: 21300000, guid: dc0449f88027fca49b95d2c3d27291d5, type: 3}
+    projectileFps: 16
+    projectileSize: 2.5
+    projectileSpin: 0
+    projectileHidden: 0
+    impact: []
+    impactFps: 20
+    impactSize: 1.375
+    impactScale: 1
+    impactGround: 0
+    impactDirectional: 1
+    impactMirror: 0
+    muzzle: []
+    muzzleFps: 25
+    muzzleSize: 0.625
+    muzzleDirectional: 1

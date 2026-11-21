@@ -1,0 +1,97 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d31d9e92da8c0464aa4d1b02d82027ff, type: 3}
+  m_Name: GunRail
+  m_EditorClassIdentifier: Assembly-CSharp::SkillDefinition
+  displayName: "\uB808\uC77C\uAC74"
+  description: "[\uCC28\uC9D5] \uCD1D\uC5D0 \uC804\uAE30\uB97C \uBAA8\uC558\uB2E4\uAC00
+    \uC77C\uC9C1\uC120\uC73C\uB85C \uAFF0\uB6AB\uB294 \uD0C4\uC744 \uC3E9\uB2C8\uB2E4.
+    \uBAA8\uC744\uC218\uB85D \uAD75\uACE0 \uC138\uC9D1\uB2C8\uB2E4."
+  kind: 2
+  manaCost: 18
+  cooldown: 9
+  castTime: 0.3
+  damageFactor: 2.8
+  radius: 0.5
+  arcDegrees: 0
+  impactDelay: 0
+  chargeTime: 1.1
+  chargeMinDamage: 0.3
+  chargeMinSize: 0.5
+  pierce: 8
+  range: 0
+  invulnerable: 0
+  groundTarget: 0
+  pullSpeed: 0
+  count: 1
+  spreadDegrees: 0
+  projectileSpeed: 40
+  projectileLifetime: 0.45
+  explosionRadius: 0
+  projectileLook: 3
+  buffEffect: 1
+  buffValue: 30
+  buffDuration: 0
+  healPercent: 0
+  statusKind: 5
+  statusDuration: 3
+  statusPower: 0
+  anim: 4
+  animStartTime: 0
+  animSpeed: 1.5
+  fxColor: {r: 0.55, g: 0.95, b: 1, a: 1}
+  fx: 9
+  icon: {fileID: 21300000, guid: 464db99d83e4ec645b1b62ccb4be74ba, type: 3}
+  sound: 10
+  vfx:
+    cast: []
+    castFps: 20
+    castGround: 0
+    castDirectional: 0
+    castMirror: 0
+    castScale: 1
+    castSize: 0.9
+    castIntro: []
+    castIntroFps: 20
+    castOutro: []
+    castOutroFps: 20
+    trail:
+    - {fileID: 21300000, guid: 9ccd17d95e0b4b04e8d7a832575f56ba, type: 3}
+    - {fileID: 21300000, guid: 8475244acf8fec14e81d1ffb3b4bcde5, type: 3}
+    - {fileID: 21300000, guid: 70b768fe0ac116e4d84eb22711eba35e, type: 3}
+    - {fileID: 21300000, guid: fd52a906bd357634eb818ec6389c93b6, type: 3}
+    - {fileID: 21300000, guid: 94b1aee7e09128c43a11afb32083808d, type: 3}
+    - {fileID: 21300000, guid: 3f60a4d97b46a844ab4d235f04652a52, type: 3}
+    - {fileID: 21300000, guid: 2aa7bb8e74531474298c3653c6e69ab5, type: 3}
+    - {fileID: 21300000, guid: 16fc7e4b5616a1847ba241f6e1d80413, type: 3}
+    - {fileID: 21300000, guid: 09b21cff2efe4d84fa5f84359b292384, type: 3}
+    - {fileID: 21300000, guid: 865752543b2733047b69770ff87372d1, type: 3}
+    - {fileID: 21300000, guid: 0c1de4a007dc0cb4e85f0ab922dcac97, type: 3}
+    - {fileID: 21300000, guid: 0d126dc833e790644973772b14822ef0, type: 3}
+    trailFps: 21.8
+    trailWidth: 1
+    projectile: []
+    projectileFps: 16
+    projectileSize: 3.75
+    projectileSpin: 0
+    projectileHidden: 1
+    impact: []
+    impactFps: 16.7
+    impactSize: 0.875
+    impactScale: 1
+    impactGround: 0
+    impactDirectional: 1
+    impactMirror: 0
+    muzzle: []
+    muzzleFps: 16.7
+    muzzleSize: 0.75
+    muzzleDirectional: 1

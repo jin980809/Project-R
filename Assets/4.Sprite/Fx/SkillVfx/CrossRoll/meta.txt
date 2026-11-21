@@ -1,0 +1,5 @@
+trail_width=1.125
+trail_fps=19.0
+cast_ground=0
+cast_fps=10.2
+cast_size=1.875

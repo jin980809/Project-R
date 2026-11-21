@@ -1,0 +1,6 @@
+proj_size=1.000
+proj_spin=0
+impact_size=0.938
+projectile_fps=12.0
+impact_fps=20.0
+impact_dir=1

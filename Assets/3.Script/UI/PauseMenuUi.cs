@@ -45,11 +45,26 @@ public class PauseMenuUi : MonoBehaviour
     [SerializeField] private Button[] rowPrevButtons;
     [SerializeField] private Button[] rowNextButtons;
     [SerializeField] private Button backButton;
+    [SerializeField] private Button keysButton;
+
+    [Header("키 설정(GameInput 키 순서로 한 칸씩)")]
+    [SerializeField] private GameObject keysPage;
+    [SerializeField] private float keysHeight = 660f;
+    [SerializeField] private Button[] keyButtons;
+    [SerializeField] private TMP_Text[] keyNameLabels;
+    [SerializeField] private TMP_Text[] keyValueLabels;
+    [SerializeField] private Button resetKeysButton;
+    [SerializeField] private Button keysBackButton;
+    [SerializeField] private Color waitingKeyColor = new Color(1f, 0.85f, 0.3f);
 
     private readonly StringBuilder builder = new StringBuilder(32);
     private readonly List<Vector2Int> resolutions = new List<Vector2Int>(16);
     private bool paused;
     private bool exitVisible;
+    private int lastKeysRevision = -1;
+    private bool wasRebinding;
+    // 키 바꾸기를 기다리는 칸(설정 화면 표시용)
+    private int waitingKey = -1;
 
     public bool IsOpen => panel.activeSelf;
 
@@ -66,6 +81,14 @@ public class PauseMenuUi : MonoBehaviour
             rowPrevButtons[i].onClick.AddListener(() => Step(row, -1));
             rowNextButtons[i].onClick.AddListener(() => Step(row, 1));
         }
+        keysButton.onClick.AddListener(OpenKeys);
+        resetKeysButton.onClick.AddListener(ResetKeys);
+        keysBackButton.onClick.AddListener(OpenSettings);
+        for (int i = 0; i < keyButtons.Length; i++)
+        {
+            int key = i;
+            keyButtons[i].onClick.AddListener(() => StartRebind(key));
+        }
         CollectResolutions();
         panel.SetActive(false);
     }
@@ -81,6 +104,13 @@ public class PauseMenuUi : MonoBehaviour
         {
             rowPrevButtons[i].onClick.RemoveAllListeners();
             rowNextButtons[i].onClick.RemoveAllListeners();
+        }
+        keysButton.onClick.RemoveAllListeners();
+        resetKeysButton.onClick.RemoveAllListeners();
+        keysBackButton.onClick.RemoveAllListeners();
+        for (int i = 0; i < keyButtons.Length; i++)
+        {
+            keyButtons[i].onClick.RemoveAllListeners();
         }
         // 씬이 바뀌어도 멈춘 시간이 남지 않게 한다.
         Resume();
@@ -111,9 +141,19 @@ public class PauseMenuUi : MonoBehaviour
     // Esc를 눌렀을 때 PlayerController가 부른다. 설정 화면이면 메인으로, 메인이면 닫는다.
     public void OnEscape()
     {
+        GameInput input = hub.LocalInput;
+        bool rebindingEsc = input != null && (input.IsRebinding || input.RebindJustEnded);
         if (!panel.activeSelf)
         {
             Open();
+        }
+        else if (keysPage.activeSelf)
+        {
+            // 키를 바꾸는 중의 Esc는 취소로만 쓴다.
+            if (!rebindingEsc)
+            {
+                OpenSettings();
+            }
         }
         else if (settingsPage.activeSelf)
         {
@@ -143,6 +183,7 @@ public class PauseMenuUi : MonoBehaviour
     {
         if (panel.activeSelf)
         {
+            CancelRebind();
             panel.SetActive(false);
             hub.SetMenuBlocked(false);
             hub.Sound.Play(SoundId.UiClose);
@@ -166,20 +207,112 @@ public class PauseMenuUi : MonoBehaviour
         {
             Resume();
         }
+        // 키가 바뀌면(바꾸기 끝, 서로 바꾸기, 초기화) 글자를 다시 쓰고 기기에 저장한다.
+        GameInput input = hub.LocalInput;
+        if (keysPage.activeSelf && input != null)
+        {
+            if (input.KeysRevision != lastKeysRevision || input.IsRebinding != wasRebinding)
+            {
+                bool saveNeeded = lastKeysRevision >= 0 && input.KeysRevision != lastKeysRevision;
+                lastKeysRevision = input.KeysRevision;
+                wasRebinding = input.IsRebinding;
+                RefreshKeys();
+                if (saveNeeded)
+                {
+                    hub.Meta.StoreKeyBindings(input);
+                    hub.Meta.Save();
+                }
+            }
+        }
+    }
+
+    private void OpenKeys()
+    {
+        mainPage.SetActive(false);
+        settingsPage.SetActive(false);
+        keysPage.SetActive(true);
+        titleLabel.text = "키 설정";
+        SetBoxHeight(keysHeight);
+        lastKeysRevision = -1;
+        wasRebinding = false;
+        RefreshKeys();
+    }
+
+    private void RefreshKeys()
+    {
+        GameInput input = hub.LocalInput;
+        for (int i = 0; i < keyButtons.Length; i++)
+        {
+            if (input != null)
+            {
+                keyNameLabels[i].text = input.GetRebindName(i);
+                keyValueLabels[i].text = input.GetKeyName(i);
+                keyValueLabels[i].color = Color.white;
+                keyButtons[i].interactable = true;
+            }
+            else
+            {
+                keyButtons[i].interactable = false;
+            }
+        }
+        if (input != null && input.IsRebinding)
+        {
+            int waiting = waitingKey;
+            if (waiting >= 0)
+            {
+                keyValueLabels[waiting].text = "키를 누르세요";
+                keyValueLabels[waiting].color = waitingKeyColor;
+            }
+        }
+        resetKeysButton.interactable = input != null;
+    }
+
+    private void StartRebind(int key)
+    {
+        GameInput input = hub.LocalInput;
+        if (input != null)
+        {
+            waitingKey = key;
+            input.StartRebind(key);
+            hub.Sound.Play(SoundId.UiClick);
+        }
+    }
+
+    private void CancelRebind()
+    {
+        GameInput input = hub.LocalInput;
+        if (input != null && input.IsRebinding)
+        {
+            input.CancelRebind();
+        }
+    }
+
+    private void ResetKeys()
+    {
+        GameInput input = hub.LocalInput;
+        if (input != null)
+        {
+            input.ResetBindings();
+            hub.Sound.Play(SoundId.UiClick);
+        }
     }
 
     private void OpenMain()
     {
+        CancelRebind();
         mainPage.SetActive(true);
         settingsPage.SetActive(false);
+        keysPage.SetActive(false);
         titleLabel.text = "메뉴";
         RefreshExit();
     }
 
     private void OpenSettings()
     {
+        CancelRebind();
         mainPage.SetActive(false);
         settingsPage.SetActive(true);
+        keysPage.SetActive(false);
         titleLabel.text = "설정";
         SetBoxHeight(settingsHeight);
         RefreshSettings();

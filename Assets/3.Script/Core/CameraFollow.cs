@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 // 로컬 플레이어를 따라가는 카메라. 맵 밖이 보이지 않게 제한하고 흔들림을 지원한다.
 public class CameraFollow : MonoBehaviour
@@ -6,6 +6,8 @@ public class CameraFollow : MonoBehaviour
     [SerializeField] private Camera targetCamera;
     [SerializeField] private float smoothTime = 0.12f;
     [SerializeField] private Vector2 mapHalfSize = new Vector2(9.6f, 5.4f);
+    [Tooltip("보이는 범위의 가운데(던전은 북쪽 벽이 높아 위로 치우친다)")]
+    [SerializeField] private Vector2 mapCenter = Vector2.zero;
     [SerializeField] private Vector2 lookOffset = new Vector2(0f, 0.4f);
 
     private Transform target;
@@ -70,8 +72,8 @@ public class CameraFollow : MonoBehaviour
         float halfWidth = halfHeight * targetCamera.aspect;
         float limitX = Mathf.Max(0f, mapHalfSize.x - halfWidth);
         float limitY = Mathf.Max(0f, mapHalfSize.y - halfHeight);
-        point.x = Mathf.Clamp(point.x, -limitX, limitX);
-        point.y = Mathf.Clamp(point.y, -limitY, limitY);
+        point.x = Mathf.Clamp(point.x, mapCenter.x - limitX, mapCenter.x + limitX);
+        point.y = Mathf.Clamp(point.y, mapCenter.y - limitY, mapCenter.y + limitY);
         return point;
     }
 }
